@@ -6,9 +6,10 @@ from app.calculator.registry import get_calculator, get_reference_data, get_resu
 from app.calculator.result_cache import CalcResultCache
 from app.chat.llm.base import LLMProvider
 from app.chat.orchestrator import Orchestrator
-from app.chat.registry import get_llm, get_redactor, get_retriever
+from app.chat.registry import get_llm, get_retriever
 from app.domain.models.chat import ChatRequest, ChatResponse
 from app.guardrails.redactor import Redactor
+from app.guardrails.registry import get_redactor
 from app.rag.retriever import Retriever
 
 router = APIRouter(prefix="/api", tags=["chat"])

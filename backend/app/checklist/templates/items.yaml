@@ -1,0 +1,38 @@
+# 플랜트 데이터 체크리스트 구조 (PRD §2.4). 문구는 default_{ko,en}.yaml에 같은 id로 둔다.
+# linked_calc_field: 계산기 입력 필드(camelCase) — 화면에 "계산기 입력에 사용됨"으로 표시
+categories: [gas_turbine, exhaust_gas, feedwater_steam, pinch_approach, design_docs, maintenance_history, economics]
+
+items:
+  # 가스터빈
+  - {id: gt.model, category: gas_turbine, kind: design, priority: required}
+  - {id: gt.load_history, category: gas_turbine, kind: operating, priority: required, unit: "%", linked_calc_field: gtLoadPct}
+  - {id: gt.back_pressure, category: gas_turbine, kind: operating, priority: required, unit: mbar, linked_calc_field: gtBackPressureMbar}
+  - {id: gt.compressor_inlet_temp, category: gas_turbine, kind: operating, priority: required, unit: ℃, linked_calc_field: ambientTempC}
+  # 배기가스
+  - {id: exh.temp, category: exhaust_gas, kind: operating, priority: required, unit: ℃, linked_calc_field: exhaustTempC}
+  - {id: exh.flow, category: exhaust_gas, kind: operating, priority: required, unit: kg/s, linked_calc_field: exhaustFlowKgS}
+  - {id: exh.composition, category: exhaust_gas, kind: operating, priority: recommended, unit: vol%}
+  - {id: exh.hrsg_dp, category: exhaust_gas, kind: operating, priority: required, unit: mbar, linked_calc_field: hrsgGasDpMbar}
+  # 급수/증기
+  - {id: fw.hp_steam, category: feedwater_steam, kind: operating, priority: required, linked_calc_field: hpSteamFlowKgS}
+  - {id: fw.ip_steam, category: feedwater_steam, kind: operating, priority: recommended, linked_calc_field: ipSteamFlowKgS}
+  - {id: fw.lp_steam, category: feedwater_steam, kind: operating, priority: recommended, linked_calc_field: lpSteamFlowKgS}
+  - {id: fw.feedwater_temp, category: feedwater_steam, kind: operating, priority: recommended, unit: ℃}
+  - {id: fw.drum_pressure, category: feedwater_steam, kind: operating, priority: required, unit: barg, linked_calc_field: hpDrumPressureBarg}
+  - {id: fw.stack_temp, category: feedwater_steam, kind: operating, priority: required, unit: ℃, linked_calc_field: stackTempC}
+  # 핀치/어프로치
+  - {id: pinch.evap_gas_out, category: pinch_approach, kind: operating, priority: required, unit: ℃, linked_calc_field: hpEvapGasOutTempC}
+  - {id: pinch.eco_water_out, category: pinch_approach, kind: operating, priority: required, unit: ℃, linked_calc_field: hpEcoWaterOutTempC}
+  - {id: pinch.design_values, category: pinch_approach, kind: design, priority: required, unit: ℃}
+  # 설계 자료
+  - {id: doc.heat_balance, category: design_docs, kind: document, priority: recommended}
+  - {id: doc.tube_spec, category: design_docs, kind: document, priority: recommended}
+  - {id: doc.pid, category: design_docs, kind: document, priority: optional}
+  # 정비 이력
+  - {id: mnt.cleaning_history, category: maintenance_history, kind: document, priority: recommended}
+  - {id: mnt.inspection_photos, category: maintenance_history, kind: document, priority: optional}
+  # 경제성
+  - {id: eco.electricity_price, category: economics, kind: operating, priority: recommended, unit: KRW/MWh, linked_calc_field: electricityPriceKrwPerMwh}
+  - {id: eco.fuel_price, category: economics, kind: operating, priority: recommended, unit: KRW/GJ}
+  - {id: eco.operating_hours, category: economics, kind: operating, priority: recommended, unit: h, linked_calc_field: annualOperatingHours}
+  - {id: eco.outage_schedule, category: economics, kind: document, priority: optional}

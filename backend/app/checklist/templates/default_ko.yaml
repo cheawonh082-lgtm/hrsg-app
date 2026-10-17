@@ -1,0 +1,52 @@
+# 체크리스트 문구 (한국어). 항목 id는 items.yaml과 같아야 한다.
+categories:
+  gas_turbine: 가스터빈
+  exhaust_gas: 배기가스
+  feedwater_steam: 급수/증기
+  pinch_approach: 핀치/어프로치
+  design_docs: 설계 자료
+  maintenance_history: 정비 이력
+  economics: 경제성
+
+priorities: {required: 필수, recommended: 권장, optional: 선택}
+
+items:
+  gt.model: {label: GT 모델 및 정격 출력, description: "모델명, 정격 출력, 정격 배기 유량·온도"}
+  gt.load_history: {label: 부하별 운전 이력, period: "최근 12개월, 1시간 평균"}
+  gt.back_pressure: {label: GT 배압 측정값 및 측정 위치, period: "최근 12개월, 1시간 평균"}
+  gt.compressor_inlet_temp: {label: 압축기 입구 온도(외기 온도), period: "최근 12개월, 1시간 평균"}
+  exh.temp: {label: GT 배기 온도, period: "최근 12개월, 1시간 평균"}
+  exh.flow: {label: 배기 유량 (또는 연료량·공기비), period: "최근 12개월, 1시간 평균"}
+  exh.composition: {label: "배기가스 성분 (O₂, H₂O)", period: 대표 운전점}
+  exh.hrsg_dp: {label: HRSG 입·출구 가스 차압, period: "최근 12개월, 1시간 평균"}
+  fw.hp_steam: {label: HP 증기 유량·압력·온도, period: "최근 12개월, 1시간 평균"}
+  fw.ip_steam: {label: IP 증기 유량·압력·온도, period: "최근 12개월, 1시간 평균"}
+  fw.lp_steam: {label: LP 증기 유량·압력·온도, period: "최근 12개월, 1시간 평균"}
+  fw.feedwater_temp: {label: 급수 온도, period: "최근 12개월, 1시간 평균"}
+  fw.drum_pressure: {label: HP 드럼 압력, period: "최근 12개월, 1시간 평균"}
+  fw.stack_temp: {label: 스택 온도, period: "최근 12개월, 1시간 평균"}
+  pinch.evap_gas_out: {label: HP 증발기 출구 가스 온도, period: "최근 12개월, 1시간 평균"}
+  pinch.eco_water_out: {label: HP 절탄기 출구 급수 온도, period: "최근 12개월, 1시간 평균"}
+  pinch.design_values: {label: 설계 핀치/어프로치 값, description: HP·IP·LP 섹션별}
+  doc.heat_balance: {label: HRSG 열정산서 (Heat Balance), description: 설계 및 성능 보증 조건}
+  doc.tube_spec: {label: 튜브 배열 및 핀 사양}
+  doc.pid: {label: P&ID}
+  mnt.cleaning_history: {label: 과거 세정 이력, description: "공법, 시기, 세정 전후 운전 데이터"}
+  mnt.inspection_photos: {label: 점검 사진, description: 가스측 핀 튜브 상태}
+  eco.electricity_price: {label: 전력 단가}
+  eco.fuel_price: {label: 연료 단가}
+  eco.operating_hours: {label: 연간 운전 시간}
+  eco.outage_schedule: {label: 계획 정비 일정}
+
+email:
+  subject: "[HRSG 성능 진단] 플랜트 데이터 요청드립니다"
+  greeting: "안녕하세요, {recipient}님."
+  intro: "HRSG 성능·경제성 검토를 위해 아래 자료를 요청드립니다."
+  outro: "회신 가능 일정을 알려주시면 감사하겠습니다."
+  empty: "현재 요청할 자료가 없습니다."
+  memo: 메모
+  unit: 단위
+  recipients:
+    customer_contact: 고객사 담당자
+    plant_operations: 발전소 운영팀
+    performance_engineer: 성능 담당 엔지니어

@@ -1,4 +1,5 @@
 """챗 구성요소 선택 (DI). 계산기 registry.py와 같은 방식 — 환경변수로 구현체를 고른다.
+마스킹(get_redactor)은 체크리스트와 공유하므로 app/guardrails/registry.py에 있다.
 
 - LLM_PROVIDER: fake(기본) | claude
 - 문서: DOCS_MASKED_DIR에 인제스트 결과가 있으면 실제 문서, 없으면 내장 Mock 문서
@@ -14,7 +15,7 @@ from app.chat.llm.base import LLMProvider
 from app.chat.llm.claude import ClaudeProvider
 from app.chat.llm.fake import FakeLLMProvider
 from app.config import Settings, get_settings
-from app.guardrails.redactor import Redactor
+from app.guardrails.registry import redactor_for
 from app.rag.retriever import KeywordRetriever, Retriever
 from app.rag.store import load_chunks, resolve_docs_dir
 
@@ -26,18 +27,9 @@ def get_llm(settings: Settings = Depends(get_settings)) -> LLMProvider:
 
 
 @lru_cache
-def _redactor(secrets_dir: Path) -> Redactor:
-    return Redactor.load(secrets_dir)
-
-
-def get_redactor(settings: Settings = Depends(get_settings)) -> Redactor:
-    return _redactor(settings.secrets_dir)
-
-
-@lru_cache
 def _keyword_retriever(docs_masked_dir: Path, secrets_dir: Path) -> KeywordRetriever:
     docs_dir, is_mock = resolve_docs_dir(docs_masked_dir)
-    return KeywordRetriever(load_chunks(docs_dir, _redactor(secrets_dir)), is_mock=is_mock)
+    return KeywordRetriever(load_chunks(docs_dir, redactor_for(secrets_dir)), is_mock=is_mock)
 
 
 def get_retriever(settings: Settings = Depends(get_settings)) -> Retriever:

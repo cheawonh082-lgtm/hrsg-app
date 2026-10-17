@@ -1,0 +1,52 @@
+# Checklist text (English). Item ids must match items.yaml.
+categories:
+  gas_turbine: Gas turbine
+  exhaust_gas: Exhaust gas
+  feedwater_steam: Feedwater/steam
+  pinch_approach: Pinch/approach
+  design_docs: Design documents
+  maintenance_history: Maintenance history
+  economics: Economics
+
+priorities: {required: Required, recommended: Recommended, optional: Optional}
+
+items:
+  gt.model: {label: GT model and rated output, description: "Model, rated output, rated exhaust flow and temperature"}
+  gt.load_history: {label: Operating history by load, period: "Last 12 months, hourly average"}
+  gt.back_pressure: {label: GT back pressure readings and measurement location, period: "Last 12 months, hourly average"}
+  gt.compressor_inlet_temp: {label: Compressor inlet (ambient) temperature, period: "Last 12 months, hourly average"}
+  exh.temp: {label: GT exhaust temperature, period: "Last 12 months, hourly average"}
+  exh.flow: {label: Exhaust gas flow (or fuel flow and air ratio), period: "Last 12 months, hourly average"}
+  exh.composition: {label: "Exhaust gas composition (O₂, H₂O)", period: Representative operating point}
+  exh.hrsg_dp: {label: HRSG gas-side inlet/outlet pressure drop, period: "Last 12 months, hourly average"}
+  fw.hp_steam: {label: "HP steam flow, pressure and temperature", period: "Last 12 months, hourly average"}
+  fw.ip_steam: {label: "IP steam flow, pressure and temperature", period: "Last 12 months, hourly average"}
+  fw.lp_steam: {label: "LP steam flow, pressure and temperature", period: "Last 12 months, hourly average"}
+  fw.feedwater_temp: {label: Feedwater temperature, period: "Last 12 months, hourly average"}
+  fw.drum_pressure: {label: HP drum pressure, period: "Last 12 months, hourly average"}
+  fw.stack_temp: {label: Stack temperature, period: "Last 12 months, hourly average"}
+  pinch.evap_gas_out: {label: HP evaporator gas outlet temperature, period: "Last 12 months, hourly average"}
+  pinch.eco_water_out: {label: HP economizer water outlet temperature, period: "Last 12 months, hourly average"}
+  pinch.design_values: {label: Design pinch/approach values, description: "By HP, IP and LP section"}
+  doc.heat_balance: {label: HRSG heat balance, description: Design and performance guarantee conditions}
+  doc.tube_spec: {label: Tube arrangement and fin specification}
+  doc.pid: {label: P&ID}
+  mnt.cleaning_history: {label: Past cleaning history, description: "Method, timing, operating data before and after cleaning"}
+  mnt.inspection_photos: {label: Inspection photos, description: Gas-side finned tube condition}
+  eco.electricity_price: {label: Electricity price}
+  eco.fuel_price: {label: Fuel price}
+  eco.operating_hours: {label: Annual operating hours}
+  eco.outage_schedule: {label: Planned outage schedule}
+
+email:
+  subject: "[HRSG performance review] Plant data request"
+  greeting: "Dear {recipient},"
+  intro: "For the HRSG performance and economics review, we would like to request the following data."
+  outro: "Please let us know when you expect to be able to reply. Thank you."
+  empty: "There is no data to request at this time."
+  memo: Note
+  unit: Unit
+  recipients:
+    customer_contact: Customer contact
+    plant_operations: Plant operations team
+    performance_engineer: Performance engineer

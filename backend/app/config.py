@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     docs_masked_dir: Path = _ROOT_DIR / "data" / "docs_masked"
     rag_retriever: Literal["keyword"] = "keyword"
 
+    # 체크리스트 진행 상태 (재시작해도 유지, Git 제외)
+    checklist_state_path: Path = _ROOT_DIR / "data" / "checklist_state.json"
+
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 

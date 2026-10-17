@@ -3,6 +3,7 @@ secrets/
 data/docs_raw/
 data/docs_masked/
 data/vectordb/
+data/checklist_state.json
 .env
 .env.*
 !.env.example

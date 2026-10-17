@@ -211,3 +211,31 @@ def test_real_engine_returns_501_until_implemented(client, default_input):
     res = client.post("/api/calc/evaluate", json=default_input)
     assert res.status_code == 501
     assert res.json()["error"]["code"] == "NOT_IMPLEMENTED"
+
+
+# ---- 결과 세션 캐시 (A-09 기반) ----
+def test_result_retrievable_by_calc_id(client, default_input):
+    result = evaluate(client, default_input)
+    res = client.get(f"/api/calc/results/{result['meta']['calcId']}")
+    assert res.status_code == 200
+    assert res.json() == result
+
+
+def test_unknown_calc_id_returns_404_error_format(client):
+    res = client.get("/api/calc/results/does-not-exist")
+    assert res.status_code == 404
+    assert res.json()["error"]["code"] == "CALC_RESULT_NOT_FOUND"
+
+
+def test_result_cache_evicts_oldest():
+    from types import SimpleNamespace
+
+    from app.calculator.result_cache import CalcResultCache
+
+    cache = CalcResultCache(max_size=2)
+    results = {cid: CalcResult.model_construct(meta=SimpleNamespace(calc_id=cid)) for cid in ("a", "b", "c")}
+    for r in results.values():
+        cache.put(r)
+    assert cache.get("a") is None
+    assert cache.get("b") is results["b"]
+    assert cache.get("c") is results["c"]

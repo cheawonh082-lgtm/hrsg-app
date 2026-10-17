@@ -10,12 +10,18 @@ from app.calculator.real import RealCalculator
 from app.calculator.reference_data.mock import MockReferenceData
 from app.calculator.reference_data.provider import ReferenceDataProvider
 from app.calculator.reference_data.real import RealReferenceData
+from app.calculator.result_cache import CalcResultCache
 from app.config import Settings, get_settings
 
 
 @lru_cache
 def _mock_reference_data() -> MockReferenceData:
     return MockReferenceData()
+
+
+@lru_cache
+def get_result_cache() -> CalcResultCache:
+    return CalcResultCache()
 
 
 def get_reference_data(settings: Settings = Depends(get_settings)) -> ReferenceDataProvider:

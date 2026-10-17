@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.calculator.base import CalculatorService
+from app.calculator.errors import CalcResultNotFoundError
 from app.calculator.reference_data.provider import ReferenceDataProvider
-from app.calculator.registry import get_calculator, get_reference_data
+from app.calculator.registry import get_calculator, get_reference_data, get_result_cache
+from app.calculator.result_cache import CalcResultCache
 from app.domain.models.calc import CalcInput, CalcResult, GasTurbineSpec, Locale
 from app.domain.models.limits import InputLimits, input_limits
 from app.domain.models.reference import StatusThresholds
@@ -40,5 +42,19 @@ def get_input_limits():
 
 
 @router.post("/evaluate", response_model=CalcResult)
-def evaluate(inp: CalcInput, calculator: CalculatorService = Depends(get_calculator)):
-    return calculator.evaluate(inp)
+def evaluate(
+    inp: CalcInput,
+    calculator: CalculatorService = Depends(get_calculator),
+    cache: CalcResultCache = Depends(get_result_cache),
+):
+    result = calculator.evaluate(inp)
+    cache.put(result)
+    return result
+
+
+@router.get("/results/{calc_id}", response_model=CalcResult)
+def get_result(calc_id: str, cache: CalcResultCache = Depends(get_result_cache)):
+    result = cache.get(calc_id)
+    if result is None:
+        raise CalcResultNotFoundError(calc_id)
+    return result

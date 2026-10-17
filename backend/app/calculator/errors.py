@@ -20,3 +20,10 @@ class UnknownCleaningMethodError(CalcError):
         super().__init__(
             "UNKNOWN_CLEANING_METHOD", "error.unknownCleaningMethod", {"cleaningMethodIds": method_ids}
         )
+
+
+class CalcResultNotFoundError(CalcError):
+    status_code = 404
+
+    def __init__(self, calc_id: str):
+        super().__init__("CALC_RESULT_NOT_FOUND", "error.calcResultNotFound", {"calcId": calc_id})

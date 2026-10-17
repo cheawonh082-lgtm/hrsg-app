@@ -122,36 +122,39 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
         </div>
 
         {/* ② 구분·우선순위·상태·메모 */}
-        <div className="flex items-center gap-2 pl-10 md:shrink-0 md:pl-0">
+        {/* 영어 라벨처럼 길어지면 태그 줄과 [상태·메모] 묶음이 나뉘어 줄바꿈된다 — 드롭다운이 읽을 수 없게 줄지 않도록 (R-11) */}
+        <div className="flex flex-wrap items-center gap-2 pl-10 md:shrink-0 md:flex-nowrap md:pl-0">
           <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs whitespace-nowrap text-muted">
             {t(`checklist.kind.${item.kind}`)}
           </span>
           <span className={cn('rounded-md border px-2 py-0.5 text-xs font-semibold whitespace-nowrap', PRIORITY_STYLE[item.priority])}>
             {t(`checklist.priority.${item.priority}`)}
           </span>
-          <select
-            value={state.status}
-            onChange={(e) => onChange(applyStatus(state, e.target.value as ItemStatus))}
-            aria-label={t('checklist.status.label', { item: item.label })}
-            className="h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface px-2 text-base md:w-32 md:flex-none md:text-sm"
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(`checklist.status.${s}`)}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => setMemoOpen((v) => !v)}
-            aria-expanded={memoOpen}
-            aria-controls={memoId}
-            aria-label={t('checklist.memo.toggle', { item: item.label })}
-            className="relative flex size-11 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            <NotebookPen aria-hidden className="size-5" />
-            {memo && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-accent" />}
-          </button>
+          <div className="flex min-w-[10rem] flex-1 items-center gap-2 md:min-w-0 md:flex-none">
+            <select
+              value={state.status}
+              onChange={(e) => onChange(applyStatus(state, e.target.value as ItemStatus))}
+              aria-label={t('checklist.status.label', { item: item.label })}
+              className="h-11 min-w-28 flex-1 rounded-lg border border-border bg-surface px-2 text-base md:w-32 md:flex-none md:text-sm"
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {t(`checklist.status.${s}`)}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setMemoOpen((v) => !v)}
+              aria-expanded={memoOpen}
+              aria-controls={memoId}
+              aria-label={t('checklist.memo.toggle', { item: item.label })}
+              className="relative flex size-11 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <NotebookPen aria-hidden className="size-5" />
+              {memo && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-accent" />}
+            </button>
+          </div>
         </div>
       </div>
 

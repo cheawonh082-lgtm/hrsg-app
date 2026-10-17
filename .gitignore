@@ -1,6 +1,7 @@
 # --- 비밀·원문 데이터 (PRD §5) ---
 secrets/
 data/docs_raw/
+data/docs_masked/
 data/vectordb/
 .env
 .env.*

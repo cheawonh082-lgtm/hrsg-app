@@ -1,0 +1,13 @@
+# MOCK 마스킹 사전 — 가상의 이름만 들어 있습니다.
+# 실제 사전은 secrets/redaction_dict.yaml (Git 미추적)에 같은 형식으로 두면 이 파일 대신 사용됩니다.
+# 실명(또는 표기 변형) → 별칭. 긴 이름부터 치환됩니다.
+plants:
+  가상그린발전소: PLANT-A
+  가상그린복합: PLANT-A
+  Virtual Green Power Station: PLANT-A
+  가상블루발전소: PLANT-B
+  Virtual Blue Power Station: PLANT-B
+companies:
+  가상에너지주식회사: CUSTOMER-1
+  가상에너지: CUSTOMER-1
+  Virtual Energy Co.: CUSTOMER-1

@@ -3,7 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import calc, health
+from app.api import calc, chat, health
 from app.calculator.errors import CalcError
 from app.config import get_settings
 
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(calc.router)
+    app.include_router(chat.router)
     return app
 
 

@@ -28,9 +28,13 @@ export function ChatPage() {
   }, [incomingCalcId, setCalcContextId, navigate])
 
   const devMode = health.data && (health.data.llm === 'fake' || health.data.docs === 'mock')
-  const suggestions = calcContextId
-    ? [t('chat.suggestions.interpret'), t('chat.suggestions.cleaning')]
-    : [t('chat.suggestions.s1'), t('chat.suggestions.s2'), t('chat.suggestions.s3'), t('chat.suggestions.s4')]
+  // 추천 질문은 대화 시작 전에만 — 모바일에서 대화 영역을 가리지 않도록
+  const suggestions =
+    messages.length > 0
+      ? []
+      : calcContextId
+        ? [t('chat.suggestions.interpret'), t('chat.suggestions.cleaning')]
+        : [t('chat.suggestions.s1'), t('chat.suggestions.s2'), t('chat.suggestions.s3'), t('chat.suggestions.s4')]
 
   return (
     <section className="mx-auto flex min-h-[calc(100dvh-12rem)] w-full max-w-3xl flex-col gap-4">

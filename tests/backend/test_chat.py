@@ -83,6 +83,14 @@ def test_confirm_card_resend_calculates(client):
     assert gt == {"key": "gtModelId", "value": "GT_MOCK_H_CLASS", "unit": None, "source": "user"}
 
 
+def test_edited_assumptions_override_values_in_question(client):
+    """가정 수정: 같은 질문 재전송 시 확인 카드 값이 질문 문장의 값보다 우선"""
+    edited = {"gtModelId": "GT_MOCK_F_CLASS", "condition": {"hrsgGasDpMbar": 25, "stackTempC": 90}}
+    body = ask(client, "F급 GT, 차압 35mbar, 스택 110℃면 연간 손실은?", calcContext={"input": edited})
+    values = {a["key"]: a["value"] for a in blocks_of(body, "calc_result")[0]["assumptions"]}
+    assert values["hrsgGasDpMbar"] == 25 and values["stackTempC"] == 90
+
+
 def test_out_of_range_param_asks_again(client):
     confirmed = {"gtModelId": "GT_MOCK_F_CLASS", "condition": {"hrsgGasDpMbar": 30, "stackTempC": 110, "exhaustTempC": 800}}
     body = ask(client, "손실 얼마나 돼?", calcContext={"input": confirmed})

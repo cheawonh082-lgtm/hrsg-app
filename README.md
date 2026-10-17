@@ -4,12 +4,16 @@
 제품·기술 명세는 [PRD.md](PRD.md) 참조.
 
 > ⚠ 현재 계산 엔진과 레퍼런스 데이터는 모두 **Mock(가상 값)** 입니다. 화면의 수치는 검증되지 않았습니다.
+> AI 질의응답도 **Fake LLM(규칙 기반 예시 응답)** 과 **가상 예시 문서**로 동작합니다 — 아래 "실제 LLM 연결", "실제 문서 넣기" 참조.
 
 ## 구성
 
 | 경로 | 내용 |
 |---|---|
 | `backend/` | FastAPI + Pydantic v2. 계산기 인터페이스(`app/calculator/base.py`)와 Mock 구현 |
+| `backend/app/chat/` | AI 챗: Orchestrator, LLM 인터페이스(`llm/base.py`) + Fake/Claude(stub) 구현 |
+| `backend/app/rag/` | 문서 검색: `Retriever` 인터페이스 + 키워드 검색, 인제스트 CLI, 가상 예시 문서(`mock_docs/`) |
+| `backend/app/guardrails/` | 입력 필터(인젝션·공식 요청), 숫자 출처 검증, 실명 마스킹 |
 | `frontend/` | Vite + React 18 + TypeScript + Tailwind v4. 반응형 AppShell |
 | `tests/backend/` | 계산기 API 계약 테스트 (pytest) |
 | `frontend/src/**/*.test.tsx` | 컴포넌트 단위 테스트 (Vitest + Testing Library) |
@@ -50,3 +54,36 @@ cd frontend && npm run test:e2e                        # 반응형 레이아웃 
 
 `.env`의 `CALC_ENGINE=real`로 바꾸면 `RealCalculator`가 사용됩니다(현재는 501 응답).
 교체 절차는 PRD §4.4 참조 — 공식·실측 데이터는 `secrets/`(Git 미추적)에만 둡니다.
+
+## 실제 LLM 연결
+
+지금은 `LLM_PROVIDER=fake` — 정규식으로 파라미터를 뽑고 고정 템플릿으로 답하는 결정적 구현입니다(테스트도 이것으로 실행).
+
+1. `backend/app/chat/llm/claude.py`의 `extract`(질문 → 의도·파라미터)와 `compose`(근거 → 서술) 두 메서드를 구현합니다. 구현 가이드는 파일 상단 주석 참조.
+   - 서술의 수치는 `{{calc.loss.total_power_loss_mw}}` 같은 토큰으로만 쓰게 합니다. 토큰 밖 숫자는 검증기가 제거합니다(PRD §4.5 G-2·G-3).
+   - 계산 호출·결과 카드·검증·마스킹은 Orchestrator가 처리하므로 공급자 구현에는 넣지 않습니다.
+2. `.env`: `LLM_PROVIDER=claude`, `LLM_MODEL=…`, `LLM_API_KEY=…` (구현 전에는 `/api/chat`이 501)
+3. `tests/backend/test_chat.py`는 Fake 기준이라 그대로 통과해야 합니다. 실제 LLM 품질은 PRD §6.4 평가 질문 세트로 따로 확인합니다.
+
+다른 공급자(로컬 모델 등)는 `LLMProvider`를 상속한 클래스를 추가하고 `app/chat/registry.py`의 `get_llm`에 분기를 넣습니다.
+
+## 실제 문서 넣기
+
+지금은 `backend/app/rag/mock_docs/`의 가상 문서(한/영 7개)를 검색합니다. 화면에는 "예시 문서" 배지와 개발 모드 안내가 표시됩니다.
+
+1. 원문(.md, .txt / UTF-8)을 `data/docs_raw/`에 넣습니다. PDF·DOCX는 텍스트로 변환해서 넣습니다.
+   - 선택: 맨 위에 front matter(`title`, `lang`)를 넣고, 본문은 `## 섹션` 단위로 나누면 인용이 섹션 단위로 나옵니다.
+2. 실명 마스킹 사전을 `secrets/redaction_dict.yaml`에 둡니다(형식은 `backend/app/guardrails/mock_redaction_dict.yaml` 참조). 없으면 가상 사전 + 패턴(`○○발전소`, `N호기`)만 적용됩니다.
+3. 인제스트: `cd backend && .venv/Scripts/python -m app.rag.ingest` (먼저 `--dry-run`으로 마스킹 횟수 확인 권장)
+   - 결과는 `data/docs_masked/TECH-DOC-###.md`로 저장되고, 원문 파일명은 별칭으로 바뀝니다(대응표는 `data/docs_raw/.aliases.json`).
+4. 서버를 재시작하면 `data/docs_masked/`의 문서로 자동 전환됩니다(`/api/health`의 `docs`가 `real`로 바뀜).
+
+`data/docs_raw/`, `data/docs_masked/`, `secrets/`는 Git에 올라가지 않습니다. 검색 품질이 부족하면 `Retriever`를 구현한 임베딩 검색을 추가하고 `RAG_RETRIEVER`로 고릅니다.
+
+## 챗 동작 메모
+
+- 계산 질문은 서버가 직접 계산기를 호출하고, 결과 카드의 숫자는 계산 결과에서 그대로 옮깁니다(LLM 미경유).
+- 필수 값(GT 모델, HRSG 차압, 스택 온도)이 질문에 없으면 확인 카드를 보여 줍니다. "계산 실행"과 "가정 수정"은 같은 질문을 `calcContext.input`에 확정값을 담아 다시 보내며, 확정값이 질문 문장의 값보다 우선합니다.
+- 결과 카드의 "계산기에서 열기"는 `/calculator?calcId=`로 이동해 같은 입력을 복원합니다. 계산 결과는 서버 메모리에만 있어 재시작하면 사라집니다.
+- 스트리밍(SSE)과 대화 목록은 아직 없습니다(PRD Should). 응답이 블록 단위라 SSE로 바꿀 때 블록별로 보내면 됩니다.
+

@@ -178,7 +178,11 @@ class Orchestrator:
     def _plan_params(
         self, extracted: dict, ctx: CalcContext | None, gt_models: list[GasTurbineSpec], locale: Locale
     ) -> ParamPlan:
-        """우선순위: 모델 기본값 < 계산기 결과(calcId) < calcContext.input < 질문에서 추출한 값."""
+        """우선순위: 모델 기본값 < 계산기 결과(calcId) < 질문에서 추출한 값 < calcContext.input.
+
+        calcContext.input은 사용자가 확인 카드·가정 수정에서 직접 확정한 값이라 가장 우선한다
+        (같은 질문을 재전송하므로, 질문 문장에서 다시 뽑은 값이 수정값을 덮으면 안 된다).
+        """
         base: dict | None = None
         user: dict = {}
         if ctx and ctx.calc_id:
@@ -186,9 +190,9 @@ class Orchestrator:
             if cached:
                 base = cached.input.model_dump(by_alias=True)
                 user = _prune_none(copy.deepcopy(base))
+        user = _deep_merge(user, extracted)
         if ctx and ctx.input:
             user = _deep_merge(user, _prune_none(ctx.input))
-        user = _deep_merge(user, extracted)
         user.pop("locale", None)
 
         model_id = user.get("gtModelId")

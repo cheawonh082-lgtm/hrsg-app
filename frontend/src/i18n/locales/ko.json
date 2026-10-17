@@ -251,8 +251,9 @@
     "retry": "다시 시도",
     "input": {
       "label": "질문 입력",
-      "placeholder": "질문을 입력하세요 (Enter 전송, Shift+Enter 줄바꿈)",
-      "send": "전송"
+      "placeholder": "질문을 입력하세요",
+      "send": "전송",
+      "hint": "Enter 전송 · Shift+Enter 줄바꿈"
     },
     "suggestions": {
       "label": "추천 질문",

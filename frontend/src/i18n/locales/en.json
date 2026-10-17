@@ -251,8 +251,9 @@
     "retry": "Retry",
     "input": {
       "label": "Your question",
-      "placeholder": "Type a question (Enter to send, Shift+Enter for a new line)",
-      "send": "Send"
+      "placeholder": "Ask a question",
+      "send": "Send",
+      "hint": "Enter to send · Shift+Enter for a new line"
     },
     "suggestions": {
       "label": "Suggested questions",

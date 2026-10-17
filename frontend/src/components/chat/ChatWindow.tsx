@@ -102,6 +102,8 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
             onChange={(e) => setText(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder={t('chat.input.placeholder')}
+            aria-description={t('chat.input.hint')}
+            title={t('chat.input.hint')}
             enterKeyHint="send"
             className="min-h-11 min-w-0 flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2.5 focus-visible:outline-2 focus-visible:outline-accent"
           />

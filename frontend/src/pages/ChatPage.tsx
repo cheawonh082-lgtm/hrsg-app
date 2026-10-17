@@ -1,7 +1,7 @@
 import { Calculator, FlaskConical, RotateCcw, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useGtModels, useInputLimits } from '../api/hooks/useCalc'
 import { useChat } from '../api/hooks/useChat'
@@ -19,12 +19,13 @@ export function ChatPage() {
   const { messages, calcContextId, setCalcContextId, reset } = useChatStore()
   const { ask, resend, retry } = useChat()
 
-  // 계산기 "AI에게 질문하기"에서 넘어온 calcId → 대화 맥락으로 보관하고 히스토리 state는 비운다(새로고침 시 중복 방지)
-  const incomingCalcId = (location.state as { calcId?: string } | null)?.calcId
+  // 계산기 "AI에게 질문하기"에서 넘어온 calcId(state 또는 ?calcId=) → 대화 맥락으로 보관하고 주소·state는 비운다
+  const [searchParams] = useSearchParams()
+  const incomingCalcId = (location.state as { calcId?: string } | null)?.calcId ?? searchParams.get('calcId')
   useEffect(() => {
     if (!incomingCalcId) return
     setCalcContextId(incomingCalcId)
-    navigate('.', { replace: true, state: null })
+    navigate('/chat', { replace: true, state: null })
   }, [incomingCalcId, setCalcContextId, navigate])
 
   const devMode = health.data && (health.data.llm === 'fake' || health.data.docs === 'mock')

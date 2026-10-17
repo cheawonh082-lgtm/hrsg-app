@@ -95,14 +95,14 @@ test.describe('데스크톱 1280px', () => {
 test.describe('계산기 → 챗 맥락', () => {
   test.use({ viewport: { width: 1280, height: 800 } })
 
-  test('"이 결과 해석해줘" → 계산기 입력 그대로 결과 카드', async ({ page }) => {
+  test('"이 계산 결과 해석해줘" → 계산기 입력 그대로 결과 카드', async ({ page }) => {
     await page.goto('/calculator')
     await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText('0.00')
     await page.getByRole('button', { name: 'AI에게 이 결과 질문하기' }).click()
 
     await expect(page).toHaveURL(/\/chat$/)
     await expect(page.getByTestId('chat-calc-context')).toBeVisible()
-    await page.getByRole('button', { name: '이 결과 해석해줘' }).click()
+    await page.getByRole('button', { name: '이 계산 결과 해석해줘' }).click()
     await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
     await expect(lastAnswer(page).getByTestId('card-totalPowerLossMw')).toHaveText('0.00 MW')
     await expect(lastAnswer(page).getByTestId('assumptions-default')).toHaveCount(0)

@@ -222,7 +222,7 @@
     "meta": {
       "engine": "Engine"
     },
-    "restoreFailed": "Couldn't find the saved result, so the calculator starts from defaults. (Saved results are cleared when the server restarts.)"
+    "restoreFailed": "The previous calculation could not be found, so default values are shown."
   },
   "cleaning": {
     "dryIce": "Dry ice blasting",
@@ -260,7 +260,7 @@
       "s2": "F-class GT, 35 mbar pressure drop, 110℃ stack — what is the annual loss?",
       "s3": "What is the pinch point?",
       "s4": "How do I choose a cleaning method?",
-      "interpret": "Interpret this result",
+      "interpret": "Interpret this calculation result",
       "cleaning": "How much would cleaning recover under these conditions?"
     },
     "steps": {

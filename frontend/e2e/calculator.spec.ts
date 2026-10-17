@@ -123,7 +123,7 @@ test.describe('데스크톱 1280px', () => {
     await page.getByRole('button', { name: 'AI에게 이 결과 질문하기' }).click()
     await expect(page).toHaveURL(/\/chat$/)
     await expect(page.getByTestId('chat-calc-context')).toBeVisible()
-    await expect(page.getByRole('button', { name: '이 결과 해석해줘' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '이 계산 결과 해석해줘' })).toBeVisible()
   })
 })
 

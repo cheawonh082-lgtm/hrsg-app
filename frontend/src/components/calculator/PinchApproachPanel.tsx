@@ -7,7 +7,19 @@ import { formatNumber } from '../../lib/format'
 import { useUiStore } from '../../store/ui'
 import { StatusPill } from '../common/StatusPill'
 
-/** HP/IP/LP 핀치·어프로치 평가. 입력이 없으면 "데이터 필요" + 체크리스트로 이동 */
+/** 섹션별 핀치·어프로치 평가에 필요한 계산기 입력 — 체크리스트에서 같은 입력에 연결된 항목을 강조한다 */
+const PINCH_FIELDS: Record<PinchApproachEvaluation['section'], string[]> = {
+  HP: ['hpEvapGasOutTempC', 'hpEcoWaterOutTempC', 'hpDrumPressureBarg'],
+  IP: [],
+  LP: [],
+}
+
+export const checklistFocusUrl = (section: PinchApproachEvaluation['section']) => {
+  const fields = PINCH_FIELDS[section]
+  return `/checklist?focus=pinch_approach${fields.length ? `&fields=${fields.join(',')}` : ''}`
+}
+
+/** HP/IP/LP 핀치·어프로치 평가. 입력이 없으면 "데이터 필요" + 체크리스트 해당 섹션으로 이동(강조) */
 export function PinchApproachPanel({ items }: { items: PinchApproachEvaluation[] }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
@@ -46,7 +58,7 @@ export function PinchApproachPanel({ items }: { items: PinchApproachEvaluation[]
 
             {insufficient && (
               <Link
-                to="/checklist"
+                to={checklistFocusUrl(p.section)}
                 className="mt-auto inline-flex min-h-11 items-center gap-2 self-start rounded-lg border border-border px-3 text-sm font-medium text-accent hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <ClipboardList aria-hidden className="size-4" />

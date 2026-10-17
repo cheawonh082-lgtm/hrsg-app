@@ -2,6 +2,7 @@ import { SendHorizontal } from 'lucide-react'
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useVisualViewport } from '../../hooks/useVisualViewport'
 import type { ChatMessage } from '../../store/chat'
 import { MessageBubble, type MessageContext } from './MessageBubble'
 
@@ -22,13 +23,14 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const busy = messages.some((m) => m.role === 'assistant' && m.status === 'pending')
+  const { keyboardInset } = useVisualViewport()
 
   const lastStatus = messages.at(-1)?.role === 'assistant' ? (messages.at(-1) as { status: string }).status : ''
   useEffect(() => {
     if (!messages.length) return
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     endRef.current?.scrollIntoView({ block: 'end', behavior: reduce ? 'auto' : 'smooth' })
-  }, [messages.length, lastStatus])
+  }, [messages.length, lastStatus, keyboardInset])
 
   // 입력창 높이를 내용에 맞춘다(최대 6줄 정도)
   useEffect(() => {
@@ -66,7 +68,12 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
         <div ref={endRef} />
       </div>
 
-      <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 space-y-2 border-t border-border bg-bg/95 px-4 pt-3 pb-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:rounded-t-xl lg:border-x lg:px-4">
+      {/* 가상 키보드가 열리면(visualViewport) 입력창을 키보드 바로 위로 올린다 — 탭바는 키보드에 가려짐 (V-06) */}
+      <div
+        data-testid="chat-composer"
+        data-keyboard-inset={keyboardInset}
+        style={keyboardInset ? { bottom: keyboardInset } : undefined}
+        className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 space-y-2 border-t border-border bg-bg/95 px-4 pt-3 pb-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:rounded-t-xl lg:border-x lg:px-4">
         {suggestions.length > 0 && (
           <ul aria-label={t('chat.suggestions.label')} className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
             {suggestions.map((s) => (

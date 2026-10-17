@@ -32,3 +32,14 @@ export type Citation = Schemas['Citation']
 export type NoticeBlock = Schemas['NoticeBlock']
 export type Assumption = Schemas['Assumption']
 export type ProcessStep = Schemas['ProcessStep']
+
+// ---- 체크리스트 ----
+export type ChecklistResponse = Schemas['ChecklistResponse']
+export type ChecklistItem = Schemas['ChecklistItem']
+export type ChecklistItemState = Schemas['ChecklistItemState']
+export type ChecklistItemPatch = Schemas['ChecklistItemPatch']
+export type ChecklistProgress = Schemas['ChecklistProgress']
+export type ChecklistCategory = ChecklistItem['category']
+export type ItemStatus = NonNullable<ChecklistItemState['status']>
+export type EmailExportRequest = Schemas['EmailExportRequest']
+export type EmailExportResult = Schemas['EmailExportResult']

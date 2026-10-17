@@ -236,8 +236,7 @@
   },
   "pages": {
     "chatTitle": "질문하기",
-    "checklistTitle": "플랜트 데이터 체크리스트",
-    "checklistDesc": "데이터 요청 체크리스트와 이메일 복사 기능은 4주차에 구현됩니다."
+    "checklistTitle": "플랜트 데이터 체크리스트"
   },
   "chat": {
     "subtitle": "HRSG 기술 질문과 성능·경제성 계산을 함께 물어보세요. 수치는 계산기 결과 카드로만 답합니다.",
@@ -308,6 +307,94 @@
       "invalidParams": "입력 범위를 벗어난 값이 있습니다. 확인 후 다시 계산해 주세요.",
       "sanitized": "출처를 확인할 수 없는 수치는 답변에서 뺐습니다. 수치는 결과 카드를 참고하세요.",
       "generic": "안내 메시지"
+    }
+  },
+  "checklist": {
+    "subtitle": "성능 진단에 필요한 플랜트 데이터를 체크하고, 요청 이메일 텍스트를 만들어 복사하세요.",
+    "loadError": "체크리스트를 불러오지 못했습니다. 백엔드 서버가 실행 중인지 확인하세요.",
+    "empty": "조건에 맞는 항목이 없습니다.",
+    "search": "항목 검색",
+    "unit": "단위 {{unit}}",
+    "progress": {
+      "title": "진행률",
+      "overall": "전체 진행률",
+      "required": "필수 {{checked}}/{{total}}",
+      "requiredLabel": "필수 항목 진행률"
+    },
+    "filter": {
+      "label": "보기",
+      "all": "전체",
+      "required": "필수",
+      "unchecked": "미완료"
+    },
+    "reset": {
+      "button": "초기화",
+      "confirm": "체크 상태와 메모를 모두 지우고 처음 상태로 되돌릴까요?",
+      "done": "체크리스트를 초기화했습니다."
+    },
+    "section": {
+      "checkAll": "{{section}} 전체 체크"
+    },
+    "kind": {
+      "design": "설계",
+      "operating": "운전",
+      "document": "문서"
+    },
+    "priority": {
+      "required": "필수",
+      "recommended": "권장",
+      "optional": "선택"
+    },
+    "status": {
+      "label": "{{item}} 상태",
+      "pending": "대기",
+      "requested": "요청함",
+      "received": "받음",
+      "na": "해당 없음"
+    },
+    "memo": {
+      "toggle": "{{item}} 메모",
+      "label": "{{item}} 메모 입력",
+      "placeholder": "메모 (예: 담당 부서, DCS 태그, 회신 예정일)"
+    },
+    "linked": {
+      "badge": "계산기 입력에 사용됨",
+      "tooltip": "계산기의 '{{field}}' 입력에 쓰이는 데이터입니다.",
+      "open": "계산기에서 보기"
+    },
+    "sync": {
+      "failed": "서버에 저장하지 못했습니다. 이 브라우저에 임시 저장해 두었습니다.",
+      "pending": "서버에 저장되지 않은 변경 {{count}}개가 이 브라우저에 임시 저장되어 있습니다.",
+      "retry": "다시 저장"
+    },
+    "email": {
+      "open": "이메일 텍스트 복사",
+      "fab": "이메일 복사",
+      "title": "데이터 요청 이메일",
+      "scope": "포함 범위",
+      "scopes": {
+        "unchecked": "미완료 항목",
+        "all": "전체 항목",
+        "required_only": "미완료 필수 항목"
+      },
+      "language": "이메일 언어",
+      "recipient": "받는 사람 (별칭)",
+      "recipients": {
+        "customer_contact": "고객사 담당자",
+        "plant_operations": "발전소 운영팀",
+        "performance_engineer": "성능 담당 엔지니어"
+      },
+      "includeMemo": "메모 포함",
+      "memoHint": "메모는 그대로 들어갑니다. 발전소·고객사명은 자동으로 별칭으로 바뀌지만, 사람 이름 등은 직접 확인하세요.",
+      "privacy": "보안 정책상 받는 사람은 별칭으로만 표시되고, 본문의 발전소·고객사 실명은 자동으로 가려집니다.",
+      "preview": "미리보기",
+      "itemCount": "요청 항목 {{count}}개",
+      "previewError": "미리보기를 불러오지 못했습니다.",
+      "subjectLabel": "제목",
+      "copy": "클립보드에 복사",
+      "copied": "이메일 텍스트를 복사했습니다 (요청 항목 {{count}}개).",
+      "copyFailed": "복사하지 못했습니다. 미리보기 텍스트를 직접 선택해 복사하세요.",
+      "selectedHint": "텍스트를 선택해 두었습니다. Ctrl+C(모바일은 길게 눌러 복사)로 복사하세요."
     }
   }
 }

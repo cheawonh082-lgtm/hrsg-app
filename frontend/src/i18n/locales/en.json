@@ -236,8 +236,7 @@
   },
   "pages": {
     "chatTitle": "Ask",
-    "checklistTitle": "Plant Data Checklist",
-    "checklistDesc": "The data request checklist and email copy feature arrive in week 4."
+    "checklistTitle": "Plant Data Checklist"
   },
   "chat": {
     "subtitle": "Ask HRSG technical questions and performance/economics calculations. Figures come only from calculator result cards.",
@@ -308,6 +307,94 @@
       "invalidParams": "Some values are out of range. Please check and recalculate.",
       "sanitized": "Figures whose source couldn't be verified were removed. Refer to the result card for figures.",
       "generic": "Notice"
+    }
+  },
+  "checklist": {
+    "subtitle": "Check off the plant data needed for the performance review, then build and copy a request email.",
+    "loadError": "Could not load the checklist. Check that the backend server is running.",
+    "empty": "No items match.",
+    "search": "Search items",
+    "unit": "unit {{unit}}",
+    "progress": {
+      "title": "Progress",
+      "overall": "Overall progress",
+      "required": "Required {{checked}}/{{total}}",
+      "requiredLabel": "Required items progress"
+    },
+    "filter": {
+      "label": "Show",
+      "all": "All",
+      "required": "Required",
+      "unchecked": "Open"
+    },
+    "reset": {
+      "button": "Reset",
+      "confirm": "Clear all checks and notes and start over?",
+      "done": "Checklist reset."
+    },
+    "section": {
+      "checkAll": "Check all in {{section}}"
+    },
+    "kind": {
+      "design": "Design",
+      "operating": "Operating",
+      "document": "Document"
+    },
+    "priority": {
+      "required": "Required",
+      "recommended": "Recommended",
+      "optional": "Optional"
+    },
+    "status": {
+      "label": "{{item}} status",
+      "pending": "Pending",
+      "requested": "Requested",
+      "received": "Received",
+      "na": "N/A"
+    },
+    "memo": {
+      "toggle": "Note for {{item}}",
+      "label": "Note for {{item}}",
+      "placeholder": "Note (e.g. department, DCS tag, expected reply date)"
+    },
+    "linked": {
+      "badge": "Used by calculator",
+      "tooltip": "This data feeds the calculator's '{{field}}' input.",
+      "open": "Open calculator"
+    },
+    "sync": {
+      "failed": "Could not save to the server. The change is kept in this browser for now.",
+      "pending": "{{count}} change(s) not yet saved to the server are kept in this browser.",
+      "retry": "Save again"
+    },
+    "email": {
+      "open": "Copy email text",
+      "fab": "Copy email",
+      "title": "Data request email",
+      "scope": "Include",
+      "scopes": {
+        "unchecked": "Open items",
+        "all": "All items",
+        "required_only": "Open required items"
+      },
+      "language": "Email language",
+      "recipient": "Recipient (alias)",
+      "recipients": {
+        "customer_contact": "Customer contact",
+        "plant_operations": "Plant operations team",
+        "performance_engineer": "Performance engineer"
+      },
+      "includeMemo": "Include notes",
+      "memoHint": "Notes are included as written. Plant and customer names are replaced with aliases automatically; check other details such as personal names yourself.",
+      "privacy": "By security policy the recipient is shown only as an alias, and real plant/customer names in the body are masked automatically.",
+      "preview": "Preview",
+      "itemCount": "{{count}} requested item(s)",
+      "previewError": "Could not load the preview.",
+      "subjectLabel": "Subject",
+      "copy": "Copy to clipboard",
+      "copied": "Email text copied ({{count}} requested items).",
+      "copyFailed": "Could not copy. Select the preview text and copy it manually.",
+      "selectedHint": "The text is selected. Press Ctrl+C (or long-press and copy on mobile)."
     }
   }
 }

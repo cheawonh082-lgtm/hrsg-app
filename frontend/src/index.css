@@ -1,0 +1,123 @@
+@import 'tailwindcss';
+
+/* 다크 모드: <html class="dark"> 전략 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- 테마 토큰 (PRD §3.0) ---- */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f5;
+  --text: #111827;
+  --muted: #5b6472;
+  --border: #d8dee6;
+  --accent: #0f6cbd;
+  --accent-fg: #ffffff;
+  --status-normal: #15803d;
+  --status-caution: #b45309;
+  --status-danger: #b91c1c;
+  --mock-bg: #fff4d6;
+  --mock-fg: #6b4200;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0e1116;
+  --surface: #161b22;
+  --surface-2: #1f2630;
+  --text: #e6e9ee;
+  --muted: #9aa4b2;
+  --border: #2b3440;
+  --accent: #4ea1f3;
+  --accent-fg: #0b1220;
+  --status-normal: #4ade80;
+  --status-caution: #fbbf24;
+  --status-danger: #f87171;
+  --mock-bg: #3a2a05;
+  --mock-fg: #fcd77a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-status-normal: var(--status-normal);
+  --color-status-caution: var(--status-caution);
+  --color-status-danger: var(--status-danger);
+  --color-mock-bg: var(--mock-bg);
+  --color-mock-fg: var(--mock-fg);
+}
+
+/* ---- 반응형 기본 규칙 (PRD §3.4.3) ---- */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh; /* R-8 */
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    overflow-wrap: anywhere; /* R-4 */
+    word-break: keep-all; /* R-4: 한국어 단어 중간 끊김 방지 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* R-10: iOS 입력 포커스 시 자동 확대 방지 */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
+
+  /* R-9: 슬라이더 터치 영역 44px */
+  input[type='range'].range {
+    height: 2.75rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* R-1: 넓은 표는 자기 영역 안에서만 가로 스크롤 — 스크롤 가능 방향에 그림자 표시 */
+.scroll-shadow-x {
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent) left / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 30%, transparent) right / 2rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.18), transparent) left / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.18), transparent) right / 0.75rem 100% no-repeat scroll;
+}
+
+/* HRSG 도식 가스 흐름 애니메이션 */
+.hrsg-flow {
+  animation: hrsg-flow 1.2s linear infinite;
+}
+
+@keyframes hrsg-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hrsg-flow {
+    animation: none;
+  }
+}

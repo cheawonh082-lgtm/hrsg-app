@@ -1,0 +1,179 @@
+{
+  "app": { "name": "HRSG Reference", "home": "HRSG Reference home" },
+  "a11y": { "skipToContent": "Skip to content" },
+  "nav": {
+    "main": "Main menu",
+    "calculator": "Calculator",
+    "chat": "Ask",
+    "checklist": "Data Checklist",
+    "checklistShort": "Checklist"
+  },
+  "mock": {
+    "short": "MOCK DATA",
+    "full": "MOCK DATA — figures shown are unverified placeholder values",
+    "expand": "Show full notice",
+    "collapse": "Hide notice"
+  },
+  "connection": { "offline": "Cannot reach the backend. Check that the server is running on port 8000." },
+  "theme": { "label": "Theme", "light": "Light", "dark": "Dark", "system": "System", "change": "{{current}} (click to change)" },
+  "lang": { "label": "Language" },
+  "status": { "normal": "Normal", "caution": "Caution", "danger": "Danger", "insufficient_data": "Data needed" },
+  "overlay": { "close": "Close", "resize": "Toggle sheet height" },
+  "table": { "sortBy": "Sort", "desc": "high to low", "asc": "low to high" },
+  "calc": {
+    "title": "Performance & Economics Calculator",
+    "subtitle": "Results recalculate as you change inputs. All figures are placeholder (mock) values.",
+    "error": "Could not load the calculation result ({{code}}).",
+    "input": {
+      "title": "Adjust inputs",
+      "open": "Adjust inputs",
+      "model": "Gas turbine model",
+      "reset": "Reset to the selected model's defaults",
+      "primary": "Key inputs",
+      "operation": "Operating conditions",
+      "advanced": "Advanced (steam & pinch)",
+      "advancedHint": "Leave blank to exclude a value. Pinch and approach evaluation then shows 'Data needed'.",
+      "economics": "Economics",
+      "blocked": "Recalculation paused because of invalid input. Results shown are from the last valid input.",
+      "errorCount": "{{count}} error(s)",
+      "clear": "Clear {{label}}",
+      "slider": "{{label}} slider",
+      "pending": "Calculating"
+    },
+    "errors": {
+      "required": "Enter a value.",
+      "invalid": "Enter a number.",
+      "integer": "Enter a whole number.",
+      "min": "Must be at least {{limit}}.",
+      "minExclusive": "Must be greater than {{limit}}.",
+      "max": "Must be at most {{limit}}.",
+      "maxExclusive": "Must be less than {{limit}}."
+    },
+    "fields": {
+      "hrsgGasDpMbar": "HRSG pressure drop (ΔP)",
+      "gtBackPressureMbar": "GT back pressure",
+      "stackTempC": "Stack temperature",
+      "gtLoadPct": "GT load",
+      "exhaustTempC": "GT exhaust temperature",
+      "exhaustFlowKgS": "Exhaust gas flow",
+      "ambientTempC": "Ambient temperature",
+      "hpSteamFlowKgS": "HP steam flow",
+      "ipSteamFlowKgS": "IP steam flow",
+      "lpSteamFlowKgS": "LP steam flow",
+      "hpDrumPressureBarg": "HP drum pressure",
+      "hpEvapGasOutTempC": "HP evaporator gas outlet temp.",
+      "hpEcoWaterOutTempC": "HP economizer water outlet temp.",
+      "electricityPriceKrwPerMwh": "Electricity price",
+      "annualOperatingHours": "Annual operating hours",
+      "analysisPeriodYears": "Analysis period"
+    },
+    "units": { "years": "yr" },
+    "kpi": {
+      "totalLoss": "Total power loss",
+      "annualLoss": "Annual loss",
+      "annualRecovery": "Annual recovery by cleaning",
+      "overallStatus": "Overall status · fouling index",
+      "foulingIndexUnit": "/ 100",
+      "vsPrevious": "vs. previous",
+      "increase": "increase",
+      "decrease": "decrease",
+      "breakdown": "GT {{gt}} · ST {{st}} MW",
+      "recoveryRate": "{{value}}% of loss recovered"
+    },
+    "metrics": {
+      "gtBackPressure": "GT back pressure",
+      "hrsgGasDp": "HRSG pressure drop",
+      "stackTemp": "Stack temperature",
+      "hpSteamFlow": "HP steam flow"
+    },
+    "gauge": {
+      "title": "Operating indicators",
+      "design": "Design {{value}} {{unit}}",
+      "aria": "{{label}} {{value}} {{unit}}, design {{design}} {{unit}}",
+      "page": "Show indicator {{index}}: {{label}}"
+    },
+    "diagram": {
+      "title": "HRSG layout",
+      "flow": "Exhaust gas flow",
+      "gt": "GT outlet",
+      "gasIn": "Gas in",
+      "gasOut": "Gas out",
+      "hintHover": "Hover over or select a section to see its temperatures and status.",
+      "hintTap": "Tap a section to see its gas temperatures and status.",
+      "legend": "Status"
+    },
+    "sections": {
+      "HP_SH": { "name": "HP superheater", "short": "HP SH" },
+      "RH": { "name": "Reheater", "short": "RH" },
+      "HP_EVA": { "name": "HP evaporator", "short": "HP EVA" },
+      "HP_ECO": { "name": "HP economizer", "short": "HP ECO" },
+      "IP_SH": { "name": "IP superheater", "short": "IP SH" },
+      "IP_EVA": { "name": "IP evaporator", "short": "IP EVA" },
+      "IP_ECO": { "name": "IP economizer", "short": "IP ECO" },
+      "LP_SH": { "name": "LP superheater", "short": "LP SH" },
+      "LP_EVA": { "name": "LP evaporator", "short": "LP EVA" },
+      "CPH": { "name": "Condensate preheater", "short": "CPH" },
+      "STACK": { "name": "Stack", "short": "STACK" }
+    },
+    "trend": {
+      "title": "Loss sensitivity to pressure drop",
+      "xAxis": "HRSG pressure drop ΔP (mbar)",
+      "yAxis": "Total loss (MW)",
+      "current": "Current",
+      "caution": "Caution",
+      "danger": "Danger",
+      "aria": "Total loss versus pressure drop. At the current {{x}} mbar, total loss is {{y}} MW"
+    },
+    "cleaning": {
+      "title": "Cleaning method cost comparison",
+      "caption": "Based on a {{years}}-year analysis period. Cleaning is assumed during a planned outage, so downtime is not costed (mock).",
+      "method": "Method",
+      "cost": "Cost",
+      "downtime": "Downtime",
+      "recovery": "Recovery",
+      "payback": "Payback",
+      "netBenefit": "Net benefit",
+      "recommended": "Recommended",
+      "days": "{{value}} days",
+      "months": "{{value}} mo",
+      "na": "N/A"
+    },
+    "pinch": {
+      "title": "Pinch & approach evaluation",
+      "section": "{{section}} section",
+      "pinch": "Pinch",
+      "approach": "Approach",
+      "current": "Current",
+      "design": "Design",
+      "requestData": "Request data in checklist",
+      "comment": {
+        "normal": "Within the design range.",
+        "caution": "Pinch is above design. Check whether fouling is progressing.",
+        "danger": "Pinch is well above design. Consider cleaning.",
+        "insufficient_data": "The operating data needed for this evaluation is missing."
+      }
+    },
+    "ask": {
+      "button": "Ask AI about this result",
+      "hint": "Send the current result to the Ask screen to request an interpretation."
+    },
+    "meta": { "engine": "Engine" }
+  },
+  "cleaning": {
+    "dryIce": "Dry ice blasting",
+    "highPressureWater": "High-pressure water",
+    "chemical": "Chemical cleaning",
+    "mechanical": "Mechanical cleaning"
+  },
+  "warn": {
+    "exhaustFlowOffRated": "Exhaust gas flow differs from rated by more than 20%; results may be less reliable.",
+    "exhaustTempAboveRated": "Exhaust temperature is more than 30℃ above rated."
+  },
+  "pages": {
+    "chatTitle": "Ask",
+    "chatDesc": "RAG-based Q&A and calculation result cards arrive in week 3.",
+    "chatCalcContext": "Received a calculation result (ID {{id}}) from the calculator. It will be connected to AI Q&A in week 3.",
+    "checklistTitle": "Plant Data Checklist",
+    "checklistDesc": "The data request checklist and email copy feature arrive in week 4."
+  }
+}

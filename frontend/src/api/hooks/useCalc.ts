@@ -1,0 +1,48 @@
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
+
+import { apiFetch } from '../client'
+import type { CalcInput, CalcResult, GasTurbineSpec, InputLimits, StatusThresholds } from '../types'
+
+export function useGtModels() {
+  return useQuery({
+    queryKey: ['calc', 'gt-models'],
+    queryFn: () => apiFetch<GasTurbineSpec[]>('/api/calc/gt-models'),
+    staleTime: Infinity,
+  })
+}
+
+export function calcDefaultsQuery(gtModelId: string) {
+  return queryOptions({
+    queryKey: ['calc', 'defaults', gtModelId],
+    queryFn: () => apiFetch<CalcInput>(`/api/calc/defaults?gtModelId=${encodeURIComponent(gtModelId)}`),
+    staleTime: Infinity,
+  })
+}
+
+export function useThresholds() {
+  return useQuery({
+    queryKey: ['calc', 'thresholds'],
+    queryFn: () => apiFetch<StatusThresholds>('/api/calc/thresholds'),
+    staleTime: Infinity,
+  })
+}
+
+/** 입력 범위 — 백엔드 Pydantic 스키마에서 추출한 값. zod 검증에 사용 */
+export function useInputLimits() {
+  return useQuery({
+    queryKey: ['calc', 'input-limits'],
+    queryFn: () => apiFetch<InputLimits>('/api/calc/input-limits'),
+    staleTime: Infinity,
+  })
+}
+
+/** 같은 입력이면 같은 결과(결정적)이므로 query로 캐시. 재계산 중에는 이전 값 유지(R-13). */
+export function useEvaluate(input: CalcInput | undefined) {
+  return useQuery({
+    queryKey: ['calc', 'evaluate', input],
+    queryFn: () => apiFetch<CalcResult>('/api/calc/evaluate', { method: 'POST', body: JSON.stringify(input) }),
+    enabled: !!input,
+    placeholderData: keepPreviousData,
+    retry: false,
+  })
+}

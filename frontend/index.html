@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>HRSG Reference</title>
+    <link rel="icon" href="data:," />
+    <script>
+      // 첫 렌더 전에 테마·언어 적용(깜빡임 방지). 키는 src/store/ui.ts 의 persist 이름과 동일.
+      (function () {
+        var theme = 'system'
+        var locale = 'ko'
+        try {
+          var saved = JSON.parse(localStorage.getItem('hrsg-ui') || '{}').state || {}
+          theme = saved.theme || theme
+          locale = saved.locale || locale
+        } catch (e) {}
+        var dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', dark)
+        document.documentElement.lang = locale
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

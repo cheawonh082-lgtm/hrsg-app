@@ -1,0 +1,179 @@
+{
+  "app": { "name": "HRSG Reference", "home": "HRSG Reference 홈" },
+  "a11y": { "skipToContent": "본문으로 건너뛰기" },
+  "nav": {
+    "main": "주요 메뉴",
+    "calculator": "계산기",
+    "chat": "질문하기",
+    "checklist": "데이터 체크리스트",
+    "checklistShort": "체크리스트"
+  },
+  "mock": {
+    "short": "MOCK DATA",
+    "full": "MOCK DATA — 표시 수치는 검증되지 않은 가상 값입니다",
+    "expand": "안내 전체 보기",
+    "collapse": "안내 접기"
+  },
+  "connection": { "offline": "백엔드에 연결할 수 없습니다. 서버(8000번 포트) 실행 상태를 확인하세요." },
+  "theme": { "label": "테마", "light": "라이트", "dark": "다크", "system": "시스템 설정", "change": "{{current}} (눌러서 변경)" },
+  "lang": { "label": "언어" },
+  "status": { "normal": "정상", "caution": "주의", "danger": "위험", "insufficient_data": "데이터 필요" },
+  "overlay": { "close": "닫기", "resize": "시트 높이 전환" },
+  "table": { "sortBy": "정렬", "desc": "높은 순", "asc": "낮은 순" },
+  "calc": {
+    "title": "성능·경제성 계산기",
+    "subtitle": "입력값을 바꾸면 결과가 바로 다시 계산됩니다. 모든 수치는 가상(Mock) 값입니다.",
+    "error": "계산 결과를 불러오지 못했습니다 ({{code}}).",
+    "input": {
+      "title": "입력 조정",
+      "open": "입력 조정",
+      "model": "가스터빈 모델",
+      "reset": "선택한 모델의 기본값으로 복원",
+      "primary": "주요 입력",
+      "operation": "운전 조건",
+      "advanced": "고급 입력 (증기·핀치)",
+      "advancedHint": "비워 두면 해당 항목은 계산에서 빠지고, 핀치·어프로치 평가는 '데이터 필요'로 표시됩니다.",
+      "economics": "경제성",
+      "blocked": "입력값 오류로 재계산을 멈췄습니다. 화면의 결과는 마지막으로 올바르게 입력한 값 기준입니다.",
+      "errorCount": "오류 {{count}}개",
+      "clear": "{{label}} 비우기",
+      "slider": "{{label}} 슬라이더",
+      "pending": "계산 중"
+    },
+    "errors": {
+      "required": "값을 입력하세요.",
+      "invalid": "숫자를 입력하세요.",
+      "integer": "정수를 입력하세요.",
+      "min": "{{limit}} 이상이어야 합니다.",
+      "minExclusive": "{{limit}}보다 커야 합니다.",
+      "max": "{{limit}} 이하여야 합니다.",
+      "maxExclusive": "{{limit}}보다 작아야 합니다."
+    },
+    "fields": {
+      "hrsgGasDpMbar": "HRSG 차압 (ΔP)",
+      "gtBackPressureMbar": "GT 배압",
+      "stackTempC": "스택 온도",
+      "gtLoadPct": "GT 부하율",
+      "exhaustTempC": "GT 배기온도",
+      "exhaustFlowKgS": "배기가스 유량",
+      "ambientTempC": "대기온도",
+      "hpSteamFlowKgS": "HP 증기 유량",
+      "ipSteamFlowKgS": "IP 증기 유량",
+      "lpSteamFlowKgS": "LP 증기 유량",
+      "hpDrumPressureBarg": "HP 드럼 압력",
+      "hpEvapGasOutTempC": "HP 증발기 출구 가스온도",
+      "hpEcoWaterOutTempC": "HP 절탄기 출구 급수온도",
+      "electricityPriceKrwPerMwh": "전력 단가",
+      "annualOperatingHours": "연간 운전시간",
+      "analysisPeriodYears": "분석 기간"
+    },
+    "units": { "years": "년" },
+    "kpi": {
+      "totalLoss": "총 출력 손실",
+      "annualLoss": "연간 손실",
+      "annualRecovery": "세정 시 연간 회수",
+      "overallStatus": "종합 상태 · 오염 지수",
+      "foulingIndexUnit": "/ 100",
+      "vsPrevious": "직전 계산 대비",
+      "increase": "증가",
+      "decrease": "감소",
+      "breakdown": "GT {{gt}} · ST {{st}} MW",
+      "recoveryRate": "손실 대비 회수율 {{value}}%"
+    },
+    "metrics": {
+      "gtBackPressure": "GT 배압",
+      "hrsgGasDp": "HRSG 차압",
+      "stackTemp": "스택 온도",
+      "hpSteamFlow": "HP 증기 유량"
+    },
+    "gauge": {
+      "title": "운전 지표",
+      "design": "설계 {{value}} {{unit}}",
+      "aria": "{{label}} {{value}} {{unit}}, 설계값 {{design}} {{unit}}",
+      "page": "{{index}}번째 지표 보기: {{label}}"
+    },
+    "diagram": {
+      "title": "HRSG 구조도",
+      "flow": "배기가스 흐름",
+      "gt": "GT 출구",
+      "gasIn": "가스 입구",
+      "gasOut": "가스 출구",
+      "hintHover": "섹션에 마우스를 올리거나 누르면 온도와 상태를 볼 수 있습니다.",
+      "hintTap": "섹션을 누르면 가스 온도와 상태를 볼 수 있습니다.",
+      "legend": "상태"
+    },
+    "sections": {
+      "HP_SH": { "name": "고압 과열기", "short": "HP SH" },
+      "RH": { "name": "재열기", "short": "RH" },
+      "HP_EVA": { "name": "고압 증발기", "short": "HP EVA" },
+      "HP_ECO": { "name": "고압 절탄기", "short": "HP ECO" },
+      "IP_SH": { "name": "중압 과열기", "short": "IP SH" },
+      "IP_EVA": { "name": "중압 증발기", "short": "IP EVA" },
+      "IP_ECO": { "name": "중압 절탄기", "short": "IP ECO" },
+      "LP_SH": { "name": "저압 과열기", "short": "LP SH" },
+      "LP_EVA": { "name": "저압 증발기", "short": "LP EVA" },
+      "CPH": { "name": "복수 예열기", "short": "CPH" },
+      "STACK": { "name": "스택", "short": "STACK" }
+    },
+    "trend": {
+      "title": "차압 변화에 따른 손실 감도",
+      "xAxis": "HRSG 차압 ΔP (mbar)",
+      "yAxis": "총 손실 (MW)",
+      "current": "현재",
+      "caution": "주의",
+      "danger": "위험",
+      "aria": "차압에 따른 총 손실 곡선. 현재 차압 {{x}} mbar에서 총 손실 {{y}} MW"
+    },
+    "cleaning": {
+      "title": "세정 공법별 비용 비교",
+      "caption": "분석 기간 {{years}}년 기준입니다. 계획정비 기간에 세정한다고 가정해 정지일수는 비용에 넣지 않았습니다 (Mock).",
+      "method": "공법",
+      "cost": "비용",
+      "downtime": "정지일수",
+      "recovery": "회수율",
+      "payback": "회수기간",
+      "netBenefit": "순편익",
+      "recommended": "추천",
+      "days": "{{value}}일",
+      "months": "{{value}}개월",
+      "na": "산정 불가"
+    },
+    "pinch": {
+      "title": "핀치·어프로치 평가",
+      "section": "{{section}} 섹션",
+      "pinch": "핀치",
+      "approach": "어프로치",
+      "current": "현재",
+      "design": "설계",
+      "requestData": "체크리스트에서 데이터 요청",
+      "comment": {
+        "normal": "설계 범위 안입니다.",
+        "caution": "설계보다 핀치가 커졌습니다. 오염이 진행 중인지 확인하세요.",
+        "danger": "설계보다 핀치가 크게 늘었습니다. 세정을 검토하세요.",
+        "insufficient_data": "평가에 필요한 운전 데이터가 없습니다."
+      }
+    },
+    "ask": {
+      "button": "AI에게 이 결과 질문하기",
+      "hint": "현재 계산 결과를 질문하기 화면으로 넘겨 해석을 요청할 수 있습니다."
+    },
+    "meta": { "engine": "계산 엔진" }
+  },
+  "cleaning": {
+    "dryIce": "드라이아이스 블라스팅",
+    "highPressureWater": "고압수 세정",
+    "chemical": "화학 세정",
+    "mechanical": "기계식 세정"
+  },
+  "warn": {
+    "exhaustFlowOffRated": "배기가스 유량이 정격과 20% 넘게 차이 나 결과 신뢰도가 낮을 수 있습니다.",
+    "exhaustTempAboveRated": "배기온도가 정격보다 30℃ 넘게 높습니다."
+  },
+  "pages": {
+    "chatTitle": "질문하기",
+    "chatDesc": "RAG 기반 AI 질의응답과 계산 결과 카드는 3주차에 구현됩니다.",
+    "chatCalcContext": "계산기에서 계산 결과(ID {{id}})를 넘겨받았습니다. 3주차에 AI 질의응답과 연결됩니다.",
+    "checklistTitle": "플랜트 데이터 체크리스트",
+    "checklistDesc": "데이터 요청 체크리스트와 이메일 복사 기능은 4주차에 구현됩니다."
+  }
+}

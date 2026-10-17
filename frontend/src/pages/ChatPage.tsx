@@ -1,26 +1,93 @@
-import { Calculator, MessageSquare } from 'lucide-react'
+import { Calculator, FlaskConical, RotateCcw, X } from 'lucide-react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
-import { PagePlaceholder } from '../components/common/PagePlaceholder'
+import { useGtModels, useInputLimits } from '../api/hooks/useCalc'
+import { useChat } from '../api/hooks/useChat'
+import { useHealth } from '../api/hooks/useHealth'
+import { ChatWindow } from '../components/chat/ChatWindow'
+import { useChatStore } from '../store/chat'
 
 export function ChatPage() {
   const { t } = useTranslation()
-  // 계산기 화면 "AI에게 질문하기"에서 넘어온 계산 결과 ID (3주차 질의응답 컨텍스트로 사용)
-  const calcId = (useLocation().state as { calcId?: string } | null)?.calcId
+  const location = useLocation()
+  const navigate = useNavigate()
+  const health = useHealth()
+  const models = useGtModels()
+  const limits = useInputLimits()
+  const { messages, calcContextId, setCalcContextId, reset } = useChatStore()
+  const { ask, resend, retry } = useChat()
+
+  // 계산기 "AI에게 질문하기"에서 넘어온 calcId → 대화 맥락으로 보관하고 히스토리 state는 비운다(새로고침 시 중복 방지)
+  const incomingCalcId = (location.state as { calcId?: string } | null)?.calcId
+  useEffect(() => {
+    if (!incomingCalcId) return
+    setCalcContextId(incomingCalcId)
+    navigate('.', { replace: true, state: null })
+  }, [incomingCalcId, setCalcContextId, navigate])
+
+  const devMode = health.data && (health.data.llm === 'fake' || health.data.docs === 'mock')
+  const suggestions = calcContextId
+    ? [t('chat.suggestions.interpret'), t('chat.suggestions.cleaning')]
+    : [t('chat.suggestions.s1'), t('chat.suggestions.s2'), t('chat.suggestions.s3'), t('chat.suggestions.s4')]
 
   return (
-    <div className="space-y-4">
-      <PagePlaceholder icon={MessageSquare} title={t('pages.chatTitle')} description={t('pages.chatDesc')} />
-      {calcId && (
-        <p
-          data-testid="chat-calc-context"
-          className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3 text-sm"
-        >
-          <Calculator aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
-          <span className="min-w-0">{t('pages.chatCalcContext', { id: calcId })}</span>
+    <section className="mx-auto flex min-h-[calc(100dvh-12rem)] w-full max-w-3xl flex-col gap-4">
+      <header className="flex flex-wrap items-start gap-3">
+        <div className="min-w-0 flex-1 space-y-1">
+          <h1 className="text-2xl font-bold">{t('pages.chatTitle')}</h1>
+          <p className="text-muted">{t('chat.subtitle')}</p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            <RotateCcw aria-hidden className="size-4" />
+            {t('chat.newChat')}
+          </button>
+        )}
+      </header>
+
+      {devMode && (
+        <p data-testid="chat-dev-mode" className="flex items-start gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
+          <FlaskConical aria-hidden className="mt-0.5 size-4 shrink-0" />
+          <span className="min-w-0">{t('chat.devMode')}</span>
         </p>
       )}
-    </div>
+
+      {calcContextId && (
+        <p
+          data-testid="chat-calc-context"
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 text-sm"
+        >
+          <Calculator aria-hidden className="size-4 shrink-0 text-accent" />
+          <span className="min-w-0 flex-1">{t('chat.calcContext')}</span>
+          <button
+            type="button"
+            onClick={() => setCalcContextId(null)}
+            aria-label={t('chat.calcContextClear')}
+            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            <X aria-hidden className="size-4" />
+          </button>
+        </p>
+      )}
+
+      <ChatWindow
+        messages={messages}
+        suggestions={suggestions}
+        onAsk={(text) => void ask(text)}
+        ctx={{
+          models: models.data ?? [],
+          limits: limits.data,
+          mockDocs: health.data?.docs === 'mock',
+          onResend: (request, input) => void resend(request, input),
+          onRetry: (request) => void retry(request),
+        }}
+      />
+    </section>
   )
 }

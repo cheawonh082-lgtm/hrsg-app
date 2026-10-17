@@ -1,6 +1,11 @@
 {
-  "app": { "name": "HRSG Reference", "home": "HRSG Reference 홈" },
-  "a11y": { "skipToContent": "본문으로 건너뛰기" },
+  "app": {
+    "name": "HRSG Reference",
+    "home": "HRSG Reference 홈"
+  },
+  "a11y": {
+    "skipToContent": "본문으로 건너뛰기"
+  },
   "nav": {
     "main": "주요 메뉴",
     "calculator": "계산기",
@@ -14,12 +19,34 @@
     "expand": "안내 전체 보기",
     "collapse": "안내 접기"
   },
-  "connection": { "offline": "백엔드에 연결할 수 없습니다. 서버(8000번 포트) 실행 상태를 확인하세요." },
-  "theme": { "label": "테마", "light": "라이트", "dark": "다크", "system": "시스템 설정", "change": "{{current}} (눌러서 변경)" },
-  "lang": { "label": "언어" },
-  "status": { "normal": "정상", "caution": "주의", "danger": "위험", "insufficient_data": "데이터 필요" },
-  "overlay": { "close": "닫기", "resize": "시트 높이 전환" },
-  "table": { "sortBy": "정렬", "desc": "높은 순", "asc": "낮은 순" },
+  "connection": {
+    "offline": "백엔드에 연결할 수 없습니다. 서버(8000번 포트) 실행 상태를 확인하세요."
+  },
+  "theme": {
+    "label": "테마",
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템 설정",
+    "change": "{{current}} (눌러서 변경)"
+  },
+  "lang": {
+    "label": "언어"
+  },
+  "status": {
+    "normal": "정상",
+    "caution": "주의",
+    "danger": "위험",
+    "insufficient_data": "데이터 필요"
+  },
+  "overlay": {
+    "close": "닫기",
+    "resize": "시트 높이 전환"
+  },
+  "table": {
+    "sortBy": "정렬",
+    "desc": "높은 순",
+    "asc": "낮은 순"
+  },
   "calc": {
     "title": "성능·경제성 계산기",
     "subtitle": "입력값을 바꾸면 결과가 바로 다시 계산됩니다. 모든 수치는 가상(Mock) 값입니다.",
@@ -67,7 +94,9 @@
       "annualOperatingHours": "연간 운전시간",
       "analysisPeriodYears": "분석 기간"
     },
-    "units": { "years": "년" },
+    "units": {
+      "years": "년"
+    },
     "kpi": {
       "totalLoss": "총 출력 손실",
       "annualLoss": "연간 손실",
@@ -103,17 +132,50 @@
       "legend": "상태"
     },
     "sections": {
-      "HP_SH": { "name": "고압 과열기", "short": "HP SH" },
-      "RH": { "name": "재열기", "short": "RH" },
-      "HP_EVA": { "name": "고압 증발기", "short": "HP EVA" },
-      "HP_ECO": { "name": "고압 절탄기", "short": "HP ECO" },
-      "IP_SH": { "name": "중압 과열기", "short": "IP SH" },
-      "IP_EVA": { "name": "중압 증발기", "short": "IP EVA" },
-      "IP_ECO": { "name": "중압 절탄기", "short": "IP ECO" },
-      "LP_SH": { "name": "저압 과열기", "short": "LP SH" },
-      "LP_EVA": { "name": "저압 증발기", "short": "LP EVA" },
-      "CPH": { "name": "복수 예열기", "short": "CPH" },
-      "STACK": { "name": "스택", "short": "STACK" }
+      "HP_SH": {
+        "name": "고압 과열기",
+        "short": "HP SH"
+      },
+      "RH": {
+        "name": "재열기",
+        "short": "RH"
+      },
+      "HP_EVA": {
+        "name": "고압 증발기",
+        "short": "HP EVA"
+      },
+      "HP_ECO": {
+        "name": "고압 절탄기",
+        "short": "HP ECO"
+      },
+      "IP_SH": {
+        "name": "중압 과열기",
+        "short": "IP SH"
+      },
+      "IP_EVA": {
+        "name": "중압 증발기",
+        "short": "IP EVA"
+      },
+      "IP_ECO": {
+        "name": "중압 절탄기",
+        "short": "IP ECO"
+      },
+      "LP_SH": {
+        "name": "저압 과열기",
+        "short": "LP SH"
+      },
+      "LP_EVA": {
+        "name": "저압 증발기",
+        "short": "LP EVA"
+      },
+      "CPH": {
+        "name": "복수 예열기",
+        "short": "CPH"
+      },
+      "STACK": {
+        "name": "스택",
+        "short": "STACK"
+      }
     },
     "trend": {
       "title": "차압 변화에 따른 손실 감도",
@@ -157,7 +219,10 @@
       "button": "AI에게 이 결과 질문하기",
       "hint": "현재 계산 결과를 질문하기 화면으로 넘겨 해석을 요청할 수 있습니다."
     },
-    "meta": { "engine": "계산 엔진" }
+    "meta": {
+      "engine": "계산 엔진"
+    },
+    "restoreFailed": "저장된 계산 결과를 찾지 못해 기본값으로 시작합니다. (서버를 다시 시작하면 이전 결과는 지워집니다)"
   },
   "cleaning": {
     "dryIce": "드라이아이스 블라스팅",
@@ -171,9 +236,77 @@
   },
   "pages": {
     "chatTitle": "질문하기",
-    "chatDesc": "RAG 기반 AI 질의응답과 계산 결과 카드는 3주차에 구현됩니다.",
-    "chatCalcContext": "계산기에서 계산 결과(ID {{id}})를 넘겨받았습니다. 3주차에 AI 질의응답과 연결됩니다.",
     "checklistTitle": "플랜트 데이터 체크리스트",
     "checklistDesc": "데이터 요청 체크리스트와 이메일 복사 기능은 4주차에 구현됩니다."
+  },
+  "chat": {
+    "subtitle": "HRSG 기술 질문과 성능·경제성 계산을 함께 물어보세요. 수치는 계산기 결과 카드로만 답합니다.",
+    "devMode": "개발 모드: AI 답변은 규칙 기반 예시 응답(Fake)이고, 근거 문서는 가상의 예시 문서입니다. 실제 LLM·문서 연결 후 바뀝니다.",
+    "calcContext": "계산기에서 넘겨받은 결과를 기준으로 답합니다.",
+    "calcContextClear": "계산 결과 맥락 해제",
+    "newChat": "새 대화",
+    "empty": "무엇이든 물어보세요. 아래 추천 질문으로 시작할 수도 있습니다.",
+    "log": "대화 내용",
+    "error": "답변을 받지 못했습니다 ({{code}}).",
+    "retry": "다시 시도",
+    "input": {
+      "label": "질문 입력",
+      "placeholder": "질문을 입력하세요 (Enter 전송, Shift+Enter 줄바꿈)",
+      "send": "전송"
+    },
+    "suggestions": {
+      "label": "추천 질문",
+      "s1": "HRSG 핀 오염이 GT 배압에 미치는 영향은?",
+      "s2": "F급 GT, 차압 35mbar, 스택 110℃면 연간 손실은?",
+      "s3": "핀치 포인트란?",
+      "s4": "세정 공법은 어떻게 고르나요?",
+      "interpret": "이 결과 해석해줘",
+      "cleaning": "이 조건에서 세정하면 얼마나 회수돼?"
+    },
+    "steps": {
+      "label": "처리 과정",
+      "working": "답변을 준비하고 있습니다…",
+      "summary": "처리 과정 {{count}}단계",
+      "detect_language": "언어 감지",
+      "classify_intent": "의도 분류",
+      "extract_params": "파라미터 확인",
+      "calculate": "계산",
+      "retrieve": "자료 검색",
+      "compose": "답변 작성",
+      "validate": "수치 검증"
+    },
+    "card": {
+      "title": "계산 결과",
+      "foulingIndex": "오염 지수",
+      "recommended": "추천 공법",
+      "assumptions": "계산에 쓴 값",
+      "defaults": "기본값으로 채운 값 {{count}}개",
+      "userValue": "입력한 값",
+      "openInCalculator": "계산기에서 열기",
+      "edit": "가정 수정"
+    },
+    "confirm": {
+      "title": "계산에 필요한 값을 확인해 주세요",
+      "hint": "질문에 없던 필수 값은 모델 기본값으로 제안해 두었습니다. 확인하거나 고친 뒤 계산을 실행하세요.",
+      "editTitle": "가정 수정",
+      "editHint": "값을 고친 뒤 다시 계산하면 새 결과 카드가 추가됩니다.",
+      "missing": "필요",
+      "proposed": "기본값 제안",
+      "run": "계산 실행",
+      "cancel": "취소"
+    },
+    "citations": {
+      "title": "근거 자료",
+      "mock": "예시 문서"
+    },
+    "notice": {
+      "blocked": "이 요청은 처리할 수 없습니다. HRSG 관련 질문을 해 주세요.",
+      "confidential": "내부 계산 공식·계수와 원문 자료는 안내할 수 없습니다. 계산 결과는 계산기나 결과 카드로 확인해 주세요.",
+      "outOfScope": "HRSG·복합화력 성능과 관련된 질문에 답할 수 있습니다.",
+      "paramsNeeded": "정확한 계산을 위해 몇 가지 값을 확인해 주세요.",
+      "invalidParams": "입력 범위를 벗어난 값이 있습니다. 확인 후 다시 계산해 주세요.",
+      "sanitized": "출처를 확인할 수 없는 수치는 답변에서 뺐습니다. 수치는 결과 카드를 참고하세요.",
+      "generic": "안내 메시지"
+    }
   }
 }

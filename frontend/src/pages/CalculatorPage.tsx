@@ -2,10 +2,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { LoaderCircle, MessageSquare, SlidersHorizontal } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiError } from '../api/client'
-import { calcDefaultsQuery, useGtModels, useInputLimits, useThresholds } from '../api/hooks/useCalc'
+import { calcDefaultsQuery, useCalcResult, useGtModels, useInputLimits, useThresholds } from '../api/hooks/useCalc'
 import type { CalcResult } from '../api/types'
 import { CleaningCostTable } from '../components/calculator/CleaningCostTable'
 import { GaugeGroup } from '../components/calculator/GaugeChart'
@@ -42,6 +42,18 @@ export function CalculatorPage() {
   const previous = usePreviousDistinct(result)
   const [sheetOpen, setSheetOpen] = useState(false)
 
+  // 챗 카드 "계산기에서 열기" → /calculator?calcId= : 저장된 결과의 입력으로 복원 (A-09)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const restoreId = searchParams.get('calcId')
+  const restored = useCalcResult(restoreId)
+  const [restoreFailed, setRestoreFailed] = useState(false)
+  useEffect(() => {
+    if (!restoreId || restored.isPending) return
+    if (restored.data) setDraft(toDraft(restored.data.input))
+    setRestoreFailed(restored.isError)
+    setSearchParams({}, { replace: true })
+  }, [restoreId, restored.isPending, restored.data, restored.isError, setDraft, setSearchParams])
+
   /** 모델 선택 시 해당 모델의 정격 기본값으로 운전 조건을 채운다(경제성 입력은 유지) */
   const loadModel = useCallback(
     async (gtModelId: string, keepEconomics?: CalcDraft['economics']) => {
@@ -56,8 +68,8 @@ export function CalculatorPage() {
   )
 
   useEffect(() => {
-    if (!draft && models.data?.length) void loadModel(models.data[0].modelId)
-  }, [draft, models.data, loadModel])
+    if (!draft && !restoreId && models.data?.length) void loadModel(models.data[0].modelId)
+  }, [draft, restoreId, models.data, loadModel])
 
   // 모바일 → 태블릿/PC로 바뀌면 시트를 닫는다 (입력 패널이 화면에 직접 나타남)
   useEffect(() => {
@@ -107,6 +119,12 @@ export function CalculatorPage() {
                 {panelProps ? <InputPanel {...panelProps} variant="inline" /> : <PanelSkeleton />}
               </Accordion>
             </div>
+          )}
+
+          {restoreFailed && (
+            <p role="alert" className="rounded-lg border border-status-caution/40 bg-status-caution/10 p-3 text-sm">
+              {t('calc.restoreFailed')}
+            </p>
           )}
 
           {calc.error && (

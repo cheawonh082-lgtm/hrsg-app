@@ -123,10 +123,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_api_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Assumption */
+        Assumption: {
+            /** Key */
+            key: string;
+            /** Value */
+            value: number | string;
+            /** Unit */
+            unit?: string | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "user" | "default";
+        };
+        /**
+         * CalcContext
+         * @description 계산기 화면에서 넘어온 맥락, 또는 ParamConfirmCard에서 사용자가 확인한 값.
+         */
+        CalcContext: {
+            /** Calcid */
+            calcId?: string | null;
+            /** Input */
+            input?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** CalcInput */
         CalcInput: {
             /** Gtmodelid */
@@ -177,6 +220,83 @@ export interface components {
             /** Sections */
             sections: components["schemas"]["SectionHealth"][];
             sensitivity: components["schemas"]["SensitivitySeries"];
+        };
+        /**
+         * CalcResultCard
+         * @description 모든 숫자는 CalcResult에서 서버 코드로 직접 매핑 (G-5, LLM 미경유).
+         */
+        CalcResultCard: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "calc_result";
+            /** Calcid */
+            calcId: string;
+            /** Ismock */
+            isMock: boolean;
+            /** Headline */
+            headline: components["schemas"]["Metric"][];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "normal" | "caution" | "danger";
+            /** Assumptions */
+            assumptions: components["schemas"]["Assumption"][];
+            /** Recommendedmethodid */
+            recommendedMethodId?: string | null;
+        };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Sessionid */
+            sessionId: string;
+            /** Message */
+            message: string;
+            /** Locale */
+            locale?: ("ko" | "en") | null;
+            calcContext?: components["schemas"]["CalcContext"] | null;
+        };
+        /** ChatResponse */
+        ChatResponse: {
+            /** Messageid */
+            messageId: string;
+            /**
+             * Intent
+             * @enum {string}
+             */
+            intent: "knowledge" | "calculation" | "mixed" | "out_of_scope" | "blocked";
+            /**
+             * Locale
+             * @enum {string}
+             */
+            locale: "ko" | "en";
+            /** Blocks */
+            blocks: (components["schemas"]["TextBlock"] | components["schemas"]["CalcResultCard"] | components["schemas"]["ParamConfirmCard"] | components["schemas"]["CitationsBlock"] | components["schemas"]["NoticeBlock"])[];
+            guardrail: components["schemas"]["GuardrailReport"];
+            /** Trace */
+            trace?: components["schemas"]["ProcessStep"][];
+        };
+        /** Citation */
+        Citation: {
+            /** Docalias */
+            docAlias: string;
+            /** Sectiontitle */
+            sectionTitle?: string | null;
+            /** Snippet */
+            snippet: string;
+            /** Score */
+            score: number;
+        };
+        /** CitationsBlock */
+        CitationsBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "citations";
+            /** Items */
+            items: components["schemas"]["Citation"][];
         };
         /** CleaningMethodComparison */
         CleaningMethodComparison: {
@@ -270,6 +390,21 @@ export interface components {
             /** Backpressuresensitivity */
             backPressureSensitivity?: number | null;
         };
+        /** GuardrailReport */
+        GuardrailReport: {
+            /**
+             * Numbercheck
+             * @enum {string}
+             */
+            numberCheck: "passed" | "sanitized" | "not_applicable";
+            /**
+             * Redactions
+             * @default 0
+             */
+            redactions: number;
+            /** Blockedreason */
+            blockedReason?: string | null;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -289,6 +424,11 @@ export interface components {
             dataSource: "mock" | "real";
             /** Llm */
             llm: string;
+            /**
+             * Docs
+             * @enum {string}
+             */
+            docs: "mock" | "real";
             /** Ismock */
             isMock: boolean;
         };
@@ -333,6 +473,21 @@ export interface components {
             /** Delta */
             delta?: number | null;
         };
+        /** NoticeBlock */
+        NoticeBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "notice";
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "info" | "warning";
+            /** Messagekey */
+            messageKey: string;
+        };
         /** OperatingCondition */
         OperatingCondition: {
             /** Gtloadpct */
@@ -362,6 +517,24 @@ export interface components {
             /** Hpecowaterouttempc */
             hpEcoWaterOutTempC?: number | null;
         };
+        /** ParamConfirmCard */
+        ParamConfirmCard: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "param_confirm";
+            /** Extracted */
+            extracted: {
+                [key: string]: unknown;
+            };
+            /** Missing */
+            missing: string[];
+            /** Defaultsproposed */
+            defaultsProposed: {
+                [key: string]: number | string;
+            };
+        };
         /** PinchApproachEvaluation */
         PinchApproachEvaluation: {
             /**
@@ -381,6 +554,21 @@ export interface components {
             status: ("normal" | "caution" | "danger") | "insufficient_data";
             /** Commentkey */
             commentKey: string;
+        };
+        /** ProcessStep */
+        ProcessStep: {
+            /**
+             * Step
+             * @enum {string}
+             */
+            step: "detect_language" | "classify_intent" | "retrieve" | "extract_params" | "calculate" | "compose" | "validate";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "done" | "skipped" | "error";
+            /** Durationms */
+            durationMs?: number | null;
         };
         /** RecoveryEstimate */
         RecoveryEstimate: {
@@ -437,6 +625,16 @@ export interface components {
             stackTemp: components["schemas"]["ThresholdBand"];
             gtBackPressure: components["schemas"]["ThresholdBand"];
             pinch: components["schemas"]["ThresholdBand"];
+        };
+        /** TextBlock */
+        TextBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "text";
+            /** Markdown */
+            markdown: string;
         };
         /**
          * ThresholdBand
@@ -647,6 +845,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CalcResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chat_api_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatResponse"];
                 };
             };
             /** @description Validation Error */

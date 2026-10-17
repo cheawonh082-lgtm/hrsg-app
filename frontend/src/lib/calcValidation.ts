@@ -63,3 +63,18 @@ export function validateDraft(
   }
   return { errors }
 }
+
+/** 필드 하나 검증 (챗 확인 카드 등 계산기 밖 입력용). 빈 칸은 nullable이어도 'required'. */
+export function validateField(limit: FieldLimit | undefined, value: number | null | undefined): FieldError | undefined {
+  if (value == null) return { code: 'required' }
+  if (!limit) return Number.isFinite(value) ? undefined : { code: 'invalid' }
+  const parsed = fieldSchema(limit).safeParse(value)
+  if (parsed.success) return undefined
+  const message = parsed.error.issues[0]?.message
+  const code = CODES.includes(message as FieldErrorCode) ? (message as FieldErrorCode) : 'invalid'
+  return {
+    code,
+    limit: code === 'min' ? limit.min : code === 'max' ? limit.max : undefined,
+    exclusive: code === 'min' ? limit.exclusiveMin : code === 'max' ? limit.exclusiveMax : undefined,
+  }
+}

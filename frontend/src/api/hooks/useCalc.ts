@@ -46,3 +46,14 @@ export function useEvaluate(input: CalcInput | undefined) {
     retry: false,
   })
 }
+
+/** 저장된 계산 결과 — 챗 카드의 "계산기에서 열기"가 같은 calcId의 입력을 복원할 때 사용 (A-09) */
+export function useCalcResult(calcId: string | null) {
+  return useQuery({
+    queryKey: ['calc', 'results', calcId],
+    queryFn: () => apiFetch<CalcResult>(`/api/calc/results/${encodeURIComponent(calcId!)}`),
+    enabled: !!calcId,
+    staleTime: Infinity,
+    retry: false,
+  })
+}

@@ -21,3 +21,14 @@ export type StatusLevel = CalcResult['current']['overallStatus']
 
 export type ConditionKey = keyof CalcInput['condition']
 export type EconomicsKey = keyof CalcInput['economics']
+
+// ---- AI 챗 ----
+export type ChatRequest = Schemas['ChatRequest']
+export type ChatResponse = Schemas['ChatResponse']
+export type AnswerBlock = ChatResponse['blocks'][number]
+export type CalcResultCard = Schemas['CalcResultCard']
+export type ParamConfirmCard = Schemas['ParamConfirmCard']
+export type Citation = Schemas['Citation']
+export type NoticeBlock = Schemas['NoticeBlock']
+export type Assumption = Schemas['Assumption']
+export type ProcessStep = Schemas['ProcessStep']

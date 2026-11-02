@@ -66,7 +66,7 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
       data-status={state.status}
       data-highlighted={highlighted || undefined}
       className={cn(
-        'scroll-mt-40 rounded-lg border border-transparent px-2 py-2 transition-colors',
+        'scroll-mt-40 rounded-xl border border-transparent px-2 py-2 transition-colors hover:bg-surface-2/50',
         highlighted && 'border-accent bg-accent/10',
         na && 'opacity-60',
       )}
@@ -81,7 +81,7 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
               checked={state.checked}
               disabled={na}
               onChange={(e) => onChange(applyCheck(state, e.target.checked))}
-              className="size-5 accent-[var(--accent)]"
+              className="check-round"
             />
             <span className="sr-only">{item.label}</span>
           </label>

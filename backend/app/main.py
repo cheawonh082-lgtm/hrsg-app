@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import calc, chat, checklist, health
 from app.calculator.errors import CalcError
+from app.chat.llm.base import LLMUnavailableError
 from app.config import get_settings
 
 
@@ -40,6 +41,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(CalcError)
     async def _calc_error(_: Request, exc: CalcError):
         return _error(exc.status_code, exc.code, exc.message_key, exc.details)
+
+    @app.exception_handler(LLMUnavailableError)
+    async def _llm_unavailable(_: Request, exc: LLMUnavailableError):
+        return _error(503, exc.code, exc.message_key)
 
     @app.exception_handler(NotImplementedError)
     async def _not_implemented(_: Request, exc: NotImplementedError):

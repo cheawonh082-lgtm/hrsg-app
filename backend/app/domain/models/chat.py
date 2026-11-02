@@ -3,6 +3,7 @@
 from typing import Annotated, Literal
 
 from pydantic import Field
+from pydantic.json_schema import SkipJsonSchema
 
 from .base import CamelModel
 from .calc import Locale, Metric, StatusLevel
@@ -30,6 +31,8 @@ class Citation(CamelModel):
     section_title: str | None = None
     snippet: str = Field(..., max_length=300)  # 마스킹된 발췌
     score: float
+    # LLM 근거·숫자 검증에만 쓰는 문단 전문 — 응답(JSON)에는 내보내지 않는다
+    full_text: SkipJsonSchema[str | None] = Field(default=None, exclude=True)
 
 
 class Assumption(CamelModel):
@@ -66,6 +69,8 @@ class ParamConfirmCard(CamelModel):
 class CitationsBlock(CamelModel):
     type: Literal["citations"] = "citations"
     items: list[Citation]
+    # excerpts: 별칭·절·발췌 / titles: 출처 논문명만 (논문 RAG 검색)
+    style: Literal["excerpts", "titles"] = "excerpts"
 
 
 class NoticeBlock(CamelModel):

@@ -481,6 +481,12 @@ export interface components {
             type: "citations";
             /** Items */
             items: components["schemas"]["Citation"][];
+            /**
+             * Style
+             * @default excerpts
+             * @enum {string}
+             */
+            style: "excerpts" | "titles";
         };
         /** CleaningMethodComparison */
         CleaningMethodComparison: {

@@ -1,5 +1,5 @@
 import { CloudOff, Mail, RotateCcw, Search } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
@@ -8,6 +8,7 @@ import type { ChecklistCategory, ChecklistItemPatch, ChecklistItemState } from '
 import { ChecklistSection } from '../components/checklist/ChecklistSection'
 import { EmailExportDialog } from '../components/checklist/EmailExportDialog'
 import { ProgressBar } from '../components/checklist/ProgressBar'
+import { TabBar } from '../components/common/TabBar'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { applyCheck, type ChecklistFilter, filterItems } from '../lib/checklist'
 import { cn } from '../lib/cn'
@@ -29,6 +30,8 @@ export function ChecklistPage() {
   useRestorePending(!!data)
 
   const [filter, setFilter] = useState<ChecklistFilter>('all')
+  const [category, setCategory] = useState<'all' | ChecklistCategory>('all')
+  const tabPanelId = useId()
   const [search, setSearch] = useState('')
   const [closed, setClosed] = useState<Set<ChecklistCategory>>(new Set())
   const [emailOpen, setEmailOpen] = useState(false)
@@ -44,6 +47,7 @@ export function ChecklistPage() {
       data.items.filter((i) => i.category === focus && i.linkedCalcField && fields.has(i.linkedCalcField)).map((i) => i.id),
     )
     setFilter('all')
+    setCategory('all')
     setSearch('')
     setClosed((prev) => new Set([...prev].filter((c) => c !== focus)))
     setHighlight({ category: focus, items })
@@ -104,7 +108,7 @@ export function ChecklistPage() {
     <section className="mx-auto w-full max-w-5xl space-y-4 pb-20 md:pb-0">
       <header className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1 space-y-1">
-          <h1 className="text-2xl font-bold">{t('pages.checklistTitle')}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('pages.checklistTitle')}</h1>
           <p className="text-muted">{t('checklist.subtitle')}</p>
         </div>
         {!isMobile && (
@@ -147,6 +151,30 @@ export function ChecklistPage() {
             <ProgressBar progress={data.progress} categories={data.categories} />
           </div>
 
+          <TabBar
+            label={t('checklist.tabs.label')}
+            panelId={tabPanelId}
+            value={category}
+            onChange={setCategory}
+            tabs={[
+              { id: 'all' as const, content: t('checklist.tabs.all') },
+              ...data.categories.map((c) => {
+                const p = data.progress.byCategory[c.id] ?? { total: 0, checked: 0 }
+                return {
+                  id: c.id,
+                  content: (
+                    <>
+                      {c.label}
+                      <span className="text-xs tabular-nums opacity-80">
+                        {p.checked}/{p.total}
+                      </span>
+                    </>
+                  ),
+                }
+              }),
+            ]}
+          />
+
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <div className="relative min-w-0 md:max-w-sm md:flex-1">
               <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" />
@@ -187,11 +215,11 @@ export function ChecklistPage() {
             </div>
           </div>
 
-          {visible.length === 0 ? (
+          {visible.every((i) => category !== 'all' && i.category !== category) ? (
             <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-muted">{t('checklist.empty')}</p>
           ) : (
-            <div className="space-y-3">
-              {data.categories.map((c) => {
+            <div id={tabPanelId} role="tabpanel" aria-label={t('checklist.tabs.label')} className="space-y-3">
+              {data.categories.filter((c) => category === 'all' || c.id === category).map((c) => {
                 const items = visible.filter((i) => i.category === c.id)
                 if (!items.length) return null
                 return (

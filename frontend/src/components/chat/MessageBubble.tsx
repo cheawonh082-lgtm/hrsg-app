@@ -54,7 +54,7 @@ export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: Mes
 
       {message.status === 'error' && (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border border-status-danger/40 bg-status-danger/10 p-3 text-sm text-status-danger">
-          <span className="min-w-0 flex-1">{t('chat.error', { code: message.errorCode })}</span>
+          <span className="min-w-0 flex-1">{t(`chat.errors.${message.errorCode}`, { defaultValue: t('chat.error', { code: message.errorCode }) })}</span>
           <button
             type="button"
             onClick={() => ctx.onRetry(message.request)}
@@ -97,7 +97,7 @@ function Block({ block, request, ctx }: { block: AnswerBlock; request: ChatReque
         />
       )
     case 'citations':
-      return <CitationList items={block.items} mockDocs={ctx.mockDocs} />
+      return <CitationList items={block.items} mockDocs={ctx.mockDocs} style={block.style} />
     case 'notice':
       return <NoticeBlock notice={block} />
   }

@@ -28,7 +28,14 @@ export function ChatPage() {
     navigate('/chat', { replace: true, state: null })
   }, [incomingCalcId, setCalcContextId, navigate])
 
-  const devMode = health.data && (health.data.llm === 'fake' || health.data.docs === 'mock')
+  // 개발 모드 안내: Fake LLM이면 답변·문서 모두, 실제 LLM이면 예시 문서 사용 여부만
+  const devModeKey = !health.data
+    ? null
+    : health.data.llm === 'fake'
+      ? 'chat.devMode'
+      : health.data.docs === 'mock'
+        ? 'chat.devModeDocs'
+        : null
   // 추천 질문은 대화 시작 전에만 — 모바일에서 대화 영역을 가리지 않도록
   const suggestions =
     messages.length > 0
@@ -41,7 +48,7 @@ export function ChatPage() {
     <section className="mx-auto flex min-h-[calc(100dvh-12rem)] w-full max-w-3xl flex-col gap-4">
       <header className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1 space-y-1">
-          <h1 className="text-2xl font-bold">{t('pages.chatTitle')}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t('pages.chatTitle')}</h1>
           <p className="text-muted">{t('chat.subtitle')}</p>
         </div>
         {messages.length > 0 && (
@@ -56,10 +63,10 @@ export function ChatPage() {
         )}
       </header>
 
-      {devMode && (
+      {devModeKey && (
         <p data-testid="chat-dev-mode" className="flex items-start gap-2 rounded-lg bg-surface-2 p-3 text-sm text-muted">
           <FlaskConical aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <span className="min-w-0">{t('chat.devMode')}</span>
+          <span className="min-w-0">{t(devModeKey)}</span>
         </p>
       )}
 

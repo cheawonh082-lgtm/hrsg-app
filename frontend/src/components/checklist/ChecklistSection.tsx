@@ -53,8 +53,8 @@ export function ChecklistSection({
       data-highlighted={highlighted || undefined}
       aria-label={label}
       className={cn(
-        'scroll-mt-40 rounded-xl border bg-surface transition-colors',
-        highlighted ? 'border-accent ring-2 ring-accent/40' : 'border-border',
+        'card scroll-mt-40 transition-colors',
+        highlighted && 'border-accent ring-2 ring-accent/40',
       )}
     >
       <div className="flex items-center gap-1 px-2">
@@ -65,7 +65,7 @@ export function ChecklistSection({
             checked={check === 'all'}
             onChange={(e) => onCheckAll(e.target.checked)}
             disabled={items.length === 0}
-            className="size-5 accent-[var(--accent)]"
+            className="check-round"
           />
           <span className="sr-only">{t('checklist.section.checkAll', { section: label })}</span>
         </label>

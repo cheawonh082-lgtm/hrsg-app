@@ -11,13 +11,15 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label={t('nav.main')}
+      data-testid="bottom-nav"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
     >
-      <ul className="mx-auto grid max-w-screen-md grid-cols-3">
+      <ul className="mx-auto grid max-w-screen-md grid-cols-4">
         {NAV_ITEMS.map(({ to, icon: Icon, labelKey, shortLabelKey }) => (
           <li key={to} className="min-w-0">
             <NavLink
               to={to}
+              end={to === '/'}
               aria-label={t(labelKey)}
               className={({ isActive }) =>
                 cn(
@@ -29,7 +31,9 @@ export function BottomTabBar() {
             >
               {({ isActive }) => (
                 <>
-                  <Icon aria-hidden className="size-6" strokeWidth={isActive ? 2.4 : 1.8} />
+                  <span className={cn('flex h-7 w-12 items-center justify-center rounded-full transition-colors', isActive && 'bg-tone-blue-bg')}>
+                    <Icon aria-hidden className="size-5.5" strokeWidth={isActive ? 2.4 : 1.8} />
+                  </span>
                   <span className="max-w-full truncate">{t(shortLabelKey)}</span>
                 </>
               )}

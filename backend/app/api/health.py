@@ -19,7 +19,8 @@ class HealthStatus(CamelModel):
 
 @router.get("/health", response_model=HealthStatus)
 def health(settings: Settings = Depends(get_settings)):
-    _, docs_mock = resolve_docs_dir(settings.docs_masked_dir)
+    # 논문 RAG 검색 API를 쓰면 실제 논문이 근거다
+    docs_mock = settings.rag_retriever != "api" and resolve_docs_dir(settings.docs_masked_dir)[1]
     return HealthStatus(
         engine=settings.calc_engine,
         data_source=settings.data_source,

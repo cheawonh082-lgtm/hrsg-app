@@ -9,6 +9,8 @@ dependencies = [
     "pydantic>=2.11",
     "pydantic-settings>=2.4",
     "pyyaml>=6.0",
+    "anthropic>=1.17,<2",  # LLM_PROVIDER=claude
+    "google-genai>=2.33",  # LLM_PROVIDER=gemini
 ]
 
 [dependency-groups]

@@ -65,17 +65,21 @@ def values_for_llm(result: CalcResult) -> dict[str, float]:
 
 
 def search_knowledge(
-    retriever: Retriever, redactor: Redactor, query: str, locale: Locale, top_k: int = 3
+    retriever: Retriever, redactor: Redactor, query: str, locale: Locale, top_k: int | None = None
 ) -> list[Citation]:
-    return [
-        Citation(
-            doc_alias=hit.chunk.doc_alias,
-            section_title=hit.chunk.section_title,
-            snippet=_truncate(redactor.redact(hit.chunk.text).text),
-            score=hit.score,
+    citations = []
+    for hit in retriever.search(query, top_k=top_k or retriever.default_top_k, lang=locale):
+        text = redactor.redact(hit.chunk.text).text
+        citations.append(
+            Citation(
+                doc_alias=hit.chunk.doc_alias,
+                section_title=hit.chunk.section_title,
+                snippet=_truncate(text),
+                score=hit.score,
+                full_text=text,
+            )
         )
-        for hit in retriever.search(query, top_k=top_k, lang=locale)
-    ]
+    return citations
 
 
 def _truncate(text: str) -> str:

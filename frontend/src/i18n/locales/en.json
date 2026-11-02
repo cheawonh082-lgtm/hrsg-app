@@ -1,7 +1,8 @@
 {
   "app": {
-    "name": "HRSG Reference",
-    "home": "HRSG Reference home"
+    "name": "HRSG Dashboard",
+    "home": "HRSG Dashboard home",
+    "tagline": "HRSG performance diagnostics for better plant efficiency"
   },
   "a11y": {
     "skipToContent": "Skip to content"
@@ -9,9 +10,15 @@
   "nav": {
     "main": "Main menu",
     "calculator": "Calculator",
-    "chat": "Ask",
+    "chat": "Ask AI",
     "checklist": "Data Checklist",
-    "checklistShort": "Checklist"
+    "checklistShort": "Checklist",
+    "home": "Home",
+    "chatShort": "Ask AI",
+    "all": "All menus",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "toggleGroup": "{{label}} submenu"
   },
   "mock": {
     "short": "MOCK DATA",
@@ -121,16 +128,6 @@
       "aria": "{{label}} {{value}} {{unit}}, design {{design}} {{unit}}",
       "page": "Show indicator {{index}}: {{label}}"
     },
-    "diagram": {
-      "title": "HRSG layout",
-      "flow": "Exhaust gas flow",
-      "gt": "GT outlet",
-      "gasIn": "Gas in",
-      "gasOut": "Gas out",
-      "hintHover": "Hover over or select a section to see its temperatures and status.",
-      "hintTap": "Tap a section to see its gas temperatures and status.",
-      "legend": "Status"
-    },
     "sections": {
       "HP_SH": {
         "name": "HP superheater",
@@ -222,7 +219,74 @@
     "meta": {
       "engine": "Engine"
     },
-    "restoreFailed": "The previous calculation could not be found, so default values are shown."
+    "restoreFailed": "The previous calculation could not be found, so default values are shown.",
+    "tabs": {
+      "label": "Calculator view",
+      "loss": "Current state / Expected loss / Cleaning recovery effect",
+      "cleaning": "Cleaning cost by method",
+      "pinch": "Pinch / Approach / Key performance indicators"
+    },
+    "schematic": {
+      "title": "HRSG schematic",
+      "gt": "Gas turbine",
+      "flow": "Exhaust gas flow",
+      "superheater": "Superheater",
+      "evaporator": "Evaporator",
+      "economizer": "Economizer",
+      "stack": "Stack",
+      "design": "Design {{value}}",
+      "foulingIndex": "Fouling display index {{value}}%.",
+      "displayOnly": "Display only (not used in loss calculation)",
+      "exhaustTemp": "GT exhaust temp",
+      "hintHover": "Hover over or select a component to see section status and operating indicators.",
+      "hintTap": "Tap a component to see section status and operating indicators."
+    },
+    "lossCompare": {
+      "title": "Current loss vs after cleaning",
+      "current": "Current loss",
+      "after": "After cleaning",
+      "basis": "based on {{value}} recovered by cleaning"
+    },
+    "recoveryEffect": {
+      "title": "Cleaning recovery effect",
+      "currentEff": "Current heat recovery",
+      "afterEff": "Heat recovery after cleaning",
+      "recoveredPower": "Recovered power",
+      "annualRecovery": "Annual recovery"
+    },
+    "efficiency": {
+      "title": "Heat recovery efficiency trend",
+      "subtitle": "Monthly efficiency decline and recovery after cleaning",
+      "design": "Design",
+      "month": "{{value}} mo",
+      "after": "After cleaning",
+      "series": "Heat recovery efficiency",
+      "recovery": "Recovery after cleaning",
+      "caution": "Caution",
+      "aria": "Heat recovery efficiency trend. Design {{design}}, current {{current}}, after cleaning {{after}}",
+      "note": "No operating history yet: this estimated curve assumes efficiency fell from design to the current value over {{months}} months. Efficiency = (exhaust temp − stack temp) / (exhaust temp − ambient temp)."
+    },
+    "perf": {
+      "title": "Key performance indicators (KPI)",
+      "overall": "Overall status",
+      "advice": {
+        "normal": "Operating within design range",
+        "caution": "Consider scheduling cleaning",
+        "danger": "Plan cleaning now"
+      },
+      "hpPinch": "HP pinch point",
+      "hpApproach": "HP approach point",
+      "steam": "HP steam production",
+      "efficiency": "Heat recovery efficiency",
+      "perfLoss": "Expected performance loss",
+      "recovery": "Expected recovery after cleaning",
+      "annualLoss": "Estimated annual loss",
+      "cleaningCost": "Estimated cleaning cost",
+      "payback": "Payback period",
+      "vsDesign": "{{value}} vs design",
+      "recoveryRate": "Recovers {{value}}% of loss",
+      "monthsUnit": "mo"
+    }
   },
   "cleaning": {
     "dryIce": "Dry ice blasting",
@@ -235,12 +299,13 @@
     "exhaustTempAboveRated": "Exhaust temperature is more than 30℃ above rated."
   },
   "pages": {
-    "chatTitle": "Ask",
+    "chatTitle": "Ask AI",
     "checklistTitle": "Plant Data Checklist"
   },
   "chat": {
     "subtitle": "Ask HRSG technical questions and performance/economics calculations. Figures come only from calculator result cards.",
     "devMode": "Development mode: AI answers are rule-based sample responses (Fake) and the sources are fictional sample documents. This changes once a real LLM and documents are connected.",
+    "devModeDocs": "Reference documents are fictional examples until real documents are added.",
     "calcContext": "Answers are based on the result passed from the calculator.",
     "calcContextClear": "Clear calculation context",
     "newChat": "New chat",
@@ -297,6 +362,7 @@
     },
     "citations": {
       "title": "Sources",
+      "sources": "Sources",
       "mock": "Sample docs"
     },
     "notice": {
@@ -307,6 +373,18 @@
       "invalidParams": "Some values are out of range. Please check and recalculate.",
       "sanitized": "Figures whose source couldn't be verified were removed. Refer to the result card for figures.",
       "generic": "Notice"
+    },
+    "welcome": {
+      "title": "Hello!",
+      "body": "Ask anything about HRSGs."
+    },
+    "errors": {
+      "LLM_NOT_CONFIGURED": "AI is not configured. Check LLM_API_KEY in .env.",
+      "LLM_AUTH_FAILED": "The AI API key is invalid or lacks permission. Check LLM_API_KEY in .env.",
+      "LLM_MODEL_NOT_FOUND": "The configured AI model was not found. Check LLM_MODEL in .env.",
+      "LLM_RATE_LIMITED": "AI quota exceeded. The free tier limits daily requests per model. Try again later or enable billing.",
+      "RAG_UNAVAILABLE": "Could not reach the paper search server. Check that the RAG search API (port 8100) is running.",
+      "LLM_UNAVAILABLE": "Could not reach the AI service. Check your network and try again."
     }
   },
   "checklist": {
@@ -395,6 +473,45 @@
       "copied": "Email text copied ({{count}} requested items).",
       "copyFailed": "Could not copy. Select the preview text and copy it manually.",
       "selectedHint": "The text is selected. Press Ctrl+C (or long-press and copy on mobile)."
+    },
+    "tabs": {
+      "label": "Category",
+      "all": "All"
+    }
+  },
+  "home": {
+    "greeting": "Welcome,",
+    "title": "This is your HRSG dashboard.",
+    "subtitle": "Run your HRSG more efficiently with AI and data.",
+    "hero": {
+      "title": "Smarter HRSG operation,\ndriven by data",
+      "subtitle": "The analysis and tools you need, in one place."
+    },
+    "cards": {
+      "chat": "Ask the AI anything\nabout HRSGs.",
+      "calculator": "Calculate current state, loss\nand cleaning effect.",
+      "checklist": "Review data requests\nand track progress.",
+      "open": "Open {{label}}"
+    },
+    "kpi": {
+      "title": "Key indicators",
+      "basis": "Based on current calculator input"
+    },
+    "trend": {
+      "title": "Expected power loss by pressure drop"
+    },
+    "cleaning": {
+      "title": "Cleaning cost by method",
+      "total": "Total cost",
+      "chart": "Donut chart of cleaning cost share by method"
+    },
+    "activity": {
+      "title": "Work status",
+      "chatNone": "You haven't asked the AI anything yet.",
+      "chat": "{{count}} questions exchanged in Ask AI.",
+      "calc": "Overall status under current conditions: '{{status}}' (fouling index {{index}}).",
+      "checklist": "{{checked}} of {{total}} checklist items received ({{percent}}%).",
+      "loading": "Loading…"
     }
   }
 }

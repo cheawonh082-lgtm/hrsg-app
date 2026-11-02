@@ -10,7 +10,7 @@ const VIEWPORTS = [
   { width: 1280, height: 800 }, // 노트북
   { width: 1920, height: 1080 }, // 데스크톱
 ]
-const PAGES = ['/calculator', '/chat', '/checklist']
+const PAGES = ['/', '/calculator', '/chat', '/checklist']
 const LG = 1024
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -43,16 +43,20 @@ for (const vp of VIEWPORTS) {
       })
     }
 
-    test('내비게이션: lg 이상 TopNav, 미만 BottomTabBar', async ({ page }) => {
+    test('내비게이션: lg 이상 좌측 사이드바, 미만 BottomTabBar + 메뉴 버튼', async ({ page }) => {
       await openPage(page, '/calculator')
-      const topNav = page.locator('header nav')
-      const bottomNav = page.locator('nav:not(header nav)')
+      const sidebar = page.getByTestId('sidebar')
+      const bottomNav = page.getByTestId('bottom-nav')
+      const menuButton = page.getByRole('button', { name: '메뉴 열기' })
       if (vp.width >= LG) {
-        await expect(topNav).toBeVisible()
+        await expect(sidebar).toBeVisible()
+        await expect(sidebar.getByRole('link', { name: /^세정 공법별/ })).toBeVisible() // 계산기 하위 메뉴 펼침
         await expect(bottomNav).toBeHidden()
+        await expect(menuButton).toBeHidden()
       } else {
-        await expect(topNav).toBeHidden()
+        await expect(sidebar).toBeHidden()
         await expect(bottomNav).toBeVisible()
+        await expect(menuButton).toBeVisible()
       }
     })
 
@@ -68,8 +72,19 @@ test.describe('모바일 상호작용 (360px)', () => {
 
   test('하단 탭으로 화면 이동', async ({ page }) => {
     await openPage(page, '/calculator')
-    await page.locator('nav:not(header nav)').getByRole('link', { name: '질문하기' }).tap()
+    await page.getByTestId('bottom-nav').getByRole('link', { name: '질문하기' }).tap()
     await expect(page).toHaveURL(/\/chat$/)
+  })
+
+  test('메뉴 드로어 → 계산기 하위 화면(세정 공법 비교)으로 이동', async ({ page }) => {
+    await openPage(page, '/')
+    await page.getByRole('button', { name: '메뉴 열기' }).tap()
+    const drawer = page.getByRole('dialog', { name: '메뉴' })
+    await drawer.getByRole('button', { name: '계산기 하위 메뉴' }).tap()
+    await drawer.getByRole('link', { name: /^세정 공법별/ }).tap()
+    await expect(page).toHaveURL(/\/calculator\?tab=cleaning$/)
+    await expect(drawer).toBeHidden()
+    await expect(page.getByRole('tab', { name: /^세정 공법별/ })).toHaveAttribute('aria-selected', 'true')
   })
 
   test('V-08 영어 전환 후에도 넘침 없음', async ({ page }) => {

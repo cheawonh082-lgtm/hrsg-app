@@ -9,6 +9,9 @@ export interface ThemeColors {
   normal: string
   caution: string
   danger: string
+  toneBlue: string
+  toneGreen: string
+  tonePurple: string
 }
 
 function read(): ThemeColors {
@@ -23,6 +26,9 @@ function read(): ThemeColors {
     normal: v('--status-normal'),
     caution: v('--status-caution'),
     danger: v('--status-danger'),
+    toneBlue: v('--tone-blue'),
+    toneGreen: v('--tone-green'),
+    tonePurple: v('--tone-purple'),
   }
 }
 

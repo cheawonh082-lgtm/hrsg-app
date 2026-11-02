@@ -27,7 +27,17 @@ class ComposeContext:
     # 토큰 경로(snake_case) → 최종값. 중간 계수·공식 단계는 넣지 않는다(G-7)
     calc_values: dict[str, float] | None = None
     citations: list[Citation] = field(default_factory=list)
+    citation_style: str = "excerpts"  # titles: 논문 RAG — 인라인 인용 없이 논리적으로 서술, 출처는 논문명 목록으로 따로 표시
     used_defaults: list[str] = field(default_factory=list)  # 기본값으로 채운 입력 필드(camelCase)
+
+
+class LLMUnavailableError(Exception):
+    """LLM API 호출 실패 — API에서 503으로 바꿔 화면에 안내한다."""
+
+    def __init__(self, code: str, message_key: str):
+        super().__init__(code)
+        self.code = code
+        self.message_key = message_key
 
 
 class LLMProvider(ABC):

@@ -21,6 +21,9 @@ class SearchHit:
 
 class Retriever(ABC):
     is_mock: bool = False
+    default_top_k: int = 3
+    # 근거 표시 방식: excerpts(문서 별칭·절·발췌) / titles(논문명만, 중복 없이)
+    citation_style: str = "excerpts"
 
     @abstractmethod
     def search(self, query: str, top_k: int = 3, lang: str | None = None) -> list[SearchHit]: ...

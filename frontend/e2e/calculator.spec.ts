@@ -9,6 +9,14 @@ async function openCalculator(page: Page) {
   await expect(lossValue(page)).toHaveText('0.00')
 }
 
+/** 계산기 화면 탭 — 탭 이름 앞부분으로 찾는다 */
+const TAB_NAMES = { loss: /^현재상태/, cleaning: /^세정 공법별/, pinch: /^핀치/ } as const
+async function openTab(page: Page, id: keyof typeof TAB_NAMES) {
+  const tab = page.getByRole('tab', { name: TAB_NAMES[id] })
+  await tab.click()
+  await expect(tab).toHaveAttribute('aria-selected', 'true')
+}
+
 /** /api/calc/evaluate 요청 본문 기록 */
 function trackEvaluate(page: Page) {
   const bodies: string[] = []
@@ -28,16 +36,21 @@ async function expectFouledDashboard(page: Page) {
   await expect(lossValue(page)).toHaveText('3.16')
   await expect(page.getByTestId('kpi-status')).toContainText('위험')
   await expect(page.getByTestId('kpi-totalLoss')).toContainText('▲')
+  await expect(page.getByTestId('trend-chart')).toHaveAttribute('data-current-x', '35')
+  await expect(page.getByTestId('trend-chart').locator('canvas')).toBeVisible()
+  await expect(page.locator('[data-testid=hrsg-schematic] [data-bundle=evaporator]')).toHaveAttribute('data-status', 'danger')
+  await expect(page.getByTestId('schematic-stack')).toHaveAttribute('data-status', 'danger')
 
   const dpGauge = page.getByTestId('gauge-hrsgGasDp')
   await expect(dpGauge).toHaveAttribute('data-value', '35')
   await expect(dpGauge).toHaveAttribute('data-status', 'danger')
   await expect(dpGauge.locator('canvas')).toHaveCount(1)
+  await expect(page.getByTestId('loss-current')).toContainText('3.16 MW')
+  await expect(page.getByTestId('efficiency-chart').locator('canvas')).toBeVisible()
 
-  await expect(page.getByTestId('trend-chart')).toHaveAttribute('data-current-x', '35')
-  await expect(page.getByTestId('trend-chart').locator('canvas')).toBeVisible()
-  await expect(page.locator('[data-testid=hrsg-diagram] [data-section=HP_EVA]')).toHaveAttribute('data-status', 'danger')
-  await expect(page.locator('[data-testid=hrsg-diagram] [data-section=STACK]')).toHaveAttribute('data-status', 'danger')
+  await openTab(page, 'pinch')
+  await expect(page.getByTestId('perf-overall')).toHaveAttribute('data-status', 'danger')
+  await expect(page.getByTestId('perf-perfLoss')).toContainText('−3.2')
 }
 
 test.describe('데스크톱 1280px', () => {
@@ -48,7 +61,6 @@ test.describe('데스크톱 1280px', () => {
     const panel = page.getByRole('complementary', { name: '입력 조정' })
     await expect(panel).toBeVisible()
     expect((await panel.boundingBox())!.width).toBe(320)
-    await expect(page.getByTestId('hrsg-diagram')).toHaveAttribute('data-orientation', 'horizontal')
 
     const bodies = trackEvaluate(page)
     await enterFouledState(panel)
@@ -60,13 +72,17 @@ test.describe('데스크톱 1280px', () => {
     expect(bodies.at(-1)).toContain('"stackTempC":110')
   })
 
-  test('섹션에 마우스를 올리면 온도·상태 툴팁', async ({ page }) => {
+  test('도식 설비에 마우스를 올리면 섹션 상태·지표 툴팁 (화면 안에 표시)', async ({ page }) => {
     await openCalculator(page)
-    await page.locator('[data-testid=hrsg-diagram] [data-section=HP_EVA]').hover()
-    const tooltip = page.getByTestId('hrsg-tooltip')
+    await page.locator('[data-testid=hrsg-schematic] [data-part=evaporator]').hover()
+    const tooltip = page.getByTestId('schematic-tooltip')
     await expect(tooltip).toContainText('고압 증발기')
-    await expect(tooltip).toContainText('가스 입구')
     await expect(tooltip).toContainText('정상')
+
+    await page.locator('[data-testid=hrsg-schematic] [data-part=stack]').hover()
+    await expect(tooltip).toContainText('스택 온도')
+    const box = (await tooltip.boundingBox())!
+    expect(box.x + box.width).toBeLessThanOrEqual(1280)
   })
 
   test('범위 밖 입력은 경고하고 계산을 막는다', async ({ page }) => {
@@ -85,6 +101,7 @@ test.describe('데스크톱 1280px', () => {
   test('핀치 입력을 비우면 "데이터 필요" + 체크리스트 링크', async ({ page }) => {
     await openCalculator(page)
     const panel = page.getByRole('complementary', { name: '입력 조정' })
+    await openTab(page, 'pinch')
     const hp = page.getByTestId('pinch-HP')
     await expect(hp).toHaveAttribute('data-status', 'normal')
 
@@ -100,6 +117,7 @@ test.describe('데스크톱 1280px', () => {
     await enterFouledState(page.getByRole('complementary', { name: '입력 조정' }))
     await expect(lossValue(page)).toHaveText('3.16')
 
+    await openTab(page, 'cleaning')
     const table = page.getByRole('table')
     const firstRow = table.locator('tbody tr').first()
     await expect(firstRow).toContainText('추천') // 기본 정렬: 순편익 높은 순
@@ -135,7 +153,6 @@ test.describe('모바일 360px', () => {
   test('바텀시트에서 입력 → 시트 요약과 대시보드 갱신', async ({ page }) => {
     await openCalculator(page)
     await expect(page.getByRole('complementary')).toHaveCount(0) // 사이드 패널 없음
-    await expect(page.getByTestId('hrsg-diagram')).toHaveAttribute('data-orientation', 'vertical')
 
     await page.getByRole('button', { name: '입력 조정' }).tap()
     await expect(sheet(page)).toBeVisible()
@@ -162,6 +179,8 @@ test.describe('모바일 360px', () => {
     await expect(sheet(page)).toBeHidden()
 
     await fab.tap()
+    // 올라오는 애니메이션이 끝난 뒤 손잡이 위치를 잰다 (도중에 재면 끌기 시작점이 어긋남)
+    await sheet(page).evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)))
     const handle = page.getByRole('button', { name: '시트 높이 전환' })
     const box = (await handle.boundingBox())!
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
@@ -171,12 +190,16 @@ test.describe('모바일 360px', () => {
     await expect(sheet(page)).toBeHidden()
   })
 
-  test('세로 도식 섹션 탭 → 정보 패널, 공법 비교는 카드 목록', async ({ page }) => {
+  test('도식 설비 탭 → 툴팁(화면 안), 공법 비교는 카드 목록', async ({ page }) => {
     await openCalculator(page)
-    await page.locator('[data-testid=hrsg-diagram] [data-section=HP_EVA]').tap()
-    await expect(page.getByTestId('hrsg-info')).toContainText('고압 증발기')
-    await expect(page.getByTestId('hrsg-info')).toContainText('가스 출구')
+    await page.locator('[data-testid=hrsg-schematic] [data-part=economizer]').tap()
+    const tooltip = page.getByTestId('schematic-tooltip')
+    await expect(tooltip).toContainText('고압 절탄기')
+    const box = (await tooltip.boundingBox())!
+    expect(box.x).toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(360)
 
+    await openTab(page, 'cleaning')
     await expect(page.getByRole('table')).toHaveCount(0)
     await expect(page.getByRole('list', { name: '세정 공법별 비용 비교' }).getByRole('listitem')).toHaveCount(4)
   })

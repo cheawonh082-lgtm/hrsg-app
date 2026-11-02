@@ -1,55 +1,57 @@
-import { Flame } from 'lucide-react'
+import { Menu, Wind } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { cn } from '../../lib/cn'
 import { LanguageSwitcher } from '../common/LanguageSwitcher'
 import { ThemeToggle } from '../common/ThemeToggle'
-import { NAV_ITEMS } from './navItems'
+
+/** 로고 + 앱 이름. dark: 남색 사이드바 위 */
+export function Brand({ dark, onClick }: { dark?: boolean; onClick?: () => void }) {
+  const { t } = useTranslation()
+  return (
+    <Link
+      to="/"
+      onClick={onClick}
+      aria-label={t('app.home')}
+      className={cn(
+        'flex min-w-0 shrink items-center gap-2.5 rounded-lg font-bold tracking-tight focus-visible:outline-2 focus-visible:outline-accent',
+        dark ? 'text-white' : 'text-text',
+      )}
+    >
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-sm">
+        <Wind aria-hidden className="size-4.5" strokeWidth={2.4} />
+      </span>
+      <span className="truncate">{t('app.name')}</span>
+    </Link>
+  )
+}
 
 /**
- * 상단 헤더. lg 이상에서는 메뉴 포함 TopNav, 미만에서는 로고 + 언어·테마만 있는 축약 헤더
- * (메뉴는 BottomTabBar가 담당, PRD §3.0).
+ * 상단 바. lg 이상: 메뉴는 좌측 사이드바가 맡고 언어·테마만 오른쪽에.
+ * lg 미만: 로고 + 언어·테마 + 전체 메뉴(드로어) 버튼 — 주요 화면 이동은 하단 탭바 (PRD §3.0).
  */
-export function TopNav() {
+export function TopNav({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { t } = useTranslation()
 
   return (
-    <div className="mx-auto flex h-14 w-full max-w-screen-2xl items-center gap-3 px-4 lg:h-16 lg:px-8">
-      <Link
-        to="/calculator"
-        aria-label={t('app.home')}
-        className="flex min-w-0 shrink items-center gap-2 rounded-lg font-semibold focus-visible:outline-2 focus-visible:outline-accent"
-      >
-        <Flame aria-hidden className="size-6 shrink-0 text-accent" />
-        <span className="truncate">{t('app.name')}</span>
-      </Link>
-
-      <nav aria-label={t('nav.main')} className="ml-6 hidden min-w-0 lg:flex">
-        <ul className="flex items-center gap-1">
-          {NAV_ITEMS.map(({ to, icon: Icon, labelKey }) => (
-            <li key={to}>
-              <NavLink
-                to={to}
-                className={({ isActive }) =>
-                  cn(
-                    'flex h-11 items-center gap-2 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors',
-                    'focus-visible:outline-2 focus-visible:outline-accent',
-                    isActive ? 'bg-surface-2 text-accent' : 'text-muted hover:bg-surface-2 hover:text-text',
-                  )
-                }
-              >
-                <Icon aria-hidden className="size-4" />
-                {t(labelKey)}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <div className="flex h-14 w-full items-center gap-2 px-4 lg:h-16 lg:px-8">
+      <div className="min-w-0 lg:hidden">
+        <Brand />
+      </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
         <LanguageSwitcher />
         <ThemeToggle />
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          aria-label={t('nav.openMenu')}
+          aria-haspopup="dialog"
+          className="flex size-11 items-center justify-center rounded-lg text-muted hover:bg-surface-2 hover:text-text focus-visible:outline-2 focus-visible:outline-accent lg:hidden"
+        >
+          <Menu aria-hidden className="size-6" />
+        </button>
       </div>
     </div>
   )

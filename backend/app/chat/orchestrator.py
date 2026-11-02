@@ -137,6 +137,7 @@ class Orchestrator:
                         intent=intent,
                         calc_values=tools.values_for_llm(result) if result else None,
                         citations=citations,
+                        citation_style=self.retriever.citation_style,
                         used_defaults=sorted(set(_input_fields(plan.input)) - plan.user_fields) if plan and plan.input else [],
                     )
                 )
@@ -145,7 +146,7 @@ class Orchestrator:
                     draft,
                     locale,
                     result=result,
-                    allowed_literals=numbers_in([message, *(c.snippet for c in citations)]),
+                    allowed_literals=numbers_in([message, *(c.full_text or c.snippet for c in citations)]),
                     allowed_paths=tools.LLM_VISIBLE_PATHS,
                 )
                 number_check = checked.status
@@ -164,7 +165,7 @@ class Orchestrator:
 
         blocks: list[AnswerBlock] = [*head, *text_blocks]
         if citations:
-            blocks.append(CitationsBlock(items=citations))
+            blocks.append(CitationsBlock(items=citations, style=self.retriever.citation_style))
         blocks.extend(notices)
         return _response(
             intent=intent,

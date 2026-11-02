@@ -1,7 +1,8 @@
 {
   "app": {
-    "name": "HRSG Reference",
-    "home": "HRSG Reference 홈"
+    "name": "HRSG Dashboard",
+    "home": "HRSG Dashboard 홈",
+    "tagline": "더 나은 공정 효율을 위한 HRSG 성능 진단 도구"
   },
   "a11y": {
     "skipToContent": "본문으로 건너뛰기"
@@ -9,9 +10,15 @@
   "nav": {
     "main": "주요 메뉴",
     "calculator": "계산기",
-    "chat": "질문하기",
+    "chat": "AI 질문하기",
     "checklist": "데이터 체크리스트",
-    "checklistShort": "체크리스트"
+    "checklistShort": "체크리스트",
+    "home": "홈",
+    "chatShort": "AI 질문",
+    "all": "전체 메뉴",
+    "menu": "메뉴",
+    "openMenu": "메뉴 열기",
+    "toggleGroup": "{{label}} 하위 메뉴"
   },
   "mock": {
     "short": "MOCK DATA",
@@ -121,16 +128,6 @@
       "aria": "{{label}} {{value}} {{unit}}, 설계값 {{design}} {{unit}}",
       "page": "{{index}}번째 지표 보기: {{label}}"
     },
-    "diagram": {
-      "title": "HRSG 구조도",
-      "flow": "배기가스 흐름",
-      "gt": "GT 출구",
-      "gasIn": "가스 입구",
-      "gasOut": "가스 출구",
-      "hintHover": "섹션에 마우스를 올리거나 누르면 온도와 상태를 볼 수 있습니다.",
-      "hintTap": "섹션을 누르면 가스 온도와 상태를 볼 수 있습니다.",
-      "legend": "상태"
-    },
     "sections": {
       "HP_SH": {
         "name": "고압 과열기",
@@ -222,7 +219,74 @@
     "meta": {
       "engine": "계산 엔진"
     },
-    "restoreFailed": "이전 계산 정보를 찾을 수 없어 기본값으로 표시합니다."
+    "restoreFailed": "이전 계산 정보를 찾을 수 없어 기본값으로 표시합니다.",
+    "tabs": {
+      "label": "계산기 화면 선택",
+      "loss": "현재상태 / 예상 손실 / 세정 시 회수효과",
+      "cleaning": "세정 공법별 비용 비교",
+      "pinch": "핀치 / 어프로치 / 핵심 성능 지표"
+    },
+    "schematic": {
+      "title": "HRSG 도식",
+      "gt": "가스터빈",
+      "flow": "배기가스 흐름",
+      "superheater": "과열기",
+      "evaporator": "증발기",
+      "economizer": "절탄기",
+      "stack": "굴뚝",
+      "design": "설계 {{value}}",
+      "foulingIndex": "오염 표시 지수 {{value}}%.",
+      "displayOnly": "표시용 지수 (손실 계산과 무관)",
+      "exhaustTemp": "GT 배기온도",
+      "hintHover": "설비에 마우스를 올리거나 누르면 섹션별 상태와 운전 지표를 볼 수 있습니다.",
+      "hintTap": "설비를 누르면 섹션별 상태와 운전 지표를 볼 수 있습니다."
+    },
+    "lossCompare": {
+      "title": "현재 손실 vs 세정 후 손실",
+      "current": "현재 손실",
+      "after": "세정 후 손실",
+      "basis": "세정 시 회수 {{value}} 기준"
+    },
+    "recoveryEffect": {
+      "title": "세정 시 회수효과",
+      "currentEff": "현재 열회수 효율",
+      "afterEff": "세정 후 열회수 효율",
+      "recoveredPower": "회수 출력",
+      "annualRecovery": "연간 회수액"
+    },
+    "efficiency": {
+      "title": "열회수 효율 추이",
+      "subtitle": "월별 효율 저하 추이와 세정 후 회복",
+      "design": "설계",
+      "month": "{{value}}개월",
+      "after": "세정 후",
+      "series": "열회수 효율",
+      "recovery": "세정 후 회복",
+      "caution": "주의",
+      "aria": "열회수 효율 추이. 설계 {{design}}, 현재 {{current}}, 세정 후 {{after}}",
+      "note": "운전 이력이 없어 설계값에서 현재값까지 {{months}}개월에 걸쳐 저하됐다고 가정한 추정 곡선입니다. 효율 = (배기온도 − 스택온도) / (배기온도 − 대기온도)."
+    },
+    "perf": {
+      "title": "핵심 성능 지표 (KPI)",
+      "overall": "종합 상태",
+      "advice": {
+        "normal": "설계 범위 안에서 운전 중",
+        "caution": "세정 시기 검토 권고",
+        "danger": "세정 계획 수립 필요"
+      },
+      "hpPinch": "HP 핀치 포인트",
+      "hpApproach": "HP 어프로치 포인트",
+      "steam": "HP 스팀 생산량",
+      "efficiency": "열회수 효율",
+      "perfLoss": "예상 성능 손실",
+      "recovery": "세정 후 회복 예상",
+      "annualLoss": "연간 손실 추정",
+      "cleaningCost": "세정 비용 추정",
+      "payback": "투자 회수 기간",
+      "vsDesign": "설계 대비 {{value}}",
+      "recoveryRate": "손실 대비 회수율 {{value}}%",
+      "monthsUnit": "개월"
+    }
   },
   "cleaning": {
     "dryIce": "드라이아이스 블라스팅",
@@ -235,12 +299,13 @@
     "exhaustTempAboveRated": "배기온도가 정격보다 30℃ 넘게 높습니다."
   },
   "pages": {
-    "chatTitle": "질문하기",
+    "chatTitle": "AI 질문하기",
     "checklistTitle": "플랜트 데이터 체크리스트"
   },
   "chat": {
     "subtitle": "HRSG 기술 질문과 성능·경제성 계산을 함께 물어보세요. 수치는 계산기 결과 카드로만 답합니다.",
     "devMode": "개발 모드: AI 답변은 규칙 기반 예시 응답(Fake)이고, 근거 문서는 가상의 예시 문서입니다. 실제 LLM·문서 연결 후 바뀝니다.",
+    "devModeDocs": "근거 문서는 가상의 예시 문서입니다. 실제 문서를 넣으면 바뀝니다.",
     "calcContext": "계산기에서 넘겨받은 결과를 기준으로 답합니다.",
     "calcContextClear": "계산 결과 맥락 해제",
     "newChat": "새 대화",
@@ -297,6 +362,7 @@
     },
     "citations": {
       "title": "근거 자료",
+      "sources": "출처",
       "mock": "예시 문서"
     },
     "notice": {
@@ -307,6 +373,18 @@
       "invalidParams": "입력 범위를 벗어난 값이 있습니다. 확인 후 다시 계산해 주세요.",
       "sanitized": "출처를 확인할 수 없는 수치는 답변에서 뺐습니다. 수치는 결과 카드를 참고하세요.",
       "generic": "안내 메시지"
+    },
+    "welcome": {
+      "title": "안녕하세요!",
+      "body": "HRSG에 대해 궁금한 점을 질문해보세요."
+    },
+    "errors": {
+      "LLM_NOT_CONFIGURED": "AI 연결 설정이 없습니다. .env의 LLM_API_KEY를 확인하세요.",
+      "LLM_AUTH_FAILED": "AI API 키가 올바르지 않거나 권한이 없습니다. .env의 LLM_API_KEY를 확인하세요.",
+      "LLM_MODEL_NOT_FOUND": "설정한 AI 모델을 찾을 수 없습니다. .env의 LLM_MODEL을 확인하세요.",
+      "LLM_RATE_LIMITED": "AI 요청 한도를 초과했습니다. 무료 등급은 모델별 하루 요청 수가 제한됩니다. 잠시 후 다시 시도하거나 결제를 등록하세요.",
+      "RAG_UNAVAILABLE": "논문 검색 서버에 연결할 수 없습니다. RAG 검색 API(포트 8100)가 실행 중인지 확인하세요.",
+      "LLM_UNAVAILABLE": "AI 서비스에 연결하지 못했습니다. 네트워크 상태를 확인하고 다시 시도하세요."
     }
   },
   "checklist": {
@@ -395,6 +473,45 @@
       "copied": "이메일 텍스트를 복사했습니다 (요청 항목 {{count}}개).",
       "copyFailed": "복사하지 못했습니다. 미리보기 텍스트를 직접 선택해 복사하세요.",
       "selectedHint": "텍스트를 선택해 두었습니다. Ctrl+C(모바일은 길게 눌러 복사)로 복사하세요."
+    },
+    "tabs": {
+      "label": "카테고리",
+      "all": "전체"
+    }
+  },
+  "home": {
+    "greeting": "안녕하세요,",
+    "title": "HRSG 대시보드입니다.",
+    "subtitle": "AI와 데이터를 기반으로 더 효율적인 HRSG 운영을 지원합니다.",
+    "hero": {
+      "title": "데이터로 보는\n더 스마트한 HRSG 운영",
+      "subtitle": "지금 필요한 분석과 도구를 한 곳에서."
+    },
+    "cards": {
+      "chat": "HRSG 관련 궁금한 점을\nAI에게 물어보세요.",
+      "calculator": "현재 상태·손실·세정 효과를\n바로 계산해 보세요.",
+      "checklist": "데이터 요청 항목을 확인하고\n진행 상황을 관리하세요.",
+      "open": "{{label}} 열기"
+    },
+    "kpi": {
+      "title": "주요 지표 현황",
+      "basis": "현재 계산기 입력 기준"
+    },
+    "trend": {
+      "title": "차압별 예상 출력 손실"
+    },
+    "cleaning": {
+      "title": "세정 공법별 비용 비교",
+      "total": "총 비용",
+      "chart": "세정 공법별 비용 비율 도넛 차트"
+    },
+    "activity": {
+      "title": "작업 현황",
+      "chatNone": "아직 AI에게 한 질문이 없습니다.",
+      "chat": "AI 질문하기에서 질문 {{count}}개를 주고받았습니다.",
+      "calc": "현재 조건의 종합 상태는 '{{status}}'입니다 (오염 지수 {{index}}).",
+      "checklist": "체크리스트 {{total}}개 중 {{checked}}개 항목을 받았습니다 ({{percent}}%).",
+      "loading": "불러오는 중…"
     }
   }
 }

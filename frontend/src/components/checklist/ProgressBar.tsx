@@ -23,7 +23,7 @@ export function Bar({ value, max, label, className, tone = 'accent' }: {
       className={cn('h-2 w-full overflow-hidden rounded-full bg-surface-2', className)}
     >
       <div
-        className={cn('h-full rounded-full transition-[width] duration-300 motion-reduce:transition-none', tone === 'required' ? 'bg-status-caution' : 'bg-accent')}
+        className={cn('h-full rounded-full transition-[width] duration-300 motion-reduce:transition-none', tone === 'required' ? 'bg-status-caution' : 'bg-status-normal')}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -40,12 +40,12 @@ export function ProgressBar({ progress, categories }: { progress: ChecklistProgr
     <section
       data-testid="checklist-progress"
       aria-label={t('checklist.progress.title')}
-      className="space-y-3 rounded-xl border border-border bg-surface p-4"
+      className="card space-y-3 p-4 md:p-5"
     >
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <p className="min-w-0 flex-1 font-semibold">
           {t('checklist.progress.overall')}{' '}
-          <span data-testid="progress-percent" className="text-2xl tabular-nums">
+          <span data-testid="progress-percent" className="text-2xl text-status-normal tabular-nums">
             {progress.percent}%
           </span>
           <span className="ml-2 text-sm text-muted tabular-nums">

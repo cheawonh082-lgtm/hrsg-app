@@ -29,7 +29,7 @@ async function usePrefs(page: Page, locale: string, theme: string) {
 async function openFilled(page: Page, path: string, locale: string) {
   await page.goto(path)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  if (path === '/calculator') {
+  if (path === '/' || path === '/calculator') {
     await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText(/\d/)
     await expect(page.getByTestId('trend-chart').locator('canvas')).toBeVisible()
   } else if (path === '/chat') {
@@ -126,7 +126,7 @@ for (const vp of VIEWPORTS) {
     test.describe(`${vp.width}x${vp.height} · ${locale} · ${theme}`, () => {
       test.use({ viewport: vp, hasTouch: vp.width < LG })
 
-      for (const path of ['/calculator', '/chat', '/checklist']) {
+      for (const path of ['/', '/calculator', '/chat', '/checklist']) {
         test(`${path} 넘침 없음 + 스크린샷`, async ({ page }) => {
           await usePrefs(page, locale, theme)
           await openFilled(page, path, locale)
@@ -138,7 +138,7 @@ for (const vp of VIEWPORTS) {
           await expectNoPageOverflow(page)
           expect(await textOverflowOffenders(page), '글자 넘침 요소').toEqual([])
 
-          await page.screenshot({ path: test.info().outputPath(`${path.slice(1)}.png`), fullPage: true })
+          await page.screenshot({ path: test.info().outputPath(`${path.slice(1) || 'home'}.png`), fullPage: true })
         })
       }
 

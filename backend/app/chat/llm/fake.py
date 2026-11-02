@@ -88,7 +88,9 @@ def _knowledge_text(ctx: ComposeContext) -> str:
         return _NOT_FOUND_TEXT[ctx.locale]
     top = ctx.citations[0]
     first_sentences = " ".join(re.split(r"(?<=[.다])\s+", top.snippet)[:2]).strip()
-    return _KNOWLEDGE_TEXT[ctx.locale].format(snippet=first_sentences, alias=top.doc_alias)
+    text = _KNOWLEDGE_TEXT[ctx.locale].format(snippet=first_sentences, alias=top.doc_alias)
+    # 논문 RAG는 인라인 출처 없이 쓴다 (출처는 답변 아래 논문명 목록으로 따로 표시)
+    return text.replace(f" [{top.doc_alias}]", "") if ctx.citation_style == "titles" else text
 
 
 _CALC_TEXT: dict[Locale, str] = {

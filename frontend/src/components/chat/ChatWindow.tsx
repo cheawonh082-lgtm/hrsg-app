@@ -1,4 +1,4 @@
-import { SendHorizontal } from 'lucide-react'
+import { Bot, SendHorizontal } from 'lucide-react'
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -58,9 +58,30 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
     <div className="flex min-h-0 flex-1 flex-col">
       <div role="log" aria-live="polite" aria-label={t('chat.log')} className="flex-1 space-y-6 pb-4">
         {messages.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-muted">
-            {t('chat.empty')}
-          </p>
+          <div className="flex flex-col items-center px-2 pt-6 pb-2 text-center md:pt-10">
+            <span className="flex size-16 items-center justify-center rounded-full bg-tone-blue-bg text-tone-blue shadow-sm ring-8 ring-tone-blue-bg/50">
+              <Bot aria-hidden className="size-8" />
+            </span>
+            <p className="mt-4 text-lg font-bold">{t('chat.welcome.title')}</p>
+            <p className="mt-1 text-muted">{t('chat.welcome.body')}</p>
+            {/* 추천 질문은 대화 시작 전에만 (부모가 빈 목록을 넘김) */}
+            {suggestions.length > 0 && (
+              <ul aria-label={t('chat.suggestions.label')} className="mt-6 grid w-full max-w-2xl gap-2 sm:grid-cols-2">
+                {suggestions.map((s) => (
+                  <li key={s} className="min-w-0">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => submit(s)}
+                      className="card flex min-h-12 w-full items-center px-4 py-2.5 text-left text-sm transition-colors hover:border-accent/50 hover:bg-tone-blue-bg/40 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"
+                    >
+                      {s}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} ctx={ctx} />
@@ -74,22 +95,6 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
         data-keyboard-inset={keyboardInset}
         style={keyboardInset ? { bottom: keyboardInset } : undefined}
         className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-10 -mx-4 space-y-2 border-t border-border bg-bg/95 px-4 pt-3 pb-3 backdrop-blur lg:bottom-0 lg:mx-0 lg:rounded-t-xl lg:border-x lg:px-4">
-        {suggestions.length > 0 && (
-          <ul aria-label={t('chat.suggestions.label')} className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-            {suggestions.map((s) => (
-              <li key={s} className="shrink-0">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => submit(s)}
-                  className="min-h-11 rounded-full border border-border bg-surface px-3 text-sm whitespace-nowrap hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"
-                >
-                  {s}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
         <form
           onSubmit={(e: FormEvent) => {
             e.preventDefault()
@@ -112,13 +117,13 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
             aria-description={t('chat.input.hint')}
             title={t('chat.input.hint')}
             enterKeyHint="send"
-            className="min-h-11 min-w-0 flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2.5 focus-visible:outline-2 focus-visible:outline-accent"
+            className="min-h-12 min-w-0 flex-1 resize-none rounded-2xl border border-border bg-surface px-4 py-3 shadow-[var(--shadow-card)] focus-visible:outline-2 focus-visible:outline-accent"
           />
           <button
             type="submit"
             disabled={busy || !text.trim()}
             aria-label={t('chat.input.send')}
-            className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-fg hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+            className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-fg hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
           >
             <SendHorizontal aria-hidden className="size-5" />
           </button>

@@ -60,15 +60,33 @@ cd frontend && npx playwright test e2e/checklist.spec.ts   # 파일 하나만
 `.env`의 `CALC_ENGINE=real`로 바꾸면 `RealCalculator`가 사용됩니다(현재는 501 응답).
 교체 절차는 PRD §4.4 참조 — 공식·실측 데이터는 `secrets/`(Git 미추적)에만 둡니다.
 
-## 실제 LLM 연결
+## 실제 LLM 연결 (Gemini / Claude)
 
-지금은 `LLM_PROVIDER=fake` — 정규식으로 파라미터를 뽑고 고정 템플릿으로 답하는 결정적 구현입니다(테스트도 이것으로 실행).
+기본은 `LLM_PROVIDER=fake` — 정규식으로 파라미터를 뽑고 고정 템플릿으로 답하는 결정적 구현입니다. 테스트는 로컬 `.env`와 관계없이 항상 Fake로 실행됩니다(`tests/backend/conftest.py`).
+두 공급자는 같은 프롬프트·스키마(`backend/app/chat/llm/prompts.py`)를 쓰고, 키만 바꿔 넣으면 됩니다.
 
-1. `backend/app/chat/llm/claude.py`의 `extract`(질문 → 의도·파라미터)와 `compose`(근거 → 서술) 두 메서드를 구현합니다. 구현 가이드는 파일 상단 주석 참조.
-   - 서술의 수치는 `{{calc.loss.total_power_loss_mw}}` 같은 토큰으로만 쓰게 합니다. 토큰 밖 숫자는 검증기가 제거합니다(PRD §4.5 G-2·G-3).
-   - 계산 호출·결과 카드·검증·마스킹은 Orchestrator가 처리하므로 공급자 구현에는 넣지 않습니다.
-2. `.env`: `LLM_PROVIDER=claude`, `LLM_MODEL=…`, `LLM_API_KEY=…` (구현 전에는 `/api/chat`이 501)
-3. `tests/backend/test_chat.py`는 Fake 기준이라 그대로 통과해야 합니다. 실제 LLM 품질은 PRD §6.4 평가 질문 세트로 따로 확인합니다.
+| 공급자 | 구현 | 키 발급 | 기본 모델 |
+|---|---|---|---|
+| `gemini` | `app/chat/llm/gemini.py` | [Google AI Studio](https://aistudio.google.com) → Get API key | `gemini-3.5-flash` |
+| `claude` | `app/chat/llm/claude.py` | [Claude Console](https://platform.claude.com) → API Keys | `claude-sonnet-5-5` |
+
+루트 `.env`(Git 제외)를 수정하고 백엔드를 재시작합니다. `/api/health`의 `llm`이 바뀌고 챗 화면의 "Fake" 안내가 사라집니다.
+```
+LLM_PROVIDER=gemini
+LLM_API_KEY=...
+LLM_MODEL=gemini-3.5-flash-lite
+LLM_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.8-flash   # gemini 전용
+```
+
+동작 방식
+- 질문 1건당 API 호출 2회: `extract`(의도·파라미터, JSON 스키마 출력)와 `compose`(서술). 확인 카드만 필요한 질문·범위 밖 질문은 `compose`를 호출하지 않습니다.
+- 서술의 수치는 `{{calc.<path>}}` 토큰으로만 쓰게 하고, 토큰 밖 숫자는 검증기가 제거합니다(PRD §4.5 G-2·G-3). 계산·카드·마스킹은 Orchestrator가 처리합니다.
+- 외부로 보내는 것은 마스킹된 질문·문서 발췌와 계산 최종값뿐입니다(PRD §5). `LOG_PROMPTS=true`일 때만 프롬프트를 로그에 남깁니다.
+- Gemini: 모델이 과부하(503·504)이거나 한도 초과(429)면 `LLM_FALLBACK_MODELS`의 모델을 차례로 시도합니다. 안전 필터로 막히면 서술 없이 카드·인용만 보여 줍니다.
+- Claude: 정책상 거절되면 서버 측 대체 모델(`fallbacks: "default"`)로 다시 시도합니다.
+- 키 오류·한도 초과·네트워크 오류는 503(`LLM_AUTH_FAILED`, `LLM_RATE_LIMITED`, `LLM_UNAVAILABLE` 등)으로 돌려주고 챗 화면에 원인을 표시합니다.
+
+> **Gemini 무료 등급 한도**: 모델·프로젝트별 하루 요청 수가 작습니다(예: `gemini-3.5-flash` 하루 20회 = 질문 약 10건). 실사용·시연 전에는 AI Studio에서 결제(유료 등급)를 등록하세요.
 
 다른 공급자(로컬 모델 등)는 `LLMProvider`를 상속한 클래스를 추가하고 `app/chat/registry.py`의 `get_llm`에 분기를 넣습니다.
 
@@ -84,6 +102,19 @@ cd frontend && npx playwright test e2e/checklist.spec.ts   # 파일 하나만
 4. 서버를 재시작하면 `data/docs_masked/`의 문서로 자동 전환됩니다(`/api/health`의 `docs`가 `real`로 바뀜).
 
 `data/docs_raw/`, `data/docs_masked/`, `secrets/`는 Git에 올라가지 않습니다. 검색 품질이 부족하면 `Retriever`를 구현한 임베딩 검색을 추가하고 `RAG_RETRIEVER`로 고릅니다.
+
+### 논문 RAG 검색 API 연결 (`RAG_RETRIEVER=api`)
+
+참고 논문 41편(3,095문단)을 검색하는 별도 서버(`hrsg-explorer-rag`, bge-m3 · Qwen3-Embedding · BM25 하이브리드)를 근거로 답합니다.
+
+1. RAG 서버 실행: `cd ../hrsg-explorer-rag && .venv/Scripts/python -m uvicorn api.app:app --port 8100` (인덱스 구축은 그 저장소 README 참고)
+2. `.env`: `RAG_RETRIEVER=api`, `RAG_API_URL=http://127.0.0.1:8100`, `RAG_API_METHOD=4`(1~4안), `RAG_API_TOP_N=5`
+3. 백엔드를 재시작합니다.
+
+- LLM에는 검색된 문단 전문을 근거로 주고, 결론 → 근거·원리 → 적용 조건 순서로 답하게 합니다(`COMPOSE_SYSTEM_PAPERS`). 문장마다 출처를 달지 않습니다.
+- 출처는 답변 아래에 **논문명만** 중복 없이 표시합니다(`CitationsBlock.style = "titles"`). 문단 전문은 응답 JSON에 싣지 않습니다.
+- 교차언어 검색이 목적이라 질문 언어로 문단을 거르지 않습니다(한국어 질문 → 영어 논문).
+- RAG 서버에 연결할 수 없으면 "자료 없음"으로 답하지 않고 503(`RAG_UNAVAILABLE`) 안내를 보여 줍니다. 첫 질문은 임베딩 모델을 불러오느라 수십 초 걸릴 수 있습니다(`RAG_WARMUP=1`로 서버 시작 때 미리 불러오기).
 
 ## 챗 동작 메모
 

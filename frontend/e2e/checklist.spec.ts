@@ -130,6 +130,7 @@ test.describe('데스크톱 1280px', () => {
     const panel = page.getByRole('complementary', { name: '입력 조정' })
     await panel.getByRole('button', { name: /고급 입력/ }).click()
     await panel.getByRole('button', { name: 'HP 드럼 압력 비우기' }).click()
+    await page.getByRole('tab', { name: /^핀치/ }).click()
     const hp = page.getByTestId('pinch-HP')
     await expect(hp).toHaveAttribute('data-status', 'insufficient_data')
     await hp.getByRole('link', { name: '체크리스트에서 데이터 요청' }).click()

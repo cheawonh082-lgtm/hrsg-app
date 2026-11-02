@@ -42,6 +42,10 @@ npm run gen:api     # 백엔드 실행 중일 때, 스키마 변경 시마다
 npm run dev
 ```
 
+## 배포 (Render 무료 플랜)
+
+`render.yaml`(Blueprint) — 절차와 무료 플랜 제약은 [DEPLOY.md](DEPLOY.md).
+
 ## 테스트
 
 ```bash

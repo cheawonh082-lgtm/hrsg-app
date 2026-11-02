@@ -12,14 +12,14 @@ GitHub 저장소 → Render Blueprint(`render.yaml`)로 서비스 2개를 만든
 ## 1. GitHub 저장소 만들기
 
 1. github.com → 오른쪽 위 **+** → **New repository**
-2. Repository name: `hrsg-reference-app`, **Private** 권장 (PRD 등 내부 문서 포함)
+2. Repository name: `hrsg-app`, **Private** 권장 (PRD 등 내부 문서 포함)
 3. README·.gitignore·license는 **추가하지 않는다** (빈 저장소여야 그대로 push 된다)
-4. **Create repository** → 나오는 HTTPS 주소(`https://github.com/<아이디>/hrsg-reference-app.git`)를 복사
+4. **Create repository** → 나오는 HTTPS 주소(`https://github.com/cheawonh082-lgtm/hrsg-app.git`)를 복사
 
 ## 2. 코드 올리기
 
 ```bash
-git remote add origin https://github.com/<아이디>/hrsg-reference-app.git
+git remote add origin https://github.com/cheawonh082-lgtm/hrsg-app.git
 git push -u origin main
 ```
 
@@ -29,7 +29,7 @@ git push -u origin main
 ## 3. Render에 Blueprint로 만들기
 
 1. dashboard.render.com → **New +** → **Blueprint**
-2. **Connect GitHub** → 저장소 접근 권한에서 `hrsg-reference-app`만 선택해 허용
+2. **Connect GitHub** → 저장소 접근 권한에서 `hrsg-app`만 선택해 허용
 3. 저장소를 고르면 `render.yaml`의 서비스 2개가 보인다. Blueprint 이름을 넣는다
 4. `LLM_API_KEY` 입력란에 Gemini API 키를 넣는다 (Render에만 저장, Git에는 없음)
 5. **Apply** → 백엔드(약 2~3분)와 정적 사이트(약 1~2분)가 빌드된다

@@ -16,7 +16,7 @@ from pydantic import ValidationError
 from app.calculator.base import CalculatorService
 from app.calculator.reference_data.provider import ReferenceDataProvider
 from app.calculator.result_cache import CalcResultCache
-from app.chat import cards, tools
+from app.chat import answer_format, cards, tools
 from app.chat.intent import classify
 from app.chat.llm.base import ComposeContext, LLMProvider
 from app.domain.models.calc import CalcInput, CalcResult, GasTurbineSpec, Locale
@@ -28,6 +28,7 @@ from app.domain.models.chat import (
     ChatResponse,
     Citation,
     CitationsBlock,
+    FollowUpsBlock,
     GuardrailReport,
     NoticeBlock,
     ProcessStep,
@@ -126,6 +127,7 @@ class Orchestrator:
             trace.skip("retrieve")
 
         text_blocks: list[AnswerBlock] = []
+        follow_ups: list[AnswerBlock] = []
         number_check = "not_applicable"
         # 확인 카드만 필요한 계산 질문, 범위 밖 질문은 서술을 만들지 않는다
         if result is not None or intent in ("knowledge", "mixed"):
@@ -142,8 +144,10 @@ class Orchestrator:
                     )
                 )
             with trace.step("validate"):
+                # 출처 번호 [n]·굵게(**)는 숫자·수식 검사 대상이 아니다 — 자리표시로 보호했다가 되돌린다
+                protected = answer_format.protect(draft, len(citations))
                 checked = check_numbers(
-                    draft,
+                    protected.text,
                     locale,
                     result=result,
                     allowed_literals=numbers_in([message, *(c.full_text or c.snippet for c in citations)]),
@@ -155,7 +159,11 @@ class Orchestrator:
                 elif checked.text.strip():
                     out = self.redactor.redact(checked.text)
                     redactions += out.count
-                    text_blocks.append(TextBlock(markdown=out.text))
+                    body, questions = answer_format.split_followups(answer_format.restore(out.text, protected))
+                    if body:
+                        text_blocks.append(TextBlock(markdown=body))
+                    if questions:
+                        follow_ups.append(FollowUpsBlock(items=[answer_format.CITE_RE.sub("", q).strip() for q in questions]))
                 if checked.status == "sanitized" and not checked.formula_blocked:
                     notices.append(NoticeBlock(level="info", message_key="chat.notice.sanitized"))
         else:
@@ -167,6 +175,7 @@ class Orchestrator:
         if citations:
             blocks.append(CitationsBlock(items=citations, style=self.retriever.citation_style))
         blocks.extend(notices)
+        blocks.extend(follow_ups)
         return _response(
             intent=intent,
             locale=locale,

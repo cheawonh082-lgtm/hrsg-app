@@ -66,7 +66,8 @@ def test_chat_shows_paper_titles_only(client, fake_api):
     assert {c["docAlias"] for c in block["items"]} == {RESULTS[0]["title"], "R002"}
     assert all("fullText" not in c for c in block["items"])  # 전문은 응답에 싣지 않는다
     text = " ".join(b["markdown"] for b in body["blocks"] if b["type"] == "text")
-    assert text and "[" not in text  # 인라인 출처 없음
+    # 본문에는 출처 번호만 — 논문명은 출처 칩·목록이 items[n-1]에서 찾아 보여 준다
+    assert "[1]" in text and RESULTS[0]["title"] not in text
 
 
 def test_rag_server_down_returns_503(client, monkeypatch):

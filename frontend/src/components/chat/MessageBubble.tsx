@@ -1,4 +1,4 @@
-import { RotateCcw } from 'lucide-react'
+import { CornerDownRight, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -7,14 +7,16 @@ import type {
   AnswerBlock,
   CalcResultCard as CalcResultCardData,
   ChatRequest,
+  CitationsBlock,
   GasTurbineSpec,
   InputLimits,
   ParamConfirmCard as ParamConfirmData,
 } from '../../api/types'
 import type { ChatMessage } from '../../store/chat'
 import { CalcResultCard } from './CalcResultCard'
-import { CitationList } from './CitationList'
+import { CitationChip, CitationList } from './CitationList'
 import { FIELD_DEFS } from './fieldMeta'
+import { Markdown } from './Markdown'
 import { NoticeBlock } from './NoticeBlock'
 import { ParamConfirmCard } from './ParamConfirmCard'
 import { ProcessIndicator } from './ProcessIndicator'
@@ -25,6 +27,9 @@ export interface MessageContext {
   mockDocs: boolean
   onResend: (request: ChatRequest, input: PartialCalcInput) => void
   onRetry: (request: ChatRequest) => void
+  onAsk: (text: string) => void // 후속 질문 버튼
+  busy: boolean
+  showFollowUps: boolean // 후속 질문은 마지막 답변에만
 }
 
 export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: MessageContext }) {
@@ -67,22 +72,40 @@ export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: Mes
       )}
 
       {message.response?.blocks.map((block, i) => (
-        <Block key={i} block={block} request={message.request} ctx={ctx} />
+        <Block
+          key={i}
+          block={block}
+          request={message.request}
+          ctx={ctx}
+          citations={message.response?.blocks.find((b): b is CitationsBlock => b.type === 'citations')}
+        />
       ))}
     </article>
   )
 }
 
-function Block({ block, request, ctx }: { block: AnswerBlock; request: ChatRequest; ctx: MessageContext }) {
+function Block({
+  block,
+  request,
+  ctx,
+  citations,
+}: {
+  block: AnswerBlock
+  request: ChatRequest
+  ctx: MessageContext
+  citations?: CitationsBlock
+}) {
   switch (block.type) {
     case 'text':
+      // [n]은 같은 응답 citations.items의 n번째 — 출처가 없으면 번호 표시는 그리지 않는다
       return (
-        <div data-testid="answer-text" className="space-y-2 leading-relaxed">
-          {block.markdown.split(/\n{2,}/).map((p, i) => (
-            <p key={i} className="break-words whitespace-pre-line">
-              {p}
-            </p>
-          ))}
+        <div data-testid="answer-text">
+          <Markdown
+            text={block.markdown}
+            renderCite={(nums, key) =>
+              citations ? <CitationChip key={key} items={citations.items} nums={nums} style={citations.style ?? 'excerpts'} /> : null
+            }
+          />
         </div>
       )
     case 'calc_result':
@@ -100,7 +123,34 @@ function Block({ block, request, ctx }: { block: AnswerBlock; request: ChatReque
       return <CitationList items={block.items} mockDocs={ctx.mockDocs} style={block.style} />
     case 'notice':
       return <NoticeBlock notice={block} />
+    case 'follow_ups':
+      return ctx.showFollowUps ? <FollowUps items={block.items} ctx={ctx} /> : null
   }
+}
+
+/** 답변 끝 후속 질문 버튼 — 누르면 그 문장을 새 질문으로 보낸다 */
+function FollowUps({ items, ctx }: { items: string[]; ctx: MessageContext }) {
+  const { t } = useTranslation()
+  return (
+    <section aria-label={t('chat.followUps')} data-testid="follow-ups" className="space-y-1.5 border-t border-border pt-3">
+      <h3 className="text-xs font-medium text-muted">{t('chat.followUps')}</h3>
+      <ul className="flex flex-wrap gap-2">
+        {items.map((q) => (
+          <li key={q} className="min-w-0">
+            <button
+              type="button"
+              disabled={ctx.busy}
+              onClick={() => ctx.onAsk(q)}
+              className="inline-flex min-h-9 max-w-full items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-left text-sm hover:border-accent/50 hover:bg-tone-blue-bg/40 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50"
+            >
+              <CornerDownRight aria-hidden className="size-3.5 shrink-0 text-muted" />
+              <span className="min-w-0">{q}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
 }
 
 /** 결과 카드 + "가정 수정" (확인 카드를 사용자 입력값으로 다시 연다) */

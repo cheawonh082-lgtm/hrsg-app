@@ -30,9 +30,28 @@ test.describe('데스크톱 1280px', () => {
     await page.getByRole('button', { name: 'HRSG 핀 오염이 GT 배압에 미치는 영향은?' }).click()
     await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
     await expect(lastAnswer(page).getByTestId('answer-text')).toContainText('자료에 따르면')
-    await expect(lastAnswer(page).getByTestId('citations')).toContainText(/TECH-DOC-\d{3}/)
-    await expect(lastAnswer(page).getByTestId('citations')).toContainText('예시 문서')
+    // 문단 끝 출처 칩 → 누르면 출처 상세
+    const chip = lastAnswer(page).getByTestId('citation-chip').first()
+    await expect(chip).toContainText(/TECH-DOC-\d{3}/)
+    await chip.click()
+    await expect(lastAnswer(page).getByRole('dialog')).toContainText(/TECH-DOC-\d{3}/)
+    // 답변 아래 "출처" 버튼 → 전체 목록
+    const sources = lastAnswer(page).getByTestId('citations')
+    await expect(sources).toContainText('예시 문서')
+    await sources.getByRole('button', { name: /출처/ }).click()
+    await expect(sources.getByRole('listitem').first()).toContainText(/TECH-DOC-\d{3}/)
     await expect(lastAnswer(page).getByTestId('calc-result-card')).toHaveCount(0)
+  })
+
+  test('후속 질문 버튼 → 새 질문으로 전송, 버튼은 마지막 답변에만', async ({ page }) => {
+    await page.getByRole('button', { name: 'HRSG 핀 오염이 GT 배압에 미치는 영향은?' }).click()
+    const followUps = lastAnswer(page).getByTestId('follow-ups')
+    await expect(followUps.getByRole('button')).toHaveCount(3)
+    const question = (await followUps.getByRole('button').first().textContent())!.trim()
+    await followUps.getByRole('button').first().click()
+    await expect(page.getByTestId('user-message').last()).toHaveText(question)
+    await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
+    await expect(page.getByTestId('follow-ups')).toHaveCount(1)
   })
 
   test('A-02 계산형 질문 → 결과 카드, A-09 계산기에서 열기 → 같은 입력 복원', async ({ page }) => {

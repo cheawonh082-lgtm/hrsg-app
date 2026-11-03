@@ -84,13 +84,16 @@ def _match_condition(message: str) -> dict[str, float]:
 
 
 def _knowledge_text(ctx: ComposeContext) -> str:
+    """실제 LLM과 같은 서식: 굵게 시작하는 결론 문단 + 나머지 발췌 목록, 문단 끝 출처 번호 [n], 후속 질문."""
     if not ctx.citations:
         return _NOT_FOUND_TEXT[ctx.locale]
-    top = ctx.citations[0]
-    first_sentences = " ".join(re.split(r"(?<=[.다])\s+", top.snippet)[:2]).strip()
-    text = _KNOWLEDGE_TEXT[ctx.locale].format(snippet=first_sentences, alias=top.doc_alias)
-    # 논문 RAG는 인라인 출처 없이 쓴다 (출처는 답변 아래 논문명 목록으로 따로 표시)
-    return text.replace(f" [{top.doc_alias}]", "") if ctx.citation_style == "titles" else text
+    first = lambda c: " ".join(re.split(r"(?<=[.다])\s+", c.snippet)[:2]).strip()  # noqa: E731
+    parts = [_KNOWLEDGE_TEXT[ctx.locale].format(snippet=first(ctx.citations[0]))]
+    rest = [f"- {first(c)} [{i}]" for i, c in enumerate(ctx.citations[1:3], start=2)]
+    if rest:
+        parts.append(_RELATED_HEADING[ctx.locale] + "\n\n" + "\n".join(rest))
+    parts.append("<followups>\n" + "\n".join(f"- {q}" for q in _FOLLOW_UPS[ctx.locale]) + "\n</followups>")
+    return "\n\n".join(parts)
 
 
 _CALC_TEXT: dict[Locale, str] = {
@@ -112,8 +115,13 @@ _DEFAULTS_TEXT: dict[Locale, str] = {
     "en": "Inputs not given in the question use model defaults. Check the assumptions on the card and edit if needed.",
 }
 _KNOWLEDGE_TEXT: dict[Locale, str] = {
-    "ko": "자료에 따르면 — {snippet} [{alias}]",
-    "en": "According to the reference material: {snippet} [{alias}]",
+    "ko": "**자료에 따르면** — {snippet} [1]",
+    "en": "**According to the reference material:** {snippet} [1]",
+}
+_RELATED_HEADING: dict[Locale, str] = {"ko": "## 관련 자료", "en": "## Related material"}
+_FOLLOW_UPS: dict[Locale, list[str]] = {
+    "ko": ["세정 공법별 차이를 알려 주세요.", "성능 저하는 어떻게 확인하나요?", "점검할 때 무엇을 봐야 하나요?"],
+    "en": ["How do the cleaning methods differ?", "How can I tell performance is degrading?", "What should I check during inspection?"],
 }
 _NOT_FOUND_TEXT: dict[Locale, str] = {
     "ko": "관련 내용을 자료에서 확인하지 못했습니다.",

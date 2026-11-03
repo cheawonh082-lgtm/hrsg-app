@@ -363,8 +363,10 @@
     "citations": {
       "title": "Sources",
       "sources": "Sources",
-      "mock": "Sample docs"
+      "mock": "Sample docs",
+      "chipLabel": "Sources: {{names}}"
     },
+    "followUps": "Ask next",
     "notice": {
       "blocked": "This request can't be processed. Please ask an HRSG-related question.",
       "confidential": "Internal formulas, coefficients and source documents can't be shared. Check figures in the calculator or the result card.",

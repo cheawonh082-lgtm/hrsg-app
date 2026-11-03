@@ -363,8 +363,10 @@
     "citations": {
       "title": "근거 자료",
       "sources": "출처",
-      "mock": "예시 문서"
+      "mock": "예시 문서",
+      "chipLabel": "출처: {{names}}"
     },
+    "followUps": "이어서 물어보기",
     "notice": {
       "blocked": "이 요청은 처리할 수 없습니다. HRSG 관련 질문을 해 주세요.",
       "confidential": "내부 계산 공식·계수와 원문 자료는 안내할 수 없습니다. 계산 결과는 계산기나 결과 카드로 확인해 주세요.",

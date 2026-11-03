@@ -357,7 +357,7 @@ export interface components {
              */
             locale: "ko" | "en";
             /** Blocks */
-            blocks: (components["schemas"]["TextBlock"] | components["schemas"]["CalcResultCard"] | components["schemas"]["ParamConfirmCard"] | components["schemas"]["CitationsBlock"] | components["schemas"]["NoticeBlock"])[];
+            blocks: (components["schemas"]["TextBlock"] | components["schemas"]["CalcResultCard"] | components["schemas"]["ParamConfirmCard"] | components["schemas"]["CitationsBlock"] | components["schemas"]["NoticeBlock"] | components["schemas"]["FollowUpsBlock"])[];
             guardrail: components["schemas"]["GuardrailReport"];
             /** Trace */
             trace?: components["schemas"]["ProcessStep"][];
@@ -599,6 +599,19 @@ export interface components {
              * @default false
              */
             nullable: boolean;
+        };
+        /**
+         * FollowUpsBlock
+         * @description 답변 끝의 후속 질문 버튼 — 누르면 그 문장을 새 질문으로 보낸다.
+         */
+        FollowUpsBlock: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "follow_ups";
+            /** Items */
+            items: string[];
         };
         /** GasTurbineSpec */
         GasTurbineSpec: {

@@ -44,6 +44,7 @@ class Assumption(CamelModel):
 
 class TextBlock(CamelModel):
     type: Literal["text"] = "text"
+    # 마크다운(소제목·굵게·목록·표). [1], [1,3]은 같은 응답 CitationsBlock.items의 1부터 센 번호
     markdown: str
 
 
@@ -73,6 +74,13 @@ class CitationsBlock(CamelModel):
     style: Literal["excerpts", "titles"] = "excerpts"
 
 
+class FollowUpsBlock(CamelModel):
+    """답변 끝의 후속 질문 버튼 — 누르면 그 문장을 새 질문으로 보낸다."""
+
+    type: Literal["follow_ups"] = "follow_ups"
+    items: list[str]
+
+
 class NoticeBlock(CamelModel):
     type: Literal["notice"] = "notice"
     level: Literal["info", "warning"]
@@ -80,7 +88,7 @@ class NoticeBlock(CamelModel):
 
 
 AnswerBlock = Annotated[
-    TextBlock | CalcResultCard | ParamConfirmCard | CitationsBlock | NoticeBlock,
+    TextBlock | CalcResultCard | ParamConfirmCard | CitationsBlock | NoticeBlock | FollowUpsBlock,
     Field(discriminator="type"),
 ]
 

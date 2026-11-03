@@ -8,7 +8,7 @@ import { MessageBubble, type MessageContext } from './MessageBubble'
 
 interface Props {
   messages: ChatMessage[]
-  ctx: MessageContext
+  ctx: Omit<MessageContext, 'onAsk' | 'busy' | 'showFollowUps'>
   suggestions: string[]
   onAsk: (text: string) => void
 }
@@ -83,8 +83,12 @@ export function ChatWindow({ messages, ctx, suggestions, onAsk }: Props) {
             )}
           </div>
         )}
-        {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} ctx={ctx} />
+        {messages.map((m, i) => (
+          <MessageBubble
+            key={m.id}
+            message={m}
+            ctx={{ ...ctx, busy, onAsk: (q) => submit(q), showFollowUps: i === messages.length - 1 }}
+          />
         ))}
         <div ref={endRef} />
       </div>

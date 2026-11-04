@@ -107,3 +107,21 @@ describe('CitationList', () => {
     expect(screen.getByText('AI 생성 답변 · fake')).toBeInTheDocument()
   })
 })
+
+describe('CitationList — 인용한 출처만', () => {
+  it('본문에서 인용하지 않은 검색 결과는 목록에서 뺀다', async () => {
+    render(<CitationList items={items} nums={[2]} style="excerpts" />)
+    const button = screen.getByRole('button', { name: /출처/ })
+    expect(button).toHaveTextContent('1')
+    await userEvent.click(button)
+    expect(screen.getAllByRole('listitem')).toHaveLength(1)
+    expect(screen.getByText('발췌 B')).toBeInTheDocument()
+  })
+
+  it('[AI]만 있는 답변은 AI 생성 항목만, 출처도 AI도 없으면 아무것도 그리지 않는다', () => {
+    const { container, rerender } = render(<CitationList items={items} nums={[]} aiModel="fake" />)
+    expect(screen.getByRole('button', { name: /출처/ })).toHaveTextContent('1')
+    rerender(<CitationList items={items} nums={[]} />)
+    expect(container).toBeEmptyDOMElement()
+  })
+})

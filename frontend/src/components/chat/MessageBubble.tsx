@@ -79,6 +79,7 @@ export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: Mes
           request={message.request}
           ctx={ctx}
           citations={message.response?.blocks.find((b): b is CitationsBlock => b.type === 'citations')}
+          cited={citedNumbers(message.response?.blocks ?? [])}
           aiModel={message.response?.blocks.find((b): b is TextBlock => b.type === 'text' && !!b.aiModel)?.aiModel ?? undefined}
         />
       ))}
@@ -86,17 +87,28 @@ export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: Mes
   )
 }
 
+/** 본문에서 실제로 인용한 출처 번호 — 검색됐지만 답변에 쓰이지 않은 문서는 출처 목록에서 뺀다.
+ *  번호 표시가 하나도 없으면(예전 형식 답변) undefined → 전체 표시 */
+function citedNumbers(blocks: AnswerBlock[]): number[] | undefined {
+  const text = blocks.filter((b): b is TextBlock => b.type === 'text').map((b) => b.markdown).join('\n')
+  const nums = [...text.matchAll(/\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\]/g)].flatMap((m) => m[1].split(',').map((n) => Number(n.trim())))
+  if (nums.length) return [...new Set(nums)].sort((a, b) => a - b)
+  return text.includes('[AI]') ? [] : undefined
+}
+
 function Block({
   block,
   request,
   ctx,
   citations,
+  cited,
   aiModel,
 }: {
   block: AnswerBlock
   request: ChatRequest
   ctx: MessageContext
   citations?: CitationsBlock
+  cited?: number[]
   aiModel?: string // [AI] 부분을 쓴 모델 — 출처 목록에 "AI 생성" 항목으로 표기
 }) {
   switch (block.type) {
@@ -130,7 +142,7 @@ function Block({
         />
       )
     case 'citations':
-      return <CitationList items={block.items} mockDocs={ctx.mockDocs} style={block.style} aiModel={aiModel} />
+      return <CitationList items={block.items} nums={cited} mockDocs={ctx.mockDocs} style={block.style} aiModel={aiModel} />
     case 'notice':
       return <NoticeBlock notice={block} />
     case 'follow_ups':

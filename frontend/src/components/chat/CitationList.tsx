@@ -152,11 +152,13 @@ export function AiChip({ model }: { model: string }) {
 /** 답변 아래 "출처" 버튼 — 누르면 이 답변이 쓴 출처 전체 목록(일반 지식 보충 포함)을 펼친다 */
 export function CitationList({
   items,
+  nums,
   mockDocs,
   style = 'excerpts',
   aiModel,
 }: {
   items: Citation[]
+  nums?: number[] // 본문에서 인용한 번호만 (없으면 전체)
   mockDocs?: boolean
   style?: Style
   aiModel?: string | null
@@ -164,7 +166,8 @@ export function CitationList({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const listId = useId()
-  const sources = groupSources(items)
+  const sources = groupSources(items, nums)
+  if (!sources.length && !aiModel) return null
 
   return (
     <section data-testid="citations" aria-label={t('chat.citations.sources')} className="text-sm">

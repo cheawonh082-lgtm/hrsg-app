@@ -85,3 +85,24 @@ def test_internal_doc_bibliography_and_section_pages():
     assert split_page("서론") == ("서론", None)
     bib = bibliography({"authors": "홍길동; Kim, J.", "year": "2021", "publisher": "기술연구소"}, Redactor({}))
     assert bib == {"authors": ("홍길동", "Kim, J."), "year": 2021, "venue": "기술연구소", "url": None}
+
+
+def test_extract_schema_fits_claude_union_limit():
+    """Claude 구조화 출력은 nullable·union 속성이 16개까지 — 값은 {field, value} 목록으로 받는다"""
+    from app.calculator.reference_data.mock import MockReferenceData
+    from app.chat.llm.prompts import extract_schema, parse_extraction
+
+    schema = extract_schema(MockReferenceData().list_gt_models())
+
+    def unions(node):
+        if isinstance(node, dict):
+            own = 1 if ("anyOf" in node or isinstance(node.get("type"), list)) else 0
+            return own + sum(unions(v) for v in node.values())
+        if isinstance(node, list):
+            return sum(unions(v) for v in node)
+        return 0
+
+    assert unions(schema) <= 16
+    got = parse_extraction({"intent": "calculation", "gtModelId": None,
+                            "values": [{"field": "hrsgGasDpMbar", "value": 35}, {"field": "nope", "value": 1}]})
+    assert got.params == {"condition": {"hrsgGasDpMbar": 35}}

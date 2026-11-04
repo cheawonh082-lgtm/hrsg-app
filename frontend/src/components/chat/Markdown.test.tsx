@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import type { Citation } from '../../api/types'
-import { fullCite, groupSources, shortCite } from '../../lib/citation'
+import { byline, groupSources, sourceTitle } from '../../lib/citation'
 import { AiChip, CitationChip, CitationList } from './CitationList'
 import { Markdown } from './Markdown'
 
@@ -61,15 +61,15 @@ describe('Markdown', () => {
 })
 
 describe('출처 표기', () => {
-  it('저자-연도 칩, 같은 논문은 한 항목으로 묶고 쪽수를 모은다', () => {
+  it('문서 제목을 앞세우고 서지 정보는 아랫줄, 같은 논문은 한 항목으로 묶고 쪽수를 모은다', () => {
     const [s, internal] = groupSources(items)
-    expect(shortCite(s.c, '외')).toBe('Kim 외 (2019)')
-    expect(fullCite(s, 'et al.')).toBe(
-      'A. Kim & B. Lee (2019). Optimization of the triple-pressure HRSG. Applied Thermal Engineering, pp. 4–5, 7.',
-    )
-    // 저자·연도가 없는 내장 문서는 별칭이 아니라 제목으로
-    expect(shortCite(internal.c, '외')).toBe('GT 배압과 HRSG 차압의 관계')
-    expect(fullCite(internal, '외')).toBe('GT 배압과 HRSG 차압의 관계.')
+    expect(sourceTitle(s.c)).toBe('Optimization of the triple-pressure HRSG')
+    expect(byline(s, 'et al.')).toBe('A. Kim & B. Lee (2019). Applied Thermal Engineering, pp. 4–5, 7.')
+    // 저자·연도가 없는 내장 문서는 별칭이 아니라 제목만
+    expect(sourceTitle(internal.c)).toBe('GT 배압과 HRSG 차압의 관계')
+    expect(byline(internal, '외')).toBe('')
+    // 제목이 비어 있을 때만 내부 ID
+    expect(sourceTitle({ ...internal.c, title: '' })).toBe(internal.c.docAlias)
   })
 })
 
@@ -77,7 +77,7 @@ describe('CitationChip', () => {
   it('첫 출처와 나머지 개수를 보이고, 누르면 서지 정보가 뜬다', async () => {
     render(<CitationChip items={items} nums={[1, 2, 3]} style="titles" />)
     const chip = screen.getByTestId('citation-chip')
-    expect(chip).toHaveTextContent('Kim 외 (2019)+1') // 같은 논문(1·3)은 한 번
+    expect(chip).toHaveTextContent('Optimization of the triple-pressure HRSG+1') // 같은 논문(1·3)은 한 번
     await userEvent.click(chip)
     const pop = screen.getByRole('dialog')
     expect(pop).toHaveTextContent('Applied Thermal Engineering, pp. 4–5, 7.')

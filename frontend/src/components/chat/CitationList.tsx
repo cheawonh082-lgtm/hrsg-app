@@ -3,7 +3,7 @@ import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Citation } from '../../api/types'
-import { fullCite, groupSources, shortCite, type Source } from '../../lib/citation'
+import { byline, groupSources, sourceTitle, type Source } from '../../lib/citation'
 
 type Style = 'excerpts' | 'titles'
 
@@ -11,9 +11,11 @@ type Style = 'excerpts' | 'titles'
 function SourceDetail({ s, style }: { s: Source; style: Style }) {
   const { t } = useTranslation()
   const { c } = s
+  const by = byline(s, t('chat.citations.etAl'))
   return (
     <>
-      <span className="block text-text">{fullCite(s, t('chat.citations.etAl'))}</span>
+      <span data-testid="source-title" className="block font-medium text-text">{sourceTitle(c)}</span>
+      {by && <span className="block text-xs text-muted">{by}</span>}
       {c.sectionTitle && <span className="block text-xs text-muted">§ {c.sectionTitle}</span>}
       {c.url && (
         <a href={c.url} target="_blank" rel="noreferrer noopener" className="mt-0.5 inline-flex items-center gap-1 text-xs text-tone-blue hover:underline">
@@ -93,22 +95,20 @@ function Chip({ label, name, testId, children }: { label: ReactNode; name: strin
 }
 
 /**
- * 문단 끝 출처 칩 (ChatGPT 형식) — 첫 출처 "저자 외 (연도)" + 나머지 개수(+N). 누르면 서지 정보가 뜬다.
+ * 문단 끝 출처 칩 (ChatGPT 형식) — 첫 출처의 문서 제목 + 나머지 개수(+N). 누르면 서지 정보가 뜬다.
  * 원문 열기·다운로드는 두지 않는다(PRD §5). 공개 논문의 DOI·URL 링크만 표시한다.
  */
 export function CitationChip({ items, nums, style }: { items: Citation[]; nums: number[]; style: Style }) {
-  const { t } = useTranslation()
   const sources = groupSources(items, nums)
   if (!sources.length) return null
-  const etAl = t('chat.citations.etAl')
   const [first, ...rest] = sources
   return (
     <Chip
       testId="citation-chip"
-      name={sources.map((s) => shortCite(s.c, etAl)).join(', ')}
+      name={sources.map((s) => sourceTitle(s.c)).join(', ')}
       label={
         <>
-          <span className="truncate">{shortCite(first.c, etAl)}</span>
+          <span className="truncate">{sourceTitle(first.c)}</span>
           {rest.length > 0 && <span className="shrink-0">+{rest.length}</span>}
         </>
       }

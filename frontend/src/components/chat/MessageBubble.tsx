@@ -11,10 +11,11 @@ import type {
   GasTurbineSpec,
   InputLimits,
   ParamConfirmCard as ParamConfirmData,
+  TextBlock,
 } from '../../api/types'
 import type { ChatMessage } from '../../store/chat'
 import { CalcResultCard } from './CalcResultCard'
-import { CitationChip, CitationList } from './CitationList'
+import { AiChip, CitationChip, CitationList } from './CitationList'
 import { FIELD_DEFS } from './fieldMeta'
 import { Markdown } from './Markdown'
 import { NoticeBlock } from './NoticeBlock'
@@ -78,6 +79,7 @@ export function MessageBubble({ message, ctx }: { message: ChatMessage; ctx: Mes
           request={message.request}
           ctx={ctx}
           citations={message.response?.blocks.find((b): b is CitationsBlock => b.type === 'citations')}
+          aiModel={message.response?.blocks.find((b): b is TextBlock => b.type === 'text' && !!b.aiModel)?.aiModel ?? undefined}
         />
       ))}
     </article>
@@ -89,23 +91,31 @@ function Block({
   request,
   ctx,
   citations,
+  aiModel,
 }: {
   block: AnswerBlock
   request: ChatRequest
   ctx: MessageContext
   citations?: CitationsBlock
+  aiModel?: string // [AI] 부분을 쓴 모델 — 출처 목록에 "AI 생성" 항목으로 표기
 }) {
   switch (block.type) {
     case 'text':
       // [n]은 같은 응답 citations.items의 n번째 — 출처가 없으면 번호 표시는 그리지 않는다
       return (
-        <div data-testid="answer-text">
+        <div data-testid="answer-text" className="space-y-3">
           <Markdown
             text={block.markdown}
-            renderCite={(nums, key) =>
-              citations ? <CitationChip key={key} items={citations.items} nums={nums} style={citations.style ?? 'excerpts'} /> : null
+            renderCite={(ref, key) =>
+              ref === 'ai' ? (
+                <AiChip key={key} model={block.aiModel ?? ''} />
+              ) : citations ? (
+                <CitationChip key={key} items={citations.items} nums={ref} style={citations.style ?? 'excerpts'} />
+              ) : null
             }
           />
+          {/* 문헌 출처가 하나도 없는 일반 지식 답변도 출처(AI 생성)를 밝힌다 */}
+          {!citations && block.aiModel && <CitationList items={[]} aiModel={block.aiModel} />}
         </div>
       )
     case 'calc_result':
@@ -120,7 +130,7 @@ function Block({
         />
       )
     case 'citations':
-      return <CitationList items={block.items} mockDocs={ctx.mockDocs} style={block.style} />
+      return <CitationList items={block.items} mockDocs={ctx.mockDocs} style={block.style} aiModel={aiModel} />
     case 'notice':
       return <NoticeBlock notice={block} />
     case 'follow_ups':

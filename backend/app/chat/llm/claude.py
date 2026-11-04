@@ -31,6 +31,10 @@ class ClaudeProvider(LLMProvider):
         self._model = model or DEFAULT_MODEL
         self._log_prompts = log_prompts
 
+    @property
+    def model_label(self) -> str:
+        return f"Claude ({self._model})"
+
     def extract(self, message: str, locale: Locale, gt_models: list[GasTurbineSpec]) -> Extraction:
         response = self._create(
             effort="low",

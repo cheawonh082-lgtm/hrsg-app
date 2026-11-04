@@ -43,6 +43,11 @@ class LLMUnavailableError(Exception):
 class LLMProvider(ABC):
     name: str
 
+    @property
+    def model_label(self) -> str:
+        """일반 지식 보충([AI]) 부분의 출처 표기에 쓰는 모델 이름"""
+        return self.name
+
     @abstractmethod
     def extract(self, message: str, locale: Locale, gt_models: list[GasTurbineSpec]) -> Extraction: ...
 

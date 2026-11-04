@@ -11,13 +11,47 @@ _FRONT_MATTER = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 _SECTION = re.compile(r"^##\s+(.+)$", re.MULTILINE)
 
 
+_PAGE_SUFFIX = re.compile(r"\s*\((pp?\.\s*[\d\s,–-]+)\)\s*$")  # "## 절 제목 (p. 12)" · "(pp. 12–13)"
+
+
 @dataclass(frozen=True)
 class Chunk:
-    doc_alias: str
+    doc_alias: str  # 내부 식별자(중복 제거용) — 화면 출처 표기는 아래 서지 정보로
     title: str
     section_title: str | None
     text: str
     lang: str | None
+    # 서지 정보 (출처 표기: 저자 (연도). 제목. 발행처, p. 쪽)
+    authors: tuple[str, ...] = ()
+    year: int | None = None
+    venue: str | None = None
+    pages: str | None = None  # "12", "12–13"
+    url: str | None = None
+
+
+def split_page(section_title: str | None) -> tuple[str | None, str | None]:
+    """'운전 사례 (p. 12)' → ('운전 사례', '12')"""
+    if not section_title:
+        return section_title, None
+    m = _PAGE_SUFFIX.search(section_title)
+    if not m:
+        return section_title, None
+    pages = re.sub(r"^pp?\.\s*", "", m.group(1)).strip().replace("-", "–")
+    return section_title[: m.start()].strip() or None, pages
+
+
+def bibliography(meta: dict[str, str], redactor: Redactor) -> dict:
+    """앞부분 메타(authors: A; B · year · publisher/venue · url · pages) → Chunk 서지 필드. 저자·발행처도 마스킹한다.
+    저자는 세미콜론으로 나눈다 ("Kim, J." 같은 '성, 이름' 표기를 쪼개지 않도록)."""
+    authors = tuple(redactor.redact(a.strip()).text for a in meta.get("authors", "").split(";") if a.strip())
+    year = meta.get("year", "").strip()
+    venue = meta.get("venue") or meta.get("publisher")
+    return {
+        "authors": authors,
+        "year": int(year) if year.isdigit() else None,
+        "venue": redactor.redact(venue).text if venue else None,
+        "url": meta.get("url") or None,
+    }
 
 
 def resolve_docs_dir(docs_masked_dir: Path) -> tuple[Path, bool]:
@@ -67,7 +101,10 @@ def load_chunks(docs_dir: Path, redactor: Redactor) -> list[Chunk]:
         if not alias:
             continue  # 별칭 없는 문서는 출처를 표시할 수 없으므로 색인하지 않는다
         title = redactor.redact(meta.get("title", alias)).text
+        bib = bibliography(meta, redactor)
+        doc_pages = meta.get("pages") or None
         for section_title, text in split_sections(body):
+            section_title, pages = split_page(section_title)
             chunks.append(
                 Chunk(
                     doc_alias=alias,
@@ -75,6 +112,8 @@ def load_chunks(docs_dir: Path, redactor: Redactor) -> list[Chunk]:
                     section_title=redactor.redact(section_title).text if section_title else None,
                     text=redactor.redact(text).text,
                     lang=meta.get("lang"),
+                    pages=pages or doc_pages,
+                    **bib,
                 )
             )
     return chunks

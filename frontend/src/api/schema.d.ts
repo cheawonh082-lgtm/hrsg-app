@@ -465,6 +465,21 @@ export interface components {
         Citation: {
             /** Docalias */
             docAlias: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+            /** Authors */
+            authors?: string[];
+            /** Year */
+            year?: number | null;
+            /** Venue */
+            venue?: string | null;
+            /** Pages */
+            pages?: string | null;
+            /** Url */
+            url?: string | null;
             /** Sectiontitle */
             sectionTitle?: string | null;
             /** Snippet */
@@ -873,6 +888,8 @@ export interface components {
             type: "text";
             /** Markdown */
             markdown: string;
+            /** Aimodel */
+            aiModel?: string | null;
         };
         /**
          * ThresholdBand

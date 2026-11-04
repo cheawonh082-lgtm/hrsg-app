@@ -20,8 +20,12 @@ LONG_TEXT = (
 ) * 2
 RESULTS = [
     {"rank": 1, "id": "R014-010", "doc_id": "R014", "title": "Optimization of the triple-pressure combined cycle power plant",
+     "authors": ["A. Kim", "B. Lee"], "year": 2019, "venue": "Applied Thermal Engineering", "doi": "10.1000/xyz",
+     "page_start": 4, "page_end": 5,
      "section": "3.2 Pinch point", "text": LONG_TEXT, "lang": "en", "score": 0.0328},
     {"rank": 2, "id": "R014-011", "doc_id": "R014", "title": "Optimization of the triple-pressure combined cycle power plant",
+     "authors": ["A. Kim", "B. Lee"], "year": 2019, "venue": "Applied Thermal Engineering", "doi": "10.1000/xyz",
+     "page_start": 7, "page_end": 7,
      "section": "3.3 Results", "text": "Second paragraph of the same paper.", "lang": "en", "score": 0.0164},
     {"rank": 3, "id": "R002-004", "doc_id": "R002", "title": "", "section": "", "text": "핀치 포인트 설명.", "lang": "ko",
      "score": 0.0161},
@@ -51,7 +55,12 @@ def fake_api(monkeypatch):
 def test_api_retriever_maps_results(fake_api):
     hits = ApiRetriever("http://rag:8100/", method="3", top_n=5).search("핀치 포인트", top_k=3, lang="ko")
     assert fake_api == [{"query": "핀치 포인트", "method": "3", "top_n": 3}]
-    assert [h.chunk.doc_alias for h in hits] == [RESULTS[0]["title"], RESULTS[0]["title"], "R002"]  # 제목 없으면 doc_id
+    assert [h.chunk.doc_alias for h in hits] == ["R014", "R014", "R002"]  # 같은 논문 묶기용 ID
+    assert [h.chunk.title for h in hits] == [RESULTS[0]["title"], RESULTS[0]["title"], "R002"]  # 제목 없으면 doc_id
+    c = hits[0].chunk
+    assert (c.authors, c.year, c.venue, c.pages, c.url) == (
+        ("A. Kim", "B. Lee"), 2019, "Applied Thermal Engineering", "4–5", "https://doi.org/10.1000/xyz")
+    assert hits[1].chunk.pages == "7" and hits[2].chunk.pages is None
     assert hits[0].score == 1.0 and hits[1].score == 0.5
     assert hits[0].chunk.text == LONG_TEXT  # 전문 유지 (발췌 자르기는 tools에서)
 
@@ -63,7 +72,9 @@ def test_chat_shows_paper_titles_only(client, fake_api):
     body = res.json()
     block = next(b for b in body["blocks"] if b["type"] == "citations")
     assert block["style"] == "titles"
-    assert {c["docAlias"] for c in block["items"]} == {RESULTS[0]["title"], "R002"}
+    assert {c["docAlias"] for c in block["items"]} == {"R014", "R002"}
+    first = block["items"][0]  # 출처 표기용 서지 정보
+    assert (first["title"], first["authors"], first["year"], first["pages"]) == (RESULTS[0]["title"], ["A. Kim", "B. Lee"], 2019, "4–5")
     assert all("fullText" not in c for c in block["items"])  # 전문은 응답에 싣지 않는다
     text = " ".join(b["markdown"] for b in body["blocks"] if b["type"] == "text")
     # 본문에는 출처 번호만 — 논문명은 출처 칩·목록이 items[n-1]에서 찾아 보여 준다

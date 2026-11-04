@@ -161,7 +161,9 @@ class Orchestrator:
                     redactions += out.count
                     body, questions = answer_format.split_followups(answer_format.restore(out.text, protected))
                     if body:
-                        text_blocks.append(TextBlock(markdown=body))
+                        # [AI]: 자료에 근거가 없어 일반 지식으로 보충한 부분 — 어떤 모델이 썼는지 출처로 남긴다
+                        ai_model = self.llm.model_label if answer_format.AI_MARK in body else None
+                        text_blocks.append(TextBlock(markdown=body, ai_model=ai_model))
                     if questions:
                         follow_ups.append(FollowUpsBlock(items=[answer_format.CITE_RE.sub("", q).strip() for q in questions]))
                 if checked.status == "sanitized" and not checked.formula_blocked:

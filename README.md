@@ -100,6 +100,7 @@ LLM_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.8-flash   # gemini 전용
 
 1. 원문(.md, .txt / UTF-8)을 `data/docs_raw/`에 넣습니다. PDF·DOCX는 텍스트로 변환해서 넣습니다.
    - 선택: 맨 위에 front matter(`title`, `lang`)를 넣고, 본문은 `## 섹션` 단위로 나누면 인용이 섹션 단위로 나옵니다.
+   - 출처 표기(저자 (연도). 제목. 발행처, p. 쪽)를 위해 front matter에 `authors`(세미콜론 구분), `year`, `publisher`, `url`, `pages`(문서 전체)를 넣을 수 있습니다. 절별 쪽수는 `## 절 제목 (p. 12)` 또는 `(pp. 12-13)`처럼 제목 끝에 적습니다. 화면에는 별칭 대신 이 서지 정보가 표시됩니다.
 2. 실명 마스킹 사전을 `secrets/redaction_dict.yaml`에 둡니다(형식은 `backend/app/guardrails/mock_redaction_dict.yaml` 참조). 없으면 가상 사전 + 패턴(`○○발전소`, `N호기`)만 적용됩니다.
 3. 인제스트: `cd backend && .venv/Scripts/python -m app.rag.ingest` (먼저 `--dry-run`으로 마스킹 횟수 확인 권장)
    - 결과는 `data/docs_masked/TECH-DOC-###.md`로 저장되고, 원문 파일명은 별칭으로 바뀝니다(대응표는 `data/docs_raw/.aliases.json`).

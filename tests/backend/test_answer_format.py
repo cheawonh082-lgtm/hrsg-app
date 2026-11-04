@@ -54,3 +54,34 @@ def test_chat_returns_markdown_with_citations_and_follow_ups(client):
     assert text.startswith("**") and "[1]" in text
     assert all(1 <= int(x) <= n for x in answer_format.CITE_RE.findall(text) for x in x.split(","))
     assert len(body["blocks"][-1]["items"]) == 3
+    # 내장 문서도 별칭이 아니라 제목·절로 출처를 표기한다
+    item = next(b for b in body["blocks"] if b["type"] == "citations")["items"][0]
+    assert item["title"] and item["title"] != item["docAlias"]
+
+
+def test_no_material_answers_from_general_knowledge_with_ai_source(client):
+    """자료가 없는 질문 → [AI] 표시가 붙은 일반 지식 답변, 어느 모델이 썼는지 출처로 남긴다"""
+    from app.chat.registry import get_retriever
+    from app.main import app
+    from app.rag.retriever import Retriever
+
+    class Empty(Retriever):
+        def search(self, query, top_k=3, lang=None):
+            return []
+
+    app.dependency_overrides[get_retriever] = lambda: Empty()
+    body = client.post("/api/chat", json={"sessionId": "s", "message": "HRSG 핀 오염이 GT 배압에 미치는 영향은?"}).json()
+    text = next(b for b in body["blocks"] if b["type"] == "text")
+    assert answer_format.AI_MARK in text["markdown"] and text["aiModel"] == "fake"
+    assert not [b for b in body["blocks"] if b["type"] == "citations"]
+
+
+def test_internal_doc_bibliography_and_section_pages():
+    from app.guardrails.redactor import Redactor
+    from app.rag.store import bibliography, split_page
+
+    assert split_page("운전 사례 (p. 12)") == ("운전 사례", "12")
+    assert split_page("결과 (pp. 12-13)") == ("결과", "12–13")
+    assert split_page("서론") == ("서론", None)
+    bib = bibliography({"authors": "홍길동; Kim, J.", "year": "2021", "publisher": "기술연구소"}, Redactor({}))
+    assert bib == {"authors": ("홍길동", "Kim, J."), "year": 2021, "venue": "기술연구소", "url": None}

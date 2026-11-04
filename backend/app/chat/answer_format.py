@@ -9,6 +9,7 @@ import re
 from dataclasses import dataclass, field
 
 CITE_RE = re.compile(r"\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\]")
+AI_MARK = "[AI]"  # 자료 근거 없이 LLM이 일반 지식으로 보충한 부분 (숫자가 없어 검증기를 그대로 통과한다)
 _BOLD = "**"
 _CITE_MARK = ""  # 사용자 영역 문자 — 숫자·기호 검사에 걸리지 않는다
 _BOLD_MARK = ""

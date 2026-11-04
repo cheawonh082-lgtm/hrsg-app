@@ -364,7 +364,12 @@
       "title": "근거 자료",
       "sources": "출처",
       "mock": "예시 문서",
-      "chipLabel": "출처: {{names}}"
+      "chipLabel": "출처: {{names}}",
+      "etAl": "외",
+      "link": "원문 링크(DOI)",
+      "ai": "AI 생성",
+      "aiSource": "AI 생성 답변 · {{model}}",
+      "aiDetail": "제공된 자료에 근거가 없어 AI가 일반 지식으로 작성한 내용입니다. 문헌 출처가 아니므로 중요한 내용은 원 자료로 확인하세요."
     },
     "followUps": "이어서 물어보기",
     "notice": {

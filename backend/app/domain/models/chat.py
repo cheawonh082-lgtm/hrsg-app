@@ -27,7 +27,14 @@ class ChatRequest(CamelModel):
 
 
 class Citation(CamelModel):
-    doc_alias: str  # 'TECH-DOC-017' (원문 파일명·경로 비노출)
+    doc_alias: str  # 내부 식별자 'TECH-DOC-017' · 'R014' — 같은 문서 묶기용(원문 파일명·경로 비노출)
+    # 화면 출처 표기: 저자 (연도). 제목. 발행처, p. 쪽
+    title: str = ""
+    authors: list[str] = Field(default_factory=list)
+    year: int | None = None
+    venue: str | None = None
+    pages: str | None = None  # "12", "12–13"
+    url: str | None = None
     section_title: str | None = None
     snippet: str = Field(..., max_length=300)  # 마스킹된 발췌
     score: float
@@ -44,8 +51,10 @@ class Assumption(CamelModel):
 
 class TextBlock(CamelModel):
     type: Literal["text"] = "text"
-    # 마크다운(소제목·굵게·목록·표). [1], [1,3]은 같은 응답 CitationsBlock.items의 1부터 센 번호
+    # 마크다운(소제목·굵게·목록·표). [1], [1,3]은 같은 응답 CitationsBlock.items의 1부터 센 번호,
+    # [AI]는 자료에 근거가 없어 LLM이 일반 지식으로 보충한 부분
     markdown: str
+    ai_model: str | None = None  # [AI] 부분을 쓴 모델 (출처 표기용). [AI]가 없으면 None
 
 
 class CalcResultCard(CamelModel):

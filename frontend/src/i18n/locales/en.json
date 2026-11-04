@@ -364,7 +364,12 @@
       "title": "Sources",
       "sources": "Sources",
       "mock": "Sample docs",
-      "chipLabel": "Sources: {{names}}"
+      "chipLabel": "Sources: {{names}}",
+      "etAl": "et al.",
+      "link": "Source link (DOI)",
+      "ai": "AI-generated",
+      "aiSource": "AI-generated answer · {{model}}",
+      "aiDetail": "Not supported by the provided material; written by AI from general knowledge. It is not a literature source, so verify important points against original documents."
     },
     "followUps": "Ask next",
     "notice": {

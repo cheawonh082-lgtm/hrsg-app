@@ -69,11 +69,18 @@ def search_knowledge(
 ) -> list[Citation]:
     citations = []
     for hit in retriever.search(query, top_k=top_k or retriever.default_top_k, lang=locale):
-        text = redactor.redact(hit.chunk.text).text
+        chunk = hit.chunk
+        text = redactor.redact(chunk.text).text
         citations.append(
             Citation(
-                doc_alias=hit.chunk.doc_alias,
-                section_title=hit.chunk.section_title,
+                doc_alias=chunk.doc_alias,
+                title=redactor.redact(chunk.title).text,
+                authors=list(chunk.authors),
+                year=chunk.year,
+                venue=chunk.venue,
+                pages=chunk.pages,
+                url=chunk.url,
+                section_title=chunk.section_title,
                 snippet=_truncate(text),
                 score=hit.score,
                 full_text=text,

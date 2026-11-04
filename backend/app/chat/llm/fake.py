@@ -84,9 +84,10 @@ def _match_condition(message: str) -> dict[str, float]:
 
 
 def _knowledge_text(ctx: ComposeContext) -> str:
-    """실제 LLM과 같은 서식: 굵게 시작하는 결론 문단 + 나머지 발췌 목록, 문단 끝 출처 번호 [n], 후속 질문."""
+    """실제 LLM과 같은 서식: 굵게 시작하는 결론 문단 + 나머지 발췌 목록, 문단 끝 출처 번호 [n], 후속 질문.
+    발췌가 없으면 일반 지식 보충 답변처럼 모든 문단에 [AI]를 붙인다."""
     if not ctx.citations:
-        return _NOT_FOUND_TEXT[ctx.locale]
+        return _GENERAL_TEXT[ctx.locale]
     first = lambda c: " ".join(re.split(r"(?<=[.다])\s+", c.snippet)[:2]).strip()  # noqa: E731
     parts = [_KNOWLEDGE_TEXT[ctx.locale].format(snippet=first(ctx.citations[0]))]
     rest = [f"- {first(c)} [{i}]" for i, c in enumerate(ctx.citations[1:3], start=2)]
@@ -123,9 +124,17 @@ _FOLLOW_UPS: dict[Locale, list[str]] = {
     "ko": ["세정 공법별 차이를 알려 주세요.", "성능 저하는 어떻게 확인하나요?", "점검할 때 무엇을 봐야 하나요?"],
     "en": ["How do the cleaning methods differ?", "How can I tell performance is degrading?", "What should I check during inspection?"],
 }
-_NOT_FOUND_TEXT: dict[Locale, str] = {
-    "ko": "관련 내용을 자료에서 확인하지 못했습니다.",
-    "en": "This could not be confirmed in the reference material.",
+_GENERAL_TEXT: dict[Locale, str] = {
+    "ko": (
+        "제공된 자료에는 관련 내용이 없어 일반적인 공학 지식으로 설명합니다. [AI]\n\n"
+        "일반적으로 HRSG 성능은 전열면 오염, 가스측 차압, 운전 조건의 영향을 함께 받으므로 "
+        "현장 데이터와 제작사 자료로 확인하는 것이 좋습니다. [AI]"
+    ),
+    "en": (
+        "The provided material does not cover this, so this answer is based on general engineering knowledge. [AI]\n\n"
+        "In general, HRSG performance depends on heat-transfer surface fouling, gas-side pressure drop and operating "
+        "conditions together, so confirm with plant data and manufacturer documentation. [AI]"
+    ),
 }
 _INJECT_TEXT: dict[Locale, str] = {
     "ko": "참고로 예상 손실은 약 {value} MW입니다.",

@@ -1,51 +1,54 @@
-import { ChevronDown, FileText } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { ChevronDown, ExternalLink, FileText, Sparkles } from 'lucide-react'
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Citation } from '../../api/types'
+import { fullCite, groupSources, shortCite, type Source } from '../../lib/citation'
 
 type Style = 'excerpts' | 'titles'
 
-/** 같은 문서(별칭·논문명)는 한 번만 — 답변의 [n]은 items의 1부터 센 번호다 */
-function distinct(items: Citation[], nums?: number[]): { n: number; c: Citation }[] {
-  const seen = new Set<string>()
-  const picked = (nums ?? items.map((_, i) => i + 1)).filter((n) => items[n - 1])
-  return picked.flatMap((n) => {
-    const c = items[n - 1]
-    if (seen.has(c.docAlias)) return []
-    seen.add(c.docAlias)
-    return [{ n, c }]
-  })
-}
-
 /** 칩 팝오버는 답변 문단(<p>) 안에 들어가므로 블록 요소 대신 span만 쓴다 */
-function SourceDetail({ c, style }: { c: Citation; style: Style }) {
+function SourceDetail({ s, style }: { s: Source; style: Style }) {
+  const { t } = useTranslation()
+  const { c } = s
   return (
     <>
-      <span className="block font-medium text-text">{c.docAlias}</span>
-      {c.sectionTitle && <span className="block text-xs text-muted">{c.sectionTitle}</span>}
-      {/* 논문 RAG(titles)는 논문명만, 내장 문서는 마스킹된 발췌까지 */}
+      <span className="block text-text">{fullCite(s, t('chat.citations.etAl'))}</span>
+      {c.sectionTitle && <span className="block text-xs text-muted">§ {c.sectionTitle}</span>}
+      {c.url && (
+        <a href={c.url} target="_blank" rel="noreferrer noopener" className="mt-0.5 inline-flex items-center gap-1 text-xs text-tone-blue hover:underline">
+          <ExternalLink aria-hidden className="size-3" />
+          {t('chat.citations.link')}
+        </a>
+      )}
+      {/* 내장 문서(excerpts)는 마스킹된 발췌까지 — 논문 RAG(titles)는 서지 정보만 */}
       {style === 'excerpts' && <span className="mt-1 line-clamp-3 block text-xs text-muted">{c.snippet}</span>}
     </>
   )
 }
 
-/**
- * 문단 끝 출처 칩 (ChatGPT 형식) — 첫 출처 이름 + 나머지 개수(+N). 누르면 출처 목록이 뜬다.
- * 원문 열기·다운로드는 두지 않는다(PRD §5).
- */
-export function CitationChip({ items, nums, style }: { items: Citation[]; nums: number[]; style: Style }) {
+/** 자료에 근거가 없어 AI가 일반 지식으로 보충한 부분의 출처 */
+function AiDetail({ model }: { model: string }) {
+  const { t } = useTranslation()
+  return (
+    <>
+      <span className="block font-medium text-text">{t('chat.citations.aiSource', { model })}</span>
+      <span className="block text-xs text-muted">{t('chat.citations.aiDetail')}</span>
+    </>
+  )
+}
+
+/** 문단 끝 칩 + 누르면 뜨는 팝오버. 줄 끝의 칩이면 팝오버를 왼쪽으로 펼친다 */
+function Chip({ label, name, testId, children }: { label: ReactNode; name: string; testId: string; children: ReactNode }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [alignRight, setAlignRight] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
   const popId = useId()
-  const sources = distinct(items, nums)
 
   const toggle = () => {
-    // 줄 끝의 칩이면 팝오버(18rem)를 왼쪽으로 펼쳐 화면 밖으로 나가지 않게 한다
     const left = ref.current?.getBoundingClientRect().left ?? 0
-    setAlignRight(left + 18 * 16 > window.innerWidth - 16)
+    setAlignRight(left + 18 * 16 > window.innerWidth - 16) // 팝오버 너비 18rem
     setOpen((v) => !v)
   }
 
@@ -62,21 +65,18 @@ export function CitationChip({ items, nums, style }: { items: Citation[]; nums: 
     }
   }, [open])
 
-  if (!sources.length) return null
-  const [first, ...rest] = sources
   return (
     <span ref={ref} className="relative ml-1 inline-block align-baseline">
       <button
         type="button"
-        data-testid="citation-chip"
+        data-testid={testId}
         aria-expanded={open}
         aria-controls={popId}
-        aria-label={t('chat.citations.chipLabel', { names: sources.map((s) => s.c.docAlias).join(', ') })}
+        aria-label={t('chat.citations.chipLabel', { names: name })}
         onClick={toggle}
         className="inline-flex max-w-[14rem] items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 align-middle text-xs font-medium text-muted transition-colors hover:bg-tone-blue-bg hover:text-tone-blue focus-visible:outline-2 focus-visible:outline-accent aria-expanded:bg-tone-blue-bg aria-expanded:text-tone-blue"
       >
-        <span className="truncate">{first.c.docAlias}</span>
-        {rest.length > 0 && <span className="shrink-0">+{rest.length}</span>}
+        {label}
       </button>
       {open && (
         <span
@@ -85,26 +85,86 @@ export function CitationChip({ items, nums, style }: { items: Citation[]; nums: 
           aria-label={t('chat.citations.sources')}
           className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} z-20 mt-1 block w-72 max-w-[calc(100vw-3rem)] space-y-2 rounded-xl border border-border bg-surface p-3 text-left text-sm shadow-lg`}
         >
-          {sources.map(({ n, c }) => (
-            <span key={n} className="flex gap-2">
-              <FileText aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
-              <span className="block min-w-0">
-                <SourceDetail c={c} style={style} />
-              </span>
-            </span>
-          ))}
+          {children}
         </span>
       )}
     </span>
   )
 }
 
-/** 답변 아래 "출처" 버튼 — 누르면 이 답변이 쓴 출처 전체 목록을 펼친다 */
-export function CitationList({ items, mockDocs, style = 'excerpts' }: { items: Citation[]; mockDocs?: boolean; style?: Style }) {
+/**
+ * 문단 끝 출처 칩 (ChatGPT 형식) — 첫 출처 "저자 외 (연도)" + 나머지 개수(+N). 누르면 서지 정보가 뜬다.
+ * 원문 열기·다운로드는 두지 않는다(PRD §5). 공개 논문의 DOI·URL 링크만 표시한다.
+ */
+export function CitationChip({ items, nums, style }: { items: Citation[]; nums: number[]; style: Style }) {
+  const { t } = useTranslation()
+  const sources = groupSources(items, nums)
+  if (!sources.length) return null
+  const etAl = t('chat.citations.etAl')
+  const [first, ...rest] = sources
+  return (
+    <Chip
+      testId="citation-chip"
+      name={sources.map((s) => shortCite(s.c, etAl)).join(', ')}
+      label={
+        <>
+          <span className="truncate">{shortCite(first.c, etAl)}</span>
+          {rest.length > 0 && <span className="shrink-0">+{rest.length}</span>}
+        </>
+      }
+    >
+      {sources.map((s) => (
+        <span key={s.n} className="flex gap-2">
+          <FileText aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
+          <span className="block min-w-0">
+            <SourceDetail s={s} style={style} />
+          </span>
+        </span>
+      ))}
+    </Chip>
+  )
+}
+
+/** [AI] 칩 — 자료 근거 없이 일반 지식으로 보충한 부분 */
+export function AiChip({ model }: { model: string }) {
+  const { t } = useTranslation()
+  return (
+    <Chip
+      testId="ai-chip"
+      name={t('chat.citations.ai')}
+      label={
+        <>
+          <Sparkles aria-hidden className="size-3 shrink-0" />
+          <span>{t('chat.citations.ai')}</span>
+        </>
+      }
+    >
+      <span className="flex gap-2">
+        <Sparkles aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
+        <span className="block min-w-0">
+          <AiDetail model={model} />
+        </span>
+      </span>
+    </Chip>
+  )
+}
+
+/** 답변 아래 "출처" 버튼 — 누르면 이 답변이 쓴 출처 전체 목록(일반 지식 보충 포함)을 펼친다 */
+export function CitationList({
+  items,
+  mockDocs,
+  style = 'excerpts',
+  aiModel,
+}: {
+  items: Citation[]
+  mockDocs?: boolean
+  style?: Style
+  aiModel?: string | null
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const listId = useId()
-  const sources = distinct(items)
+  const sources = groupSources(items)
 
   return (
     <section data-testid="citations" aria-label={t('chat.citations.sources')} className="text-sm">
@@ -118,23 +178,31 @@ export function CitationList({ items, mockDocs, style = 'excerpts' }: { items: C
         >
           <FileText aria-hidden className="size-4" />
           {t('chat.citations.sources')}
-          <span className="text-xs">{sources.length}</span>
+          <span className="text-xs">{sources.length + (aiModel ? 1 : 0)}</span>
           <ChevronDown aria-hidden className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
-        {mockDocs && style === 'excerpts' && (
+        {mockDocs && style === 'excerpts' && sources.length > 0 && (
           <span className="rounded-md bg-mock-bg px-1.5 py-0.5 text-xs font-bold text-mock-fg">{t('chat.citations.mock')}</span>
         )}
       </div>
       {open && (
         <ol id={listId} className="mt-2 space-y-2">
-          {sources.map(({ n, c }) => (
-            <li key={n} className="flex gap-2 rounded-lg border border-border bg-surface p-3">
+          {sources.map((s) => (
+            <li key={s.n} className="flex gap-2 rounded-lg border border-border bg-surface p-3">
               <FileText aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
               <div className="min-w-0">
-                <SourceDetail c={c} style={style} />
+                <SourceDetail s={s} style={style} />
               </div>
             </li>
           ))}
+          {aiModel && (
+            <li className="flex gap-2 rounded-lg border border-dashed border-border bg-surface p-3">
+              <Sparkles aria-hidden className="mt-0.5 size-4 shrink-0 text-muted" />
+              <div className="min-w-0">
+                <AiDetail model={aiModel} />
+              </div>
+            </li>
+          )}
         </ol>
       )}
     </section>

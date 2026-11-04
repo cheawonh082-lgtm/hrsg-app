@@ -3,12 +3,13 @@ import { Fragment, type ReactNode } from 'react'
 /**
  * 챗 답변용 마크다운 — LLM 프롬프트가 쓰는 범위만: 소제목(#~###), 문단, 굵게(**), 목록(-, 1.), 표, 구분선(---).
  * HTML을 해석하지 않고 React 요소만 만든다(원문에 태그가 있어도 글자로 보인다).
- * 출처 번호 [1], [1,3]은 renderCite로 넘겨 출처 칩으로 그린다.
+ * 출처 번호 [1], [1,3]과 일반 지식 보충 표시 [AI]는 renderCite로 넘겨 칩으로 그린다.
  */
 const CITE = /\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\]/
-const INLINE = new RegExp(`(\\*\\*[^*]+?\\*\\*|${CITE.source})`, 'g')
+const AI = '[AI]'
+const INLINE = new RegExp(`(\\*\\*[^*]+?\\*\\*|\\[AI\\]|${CITE.source})`, 'g')
 
-type RenderCite = (nums: number[], key: string) => ReactNode
+type RenderCite = (ref: number[] | 'ai', key: string) => ReactNode
 
 type Block =
   | { kind: 'heading'; level: number; text: string }
@@ -78,6 +79,8 @@ function Inline({ text, renderCite, k }: { text: string; renderCite: RenderCite;
     const key = `${k}-${i}`
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
       out.push(<strong key={key} className="font-semibold text-text">{part.slice(2, -2)}</strong>)
+    } else if (part === AI) {
+      out.push(renderCite('ai', key))
     } else if (CITE.test(part) && CITE.exec(part)![0] === part) {
       out.push(renderCite(part.slice(1, -1).split(',').map((n) => Number(n.trim())), key))
     } else {

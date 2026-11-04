@@ -1,7 +1,7 @@
 """논문 RAG 검색 API(hrsg-explorer-rag) 클라이언트 — RAG_RETRIEVER=api.
 
 POST {RAG_API_URL}/search {"query", "method", "top_n"} → 문단 목록. 문단마다 논문명(title)·절·본문이 온다.
-- 출처는 논문명으로 표시한다(Chunk.doc_alias = 논문명, 원문 파일명은 쓰지 않음).
+- 출처는 서지 정보(저자·연도·논문명·발행처·쪽)로 표시한다. doc_alias는 문서 ID(R014)로 같은 논문을 묶는 데만 쓴다.
 - 교차언어 검색이 목적이므로 질문 언어로 문단을 거르지 않는다(lang 인자는 무시).
 - API에 연결할 수 없으면 '자료 없음'으로 답하지 않도록 RetrieverUnavailableError(503)를 낸다.
 """
@@ -48,13 +48,24 @@ class ApiRetriever(Retriever):
         return [
             SearchHit(
                 Chunk(
-                    doc_alias=r.get("title") or r["doc_id"],
+                    doc_alias=r["doc_id"],
                     title=r.get("title") or r["doc_id"],
                     section_title=r.get("section") or None,
                     text=r["text"],
                     lang=r.get("lang"),
+                    authors=tuple(r.get("authors") or ()),
+                    year=r.get("year"),
+                    venue=r.get("venue") or None,
+                    pages=_pages(r.get("page_start"), r.get("page_end")),
+                    url=r.get("url") or (f"https://doi.org/{r['doi']}" if r.get("doi") else None),
                 ),
                 round(r["score"] / top, 3),  # RRF 점수를 1위 대비 비율(0~1)로
             )
             for r in results
         ]
+
+
+def _pages(start: int | None, end: int | None) -> str | None:
+    if not start:
+        return None
+    return str(start) if not end or end == start else f"{start}–{end}"

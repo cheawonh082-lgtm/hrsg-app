@@ -45,7 +45,13 @@ def ingest(raw_dir: Path, masked_dir: Path, redactor: Redactor, dry_run: bool = 
         title = redactor.redact(meta.get("title") or alias).text
         lang = meta.get("lang") or ("ko" if any("가" <= ch <= "힣" for ch in body) else "en")
         redactions = 0
-        lines = ["---", f"alias: {alias}", f"title: {title}", f"lang: {lang}", "---"]
+        lines = ["---", f"alias: {alias}", f"title: {title}", f"lang: {lang}"]
+        # 출처 표기용 서지 정보는 그대로 옮긴다(저자·발행처는 마스킹). 절별 쪽수는 "## 절 제목 (p. 12)"로 남긴다
+        for key in ("authors", "year", "publisher", "venue", "pages", "url"):
+            if meta.get(key):
+                value = meta[key] if key in ("year", "pages", "url") else redactor.redact(meta[key]).text
+                lines.append(f"{key}: {value}")
+        lines.append("---")
         sections = split_sections(body)
         for section_title, text in sections:
             r = redactor.redact(text)

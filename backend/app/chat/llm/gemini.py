@@ -38,6 +38,10 @@ class GeminiProvider(LLMProvider):
         self._models = list(dict.fromkeys([model or DEFAULT_MODEL, *fallback_models]))
         self._log_prompts = log_prompts
 
+    @property
+    def model_label(self) -> str:
+        return f"Gemini ({self._models[0]})"
+
     def extract(self, message: str, locale: Locale, gt_models: list[GasTurbineSpec]) -> Extraction:
         text = self._generate(
             system=EXTRACT_SYSTEM,

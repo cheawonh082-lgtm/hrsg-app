@@ -30,16 +30,17 @@ test.describe('데스크톱 1280px', () => {
     await page.getByRole('button', { name: 'HRSG 핀 오염이 GT 배압에 미치는 영향은?' }).click()
     await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
     await expect(lastAnswer(page).getByTestId('answer-text')).toContainText('자료에 따르면')
-    // 문단 끝 출처 칩 → 누르면 출처 상세
+    // 문단 끝 출처 칩 → 누르면 출처 상세. 별칭(TECH-DOC-###)이 아니라 문서 제목으로 표기
     const chip = lastAnswer(page).getByTestId('citation-chip').first()
-    await expect(chip).toContainText(/TECH-DOC-\d{3}/)
+    await expect(chip).toContainText('GT 배압과 HRSG 차압의 관계')
     await chip.click()
-    await expect(lastAnswer(page).getByRole('dialog')).toContainText(/TECH-DOC-\d{3}/)
+    await expect(lastAnswer(page).getByRole('dialog')).toContainText('GT 배압과 HRSG 차압의 관계')
     // 답변 아래 "출처" 버튼 → 전체 목록
     const sources = lastAnswer(page).getByTestId('citations')
     await expect(sources).toContainText('예시 문서')
     await sources.getByRole('button', { name: /출처/ }).click()
-    await expect(sources.getByRole('listitem').first()).toContainText(/TECH-DOC-\d{3}/)
+    await expect(sources.getByRole('listitem').first()).toContainText('§')
+    await expect(lastAnswer(page)).not.toContainText(/TECH-DOC-\d{3}/)
     await expect(lastAnswer(page).getByTestId('calc-result-card')).toHaveCount(0)
   })
 

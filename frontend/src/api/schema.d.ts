@@ -208,10 +208,145 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Config */
+        get: operations["config_api_admin_config_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_admin_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** System Status */
+        get: operations["system_status_api_admin_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List References */
+        get: operations["list_references_api_admin_references_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/references/{doc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Reference */
+        patch: operations["update_reference_api_admin_references__doc_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminConfig */
+        AdminConfig: {
+            /** Enabled */
+            enabled: boolean;
+        };
+        /** AdminLoginRequest */
+        AdminLoginRequest: {
+            /** Password */
+            password: string;
+        };
+        /** AdminSession */
+        AdminSession: {
+            /** Token */
+            token: string;
+            /**
+             * Expiresat
+             * Format: date-time
+             */
+            expiresAt: string;
+        };
+        /** AdminStatus */
+        AdminStatus: {
+            /** Version */
+            version: string;
+            /**
+             * Startedat
+             * Format: date-time
+             */
+            startedAt: string;
+            /**
+             * Calcengine
+             * @enum {string}
+             */
+            calcEngine: "mock" | "real";
+            /**
+             * Datasource
+             * @enum {string}
+             */
+            dataSource: "mock" | "real";
+            llm: components["schemas"]["LlmStatus"];
+            rag: components["schemas"]["RagStatus"];
+            references: components["schemas"]["ReferencesStatus"];
+            /** Recentlogs */
+            recentLogs: components["schemas"]["LogEntry"][];
+            /**
+             * Sessionexpiresat
+             * Format: date-time
+             */
+            sessionExpiresAt: string;
+        };
         /** Assumption */
         Assumption: {
             /** Key */
@@ -696,6 +831,33 @@ export interface components {
                 [key: string]: components["schemas"]["FieldLimit"];
             };
         };
+        /** LlmStatus */
+        LlmStatus: {
+            /** Provider */
+            provider: string;
+            /** Model */
+            model: string | null;
+            /** Keyset */
+            keySet: boolean;
+            /** Fallbackmodels */
+            fallbackModels: string[];
+            /** Logprompts */
+            logPrompts: boolean;
+        };
+        /** LogEntry */
+        LogEntry: {
+            /**
+             * Time
+             * Format: date-time
+             */
+            time: string;
+            /** Level */
+            level: string;
+            /** Logger */
+            logger: string;
+            /** Message */
+            message: string;
+        };
         /** LossEstimate */
         LossEstimate: {
             /** Gtpowerlossmw */
@@ -823,6 +985,49 @@ export interface components {
             /** Durationms */
             durationMs?: number | null;
         };
+        /** RagApiStatus */
+        RagApiStatus: {
+            /** Url */
+            url: string;
+            /** Reachable */
+            reachable: boolean;
+            /** Documents */
+            documents?: number | null;
+            /** Paragraphs */
+            paragraphs?: number | null;
+            /**
+             * Methods
+             * @default {}
+             */
+            methods: {
+                [key: string]: boolean;
+            };
+            /**
+             * Missing
+             * @default {}
+             */
+            missing: {
+                [key: string]: string;
+            };
+            /** Error */
+            error?: string | null;
+        };
+        /** RagStatus */
+        RagStatus: {
+            /**
+             * Retriever
+             * @enum {string}
+             */
+            retriever: "keyword" | "api";
+            /**
+             * Docs
+             * @enum {string}
+             */
+            docs: "mock" | "real";
+            /** Keyworddocs */
+            keywordDocs: number;
+            api: components["schemas"]["RagApiStatus"];
+        };
         /** RecoveryEstimate */
         RecoveryEstimate: {
             /** Expecteddpaftermbar */
@@ -835,6 +1040,109 @@ export interface components {
             annualRecoveryKrw: number;
             /** Recoveryratepct */
             recoveryRatePct: number;
+        };
+        /** ReferenceDoc */
+        ReferenceDoc: {
+            /** Docid */
+            docId: string;
+            /** Title */
+            title: string;
+            /** Authors */
+            authors: string[];
+            /** Year */
+            year: number | null;
+            /** Venue */
+            venue: string;
+            /** Doi */
+            doi: string;
+            /** Url */
+            url: string;
+            /** Lang */
+            lang: string;
+            /** License */
+            license: string;
+            /** Sourcetype */
+            sourceType: string;
+            /** Sourcefile */
+            sourceFile: string;
+            /** Paragraphcount */
+            paragraphCount: number;
+            /** Pages */
+            pages: string | null;
+        };
+        /** ReferenceIssue */
+        ReferenceIssue: {
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "error" | "warning";
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "invalid_file" | "missing_field" | "duplicate_doc_id" | "duplicate_paragraph_id" | "doc_id_mismatch" | "invalid_type" | "empty_text" | "mapping_missing" | "paragraph_count_mismatch" | "empty_title" | "no_authors" | "no_year" | "no_venue" | "unreadable_marker" | "corpus_all_missing" | "corpus_all_stale" | "corpus_all_paragraphs_mismatch";
+            /** Docid */
+            docId?: string | null;
+            /** Paragraphid */
+            paragraphId?: string | null;
+            /** Field */
+            field?: string | null;
+            /** Detail */
+            detail?: string | null;
+        };
+        /** ReferenceList */
+        ReferenceList: {
+            /** Configured */
+            configured: boolean;
+            /** Corpusdir */
+            corpusDir: string | null;
+            /** Corpusallpath */
+            corpusAllPath: string | null;
+            /** Documents */
+            documents: components["schemas"]["ReferenceDoc"][];
+            /** Issues */
+            issues: components["schemas"]["ReferenceIssue"][];
+        };
+        /**
+         * ReferencePatch
+         * @description 서지 정보 편집 — 보낸 필드만 바꾼다
+         */
+        ReferencePatch: {
+            /** Title */
+            title?: string | null;
+            /** Authors */
+            authors?: string[] | null;
+            /** Year */
+            year?: number | null;
+            /** Venue */
+            venue?: string | null;
+            /** Doi */
+            doi?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Lang */
+            lang?: ("ko" | "en") | null;
+        };
+        /** ReferenceUpdateResult */
+        ReferenceUpdateResult: {
+            document: components["schemas"]["ReferenceDoc"];
+            /** Issues */
+            issues: components["schemas"]["ReferenceIssue"][];
+            /**
+             * Ragsync
+             * @enum {string}
+             */
+            ragSync: "reloaded" | "unavailable" | "rejected" | "not_configured";
+        };
+        /** ReferencesStatus */
+        ReferencesStatus: {
+            /** Configured */
+            configured: boolean;
+            /** Corpusdir */
+            corpusDir: string | null;
+            /** Corpusallpath */
+            corpusAllPath: string | null;
         };
         /** SectionHealth */
         SectionHealth: {
@@ -1250,6 +1558,158 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmailExportResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    config_api_admin_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminConfig"];
+                };
+            };
+        };
+    };
+    login_api_admin_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminSession"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    system_status_api_admin_status_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_references_api_admin_references_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_reference_api_admin_references__doc_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferencePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferenceUpdateResult"];
                 };
             };
             /** @description Validation Error */

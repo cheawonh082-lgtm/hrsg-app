@@ -3,7 +3,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api import calc, chat, checklist, health
+from app.admin import logbuffer
+from app.admin.auth import AdminError
+from app.api import admin, calc, chat, checklist, health
 from app.calculator.errors import CalcError
 from app.chat.llm.base import LLMUnavailableError
 from app.config import get_settings
@@ -19,6 +21,7 @@ def _error(status: int, code: str, message_key: str, details: dict | None = None
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    logbuffer.install()  # 관리자 시스템 상태의 최근 경고·오류
     app = FastAPI(
         title="HRSG Reference API",
         version="0.1.0",
@@ -29,7 +32,7 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_methods=["GET", "POST", "PATCH"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
     @app.exception_handler(RequestValidationError)
@@ -46,6 +49,10 @@ def create_app() -> FastAPI:
     async def _llm_unavailable(_: Request, exc: LLMUnavailableError):
         return _error(503, exc.code, exc.message_key)
 
+    @app.exception_handler(AdminError)
+    async def _admin_error(_: Request, exc: AdminError):
+        return _error(exc.status_code, exc.code, exc.message_key)
+
     @app.exception_handler(NotImplementedError)
     async def _not_implemented(_: Request, exc: NotImplementedError):
         return _error(501, "NOT_IMPLEMENTED", "error.notImplemented")
@@ -54,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(calc.router)
     app.include_router(chat.router)
     app.include_router(checklist.router)
+    app.include_router(admin.router)
     return app
 
 

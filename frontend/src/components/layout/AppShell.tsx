@@ -1,7 +1,7 @@
-import { Leaf } from 'lucide-react'
+import { Leaf, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 
 import { useHealth } from '../../api/hooks/useHealth'
 import { useResizeObserver } from '../../hooks/useResizeObserver'
@@ -59,6 +59,15 @@ export function AppShell() {
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2">
           <SidebarNav label={t('nav.main')} variant="dark" />
         </div>
+        {/* 관리자 모드 — 주 메뉴와 분리해 작게 */}
+        <Link
+          to="/admin"
+          data-testid="admin-link"
+          className="mx-4 mt-2 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-sidebar-fg/70 hover:bg-sidebar-2 hover:text-sidebar-fg focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          <ShieldCheck aria-hidden className="size-4" />
+          {t('admin.nav')}
+        </Link>
         <p className="m-4 flex items-start gap-2.5 rounded-2xl bg-sidebar-2 p-4 text-xs leading-relaxed text-sidebar-fg">
           <Leaf aria-hidden className="mt-0.5 size-5 shrink-0 text-emerald-400" />
           <span className="min-w-0">{t('app.tagline')}</span>

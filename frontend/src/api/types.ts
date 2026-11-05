@@ -45,3 +45,13 @@ export type ChecklistCategory = ChecklistItem['category']
 export type ItemStatus = NonNullable<ChecklistItemState['status']>
 export type EmailExportRequest = Schemas['EmailExportRequest']
 export type EmailExportResult = Schemas['EmailExportResult']
+
+// ---- 관리자 모드 ----
+export type AdminConfig = Schemas['AdminConfig']
+export type AdminSession = Schemas['AdminSession']
+export type AdminStatus = Schemas['AdminStatus']
+export type ReferenceDoc = Schemas['ReferenceDoc']
+export type ReferenceIssue = Schemas['ReferenceIssue']
+export type ReferenceList = Schemas['ReferenceList']
+export type ReferencePatch = Schemas['ReferencePatch']
+export type ReferenceUpdateResult = Schemas['ReferenceUpdateResult']

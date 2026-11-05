@@ -2,6 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -38,8 +39,21 @@ class Settings(BaseSettings):
     rag_api_top_n: int = 5
     rag_api_timeout_s: float = 60.0  # 첫 질문은 임베딩 모델을 불러오느라 오래 걸릴 수 있다
 
+    # 참고문헌 관리(관리자 모드) — 논문 RAG 코퍼스 문헌 JSON 폴더와 검색 API가 읽는 corpus_all.json. 비우면 참고문헌 관리를 쓰지 않는다
+    rag_corpus_dir: Path | None = None
+    rag_corpus_all_path: Path | None = None
+
+    # 관리자 모드 — 비밀번호가 비어 있으면 꺼진다
+    admin_password: str = ""
+    admin_session_hours: float = 8.0
+
     # 체크리스트 진행 상태 (재시작해도 유지, Git 제외)
     checklist_state_path: Path = _ROOT_DIR / "data" / "checklist_state.json"
+
+    @field_validator("rag_corpus_dir", "rag_corpus_all_path", mode="before")
+    @classmethod
+    def _empty_path_is_none(cls, v):
+        return None if isinstance(v, str) and not v.strip() else v
 
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 

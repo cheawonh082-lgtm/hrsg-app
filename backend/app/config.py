@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     rag_api_url: str = "http://127.0.0.1:8100"
     rag_api_method: Literal["1", "2", "3", "4"] = "4"  # 1: bge+BM25, 2: qwen+BM25, 3: 둘 다+BM25, 4: 3안+언어별 가중
     rag_api_top_n: int = 5
+    rag_api_key: str = ""  # 배포판 검색 Worker(Cloudflare)와 맞춘 비밀키 — 로컬 RAG API는 비워 둔다
     rag_api_timeout_s: float = 60.0  # 첫 질문은 임베딩 모델을 불러오느라 오래 걸릴 수 있다
 
     # 참고문헌 관리(관리자 모드) — 논문 RAG 코퍼스 문헌 JSON 폴더와 검색 API가 읽는 corpus_all.json. 비우면 참고문헌 관리를 쓰지 않는다

@@ -56,7 +56,10 @@ Render 서비스 이름이 이미 쓰이고 있으면 주소 뒤에 문자가 �
 - **잠들기**: 백엔드는 15분 동안 요청이 없으면 잠든다. 다음 첫 요청은 깨어나는 데 1분 가까이 걸려 첫 화면 로딩이 실패할 수 있다 → 잠시 뒤 새로고침.
 - **저장 안 됨**: 무료 웹 서비스는 디스크가 유지되지 않는다. 체크리스트 체크 상태·메모는 재시작·재배포·잠들기 후 초기화된다.
 - **LLM 비용**: 챗은 Claude API(`claude-sonnet-5-5`)를 쓰며 사용량만큼 과금된다. 공개 주소라 누구나 챗을 쓸 수 있으므로 Anthropic 콘솔에서 월 사용 한도를 걸어 두는 것이 좋다. 키 없이 띄우려면 Render 환경변수 `LLM_PROVIDER=fake`.
-- **논문 RAG 검색 없음**: 논문 RAG 서버(`RAG_RETRIEVER=api`, hrsg-explorer-rag)는 임베딩 모델 때문에 메모리 512MB로 돌릴 수 없고, 논문 발췌 코퍼스는 공개하지 않으므로 배포판 챗은 내장 문서 키워드 검색(`keyword`)을 쓴다.
+- **논문 검색은 Cloudflare Worker**: 로컬 논문 RAG 서버는 임베딩 모델 때문에 메모리 512MB로 돌릴 수 없다. 그래서 배포판은 같은 응답 형식의 Cloudflare Worker를 쓴다.
+  - 구성: `https://hrsg-rag-search.auroora0802.workers.dev`, Workers AI bge-m3 + 비공개 Vectorize 인덱스. 배포는 hrsg-explorer-rag의 `scripts/cloudflare_sync.py`(README "Cloudflare 배포")로 한다.
+  - 설정: `RAG_RETRIEVER=api`, `RAG_API_URL`은 Worker 주소. `RAG_API_KEY`는 Render 화면에서 넣고, hrsg-explorer-rag `.env`의 값과 같아야 한다(다르면 챗이 503).
+  - 검색 방식은 bge-m3 단독이다(로컬 4안의 Qwen3·BM25 없음). 서지 정보를 고치면 `cloudflare_sync.py upload`로 메타데이터를 다시 올린다.
 - **월 사용량**: 무료 웹 서비스는 계정당 월 750시간까지 켜져 있을 수 있다 (서비스 1개면 충분).
 
 ## 수정 후 다시 배포

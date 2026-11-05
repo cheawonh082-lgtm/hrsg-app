@@ -49,12 +49,12 @@ def _keyword_retriever(docs_masked_dir: Path, secrets_dir: Path) -> KeywordRetri
 
 
 @lru_cache
-def _api_retriever(url: str, method: str, top_n: int, timeout_s: float) -> ApiRetriever:
-    return ApiRetriever(url, method, top_n, timeout_s)
+def _api_retriever(url: str, method: str, top_n: int, timeout_s: float, api_key: str) -> ApiRetriever:
+    return ApiRetriever(url, method, top_n, timeout_s, api_key)
 
 
 def get_retriever(settings: Settings = Depends(get_settings)) -> Retriever:
     if settings.rag_retriever == "api":
-        return _api_retriever(settings.rag_api_url, settings.rag_api_method, settings.rag_api_top_n, settings.rag_api_timeout_s)
+        return _api_retriever(settings.rag_api_url, settings.rag_api_method, settings.rag_api_top_n, settings.rag_api_timeout_s, settings.rag_api_key)
     # 인제스트 후에는 서버를 재시작해야 새 문서가 색인된다
     return _keyword_retriever(settings.docs_masked_dir, settings.secrets_dir)

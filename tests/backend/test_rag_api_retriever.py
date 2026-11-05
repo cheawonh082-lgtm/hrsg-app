@@ -100,3 +100,18 @@ def test_paper_prompt_uses_full_text():
     assert LONG_TEXT in content and 'paper="Paper A"' in content
     excerpt = ComposeContext(message="q", locale="ko", intent="knowledge", citations=[c])
     assert LONG_TEXT not in compose_content(excerpt) and 'alias="Paper A"' in compose_content(excerpt)
+
+
+def test_api_key_is_sent_as_bearer(monkeypatch):
+    """배포판 검색 Worker는 RAG_API_KEY가 필요하다 — 로컬 RAG API(키 없음)에는 헤더를 붙이지 않는다"""
+    seen = []
+
+    def urlopen(req, timeout):
+        seen.append(req.get_header("Authorization"))
+        assert req.get_header("User-agent") == remote.USER_AGENT  # Cloudflare가 Python 기본 UA를 막는다
+        return _Response(json.dumps({"results": RESULTS[:1]}).encode("utf-8"))
+
+    monkeypatch.setattr(remote.urllib.request, "urlopen", urlopen)
+    ApiRetriever("https://rag.example.workers.dev", api_key="s3cret").search("pinch point")
+    ApiRetriever("http://127.0.0.1:8100").search("pinch point")
+    assert seen == ["Bearer s3cret", None]

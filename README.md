@@ -116,6 +116,8 @@ LLM_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.8-flash   # gemini 전용
 2. `.env`: `RAG_RETRIEVER=api`, `RAG_API_URL=http://127.0.0.1:8100`, `RAG_API_METHOD=4`(1~4안), `RAG_API_TOP_N=5`
 3. 백엔드를 재시작합니다.
 
+배포판(Render)은 같은 형식의 Cloudflare Worker를 씁니다(`RAG_API_URL`=Worker 주소, `RAG_API_KEY`=비밀키). 구성은 DEPLOY.md 참고.
+
 - LLM에는 검색된 문단 전문을 근거로 주고, 결론 → 근거·원리 → 적용 조건 순서로 답하게 합니다(`COMPOSE_SYSTEM_PAPERS`). 문장마다 출처를 달지 않습니다.
 - 출처는 첫 줄에 **논문 제목**(첫 장의 제목), 아랫줄에 저자·연도·발행처·쪽수를 중복 없이 표시합니다(`CitationsBlock.style = "titles"`). 문단 전문은 응답 JSON에 싣지 않습니다.
 - 교차언어 검색이 목적이라 질문 언어로 문단을 거르지 않습니다(한국어 질문 → 영어 논문).

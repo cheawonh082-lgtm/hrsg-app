@@ -9,6 +9,7 @@ from app.admin.logbuffer import recent_logs
 from app.chat.llm import claude, gemini
 from app.config import Settings
 from app.domain.models.admin import AdminStatus, LlmStatus, RagApiStatus, RagStatus, ReferencesStatus
+from app.rag.remote import api_headers
 from app.rag.store import resolve_docs_dir
 
 STARTED_AT = datetime.now(UTC)
@@ -27,9 +28,10 @@ def _llm(settings: Settings) -> LlmStatus:
     )
 
 
-def rag_api_status(url: str, timeout_s: float = 3.0) -> RagApiStatus:
+def rag_api_status(url: str, api_key: str = "", timeout_s: float = 3.0) -> RagApiStatus:
+    req = urllib.request.Request(url.rstrip("/") + "/health", headers=api_headers(api_key))
     try:
-        with urllib.request.urlopen(url.rstrip("/") + "/health", timeout=timeout_s) as res:
+        with urllib.request.urlopen(req, timeout=timeout_s) as res:
             h = json.loads(res.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         return RagApiStatus(url=url, reachable=False, error=f"HTTP {e.code}")
@@ -61,7 +63,7 @@ def collect(settings: Settings, session_expires_at: datetime) -> AdminStatus:
             retriever=settings.rag_retriever,
             docs="mock" if docs_mock else "real",
             keyword_docs=keyword_docs,
-            api=rag_api_status(settings.rag_api_url),
+            api=rag_api_status(settings.rag_api_url, settings.rag_api_key),
         ),
         references=ReferencesStatus(
             configured=bool(corpus_dir and corpus_dir.is_dir()),

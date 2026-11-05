@@ -27,9 +27,19 @@ services:
       # Anthropic API 키. sync: false라 Render 화면(Environment)에서 직접 넣고 바꾼다
       - key: LLM_API_KEY
         sync: false
-      # 논문 RAG 서버(bge-m3·Qwen 임베딩)는 무료 플랜 메모리(512MB)로 돌릴 수 없고 코퍼스도 공개하지 않으므로 내장 문서 키워드 검색
+      # 논문 검색: 무료 플랜(512MB)은 임베딩 모델을 올릴 수 없으므로 Cloudflare Worker(Workers AI bge-m3 + Vectorize)를 쓴다
+      # (hrsg-explorer-rag/cloudflare/worker, 배포: scripts/cloudflare_sync.py deploy)
       - key: RAG_RETRIEVER
-        value: keyword
+        value: api
+      - key: RAG_API_URL
+        value: https://hrsg-rag-search.auroora0802.workers.dev
+      - key: RAG_API_TOP_N
+        value: "5"
+      - key: RAG_API_TIMEOUT_S
+        value: "30"
+      # Worker 비밀키(hrsg-explorer-rag/.env의 RAG_API_KEY와 같은 값). sync: false라 Render 화면에서 직접 넣는다
+      - key: RAG_API_KEY
+        sync: false
 
   - type: web
     name: hrsg-reference-web

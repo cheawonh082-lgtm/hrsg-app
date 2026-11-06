@@ -27,7 +27,7 @@ services:
       # Anthropic API 키. sync: false라 Render 화면(Environment)에서 직접 넣고 바꾼다
       - key: LLM_API_KEY
         sync: false
-      # 논문 검색: 무료 플랜(512MB)은 임베딩 모델을 올릴 수 없으므로 Cloudflare Worker(Workers AI bge-m3 + Vectorize)를 쓴다
+      # 논문 검색: 무료 플랜(512MB)은 임베딩 모델을 올릴 수 없으므로 Cloudflare Worker(Workers AI bge-m3 + Qwen3 → 1:1 RRF, Vectorize)를 쓴다
       # (hrsg-explorer-rag/cloudflare/worker, 배포: scripts/cloudflare_sync.py deploy)
       - key: RAG_RETRIEVER
         value: api

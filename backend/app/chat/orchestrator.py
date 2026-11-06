@@ -150,7 +150,7 @@ class Orchestrator:
                     protected.text,
                     locale,
                     result=result,
-                    allowed_literals=numbers_in([message, *(c.full_text or c.snippet for c in citations)]),
+                    allowed_literals=grounded_numbers(message, citations),
                     allowed_paths=tools.LLM_VISIBLE_PATHS,
                 )
                 number_check = checked.status
@@ -236,6 +236,16 @@ class Orchestrator:
             economics=self.data.get_default_economics(),
             locale=locale,
         ).model_dump(by_alias=True)
+
+
+def grounded_numbers(message: str, citations: list[Citation]) -> set[float]:
+    """답변에 그대로 써도 되는 숫자: 사용자 질문과, LLM에게 보낸 출처의 본문·논문 제목·절 제목에 있는 숫자.
+    제목도 프롬프트에 들어가므로("500MW PLANT-X …") 여기서 빠지면 맞는 숫자가 '(계산 결과 카드 참조)'로 바뀐다.
+    발행처(venue)는 프롬프트에 없으므로 넣지 않는다."""
+    texts = [message]
+    for c in citations:
+        texts += [c.full_text or c.snippet, c.title, c.section_title or ""]
+    return numbers_in(texts)
 
 
 def detect_locale(text: str) -> Locale:

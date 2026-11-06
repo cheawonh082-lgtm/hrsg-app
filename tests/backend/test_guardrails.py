@@ -131,3 +131,17 @@ def test_ingest_masks_and_switches_to_real_docs(tmp_path, redactor):
 
     # 다시 인제스트해도 별칭 유지
     assert ingest(raw, masked, redactor)[0].startswith("TECH-DOC-001")
+
+
+def test_numbers_in_cited_paper_title_are_kept():
+    """배포판 사례: '500MW'는 논문 제목에만 있었는데 '(계산 결과 카드 참조)MW'로 바뀌었다."""
+    from app.chat.orchestrator import grounded_numbers
+    from app.domain.models.chat import Citation
+
+    c = Citation(doc_alias="R022", title="500MW PLANT-X 관류보일러 재열기 온도제어에 관한 연구",
+                 section_title="2.2 재열기 온도저감기(Spray Water) 제어로직", snippet="실제온도와 목표값을 비교한다.", score=1.0)
+    allowed = grounded_numbers("감온기 분사수 제어 방식은?", [c])
+    out = check_numbers("이 내용은 500MW 관류보일러 사례(2.2절)입니다.", "ko", allowed_literals=allowed)
+    assert out.status == "passed" and "500MW" in out.text
+    # 출처 어디에도 없는 숫자는 여전히 지운다
+    assert check_numbers("효율은 47.5%입니다.", "ko", allowed_literals=allowed).removed == ["47.5"]

@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-from app.domain.models.calc import EconomicParams, GasTurbineSpec, OperatingCondition
-from app.domain.models.reference import CleaningMethodSpec, DesignBaseline, StatusThresholds
+from app.calculator.kit_adapter import Preset
+from app.domain.models.calc import CalcInput, GasTurbineSpec, Locale
 
 
 class ReferenceDataProvider(ABC):
@@ -15,17 +15,5 @@ class ReferenceDataProvider(ABC):
         """없는 모델이면 UnknownGtModelError."""
 
     @abstractmethod
-    def get_design_baseline(self, model_id: str) -> DesignBaseline: ...
-
-    @abstractmethod
-    def get_default_condition(self, model_id: str) -> OperatingCondition:
-        """계산기 화면 초기값(설계 운전점)."""
-
-    @abstractmethod
-    def get_default_economics(self) -> EconomicParams: ...
-
-    @abstractmethod
-    def list_cleaning_methods(self) -> list[CleaningMethodSpec]: ...
-
-    @abstractmethod
-    def get_thresholds(self) -> StatusThresholds: ...
+    def default_input(self, model_id: str, preset: Preset = "example", locale: Locale = "ko") -> CalcInput:
+        """계산기 화면 입력값. example: 예시 운전 상태(처음 화면) / design: 설계 상태(「초기화」, 손실 0)."""

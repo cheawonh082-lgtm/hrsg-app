@@ -62,10 +62,10 @@
       "title": "Adjust inputs",
       "open": "Adjust inputs",
       "model": "Gas turbine model",
-      "reset": "Reset to the selected model's defaults",
+      "reset": "Reset to the selected model's design values (no loss)",
       "primary": "Key inputs",
       "operation": "Operating conditions",
-      "advanced": "Advanced (steam & pinch)",
+      "advanced": "Advanced (HP steam & pinch)",
       "advancedHint": "Leave blank to exclude a value. Pinch and approach evaluation then shows 'Data needed'.",
       "economics": "Economics",
       "blocked": "Recalculation paused because of invalid input. Results shown are from the last valid input.",
@@ -91,18 +91,13 @@
       "exhaustTempC": "GT exhaust temperature",
       "exhaustFlowKgS": "Exhaust gas flow",
       "ambientTempC": "Ambient temperature",
-      "hpSteamFlowKgS": "HP steam flow",
-      "ipSteamFlowKgS": "IP steam flow",
-      "lpSteamFlowKgS": "LP steam flow",
       "hpDrumPressureBarg": "HP drum pressure",
       "hpEvapGasOutTempC": "HP evaporator gas outlet temp.",
       "hpEcoWaterOutTempC": "HP economizer water outlet temp.",
       "electricityPriceKrwPerMwh": "Electricity price",
       "annualOperatingHours": "Annual operating hours",
-      "analysisPeriodYears": "Analysis period"
-    },
-    "units": {
-      "years": "yr"
+      "hpSteamTph": "HP steam production",
+      "monthlyOperatingHours": "Monthly operating hours"
     },
     "kpi": {
       "totalLoss": "Total power loss",
@@ -119,60 +114,13 @@
     "metrics": {
       "gtBackPressure": "GT back pressure",
       "hrsgGasDp": "HRSG pressure drop",
-      "stackTemp": "Stack temperature",
-      "hpSteamFlow": "HP steam flow"
+      "stackTemp": "Stack temperature"
     },
     "gauge": {
       "title": "Operating indicators",
       "design": "Design {{value}} {{unit}}",
       "aria": "{{label}} {{value}} {{unit}}, design {{design}} {{unit}}",
       "page": "Show indicator {{index}}: {{label}}"
-    },
-    "sections": {
-      "HP_SH": {
-        "name": "HP superheater",
-        "short": "HP SH"
-      },
-      "RH": {
-        "name": "Reheater",
-        "short": "RH"
-      },
-      "HP_EVA": {
-        "name": "HP evaporator",
-        "short": "HP EVA"
-      },
-      "HP_ECO": {
-        "name": "HP economizer",
-        "short": "HP ECO"
-      },
-      "IP_SH": {
-        "name": "IP superheater",
-        "short": "IP SH"
-      },
-      "IP_EVA": {
-        "name": "IP evaporator",
-        "short": "IP EVA"
-      },
-      "IP_ECO": {
-        "name": "IP economizer",
-        "short": "IP ECO"
-      },
-      "LP_SH": {
-        "name": "LP superheater",
-        "short": "LP SH"
-      },
-      "LP_EVA": {
-        "name": "LP evaporator",
-        "short": "LP EVA"
-      },
-      "CPH": {
-        "name": "Condensate preheater",
-        "short": "CPH"
-      },
-      "STACK": {
-        "name": "Stack",
-        "short": "STACK"
-      }
     },
     "trend": {
       "title": "Loss sensitivity to pressure drop",
@@ -185,17 +133,18 @@
     },
     "cleaning": {
       "title": "Cleaning method cost comparison",
-      "caption": "Based on a {{years}}-year analysis period. Cleaning is assumed during a planned outage, so downtime is not costed (mock).",
+      "caption": "Cost is the total investment per method, net benefit is annual, and payback uses the monthly benefit. All figures are demo values.",
       "method": "Method",
       "cost": "Cost",
       "downtime": "Downtime",
       "recovery": "Recovery",
       "payback": "Payback",
       "netBenefit": "Net benefit",
-      "recommended": "Recommended",
       "days": "{{value}} days",
       "months": "{{value}} mo",
-      "na": "N/A"
+      "na": "Not available",
+      "maxNetBenefit": "Max net benefit",
+      "unavailable": "Not available — needs: {{missing}}"
     },
     "pinch": {
       "title": "Pinch & approach evaluation",
@@ -204,13 +153,7 @@
       "approach": "Approach",
       "current": "Current",
       "design": "Design",
-      "requestData": "Request data in checklist",
-      "comment": {
-        "normal": "Within the design range.",
-        "caution": "Pinch is above design. Check whether fouling is progressing.",
-        "danger": "Pinch is well above design. Consider cleaning.",
-        "insufficient_data": "The operating data needed for this evaluation is missing."
-      }
+      "requestData": "Request data in checklist"
     },
     "ask": {
       "button": "Ask AI about this result",
@@ -238,8 +181,9 @@
       "foulingIndex": "Fouling display index {{value}}%.",
       "displayOnly": "Display only (not used in loss calculation)",
       "exhaustTemp": "GT exhaust temp",
-      "hintHover": "Hover over or select a component to see section status and operating indicators.",
-      "hintTap": "Tap a component to see section status and operating indicators."
+      "hintHover": "Hover over or press a component to see its display fouling and operating indicators.",
+      "hintTap": "Tap a component to see its display fouling and operating indicators.",
+      "displayFouling": "Display fouling {{value}}%"
     },
     "lossCompare": {
       "title": "Current loss vs after cleaning",
@@ -264,15 +208,15 @@
       "recovery": "Recovery after cleaning",
       "caution": "Caution",
       "aria": "Heat recovery efficiency trend. Design {{design}}, current {{current}}, after cleaning {{after}}",
-      "note": "No operating history yet: this estimated curve assumes efficiency fell from design to the current value over {{months}} months. Efficiency = (exhaust temp − stack temp) / (exhaust temp − ambient temp)."
+      "note": "With no operating history, this estimate assumes a steady decline from the design value to the current value over {{months}} months."
     },
     "perf": {
       "title": "Key performance indicators (KPI)",
       "overall": "Overall status",
       "advice": {
         "normal": "Operating within design range",
-        "caution": "Consider scheduling cleaning",
-        "danger": "Plan cleaning now"
+        "caution": "Some indicators are outside the design range",
+        "danger": "Some indicators need immediate inspection"
       },
       "hpPinch": "HP pinch point",
       "hpApproach": "HP approach point",
@@ -285,14 +229,10 @@
       "payback": "Payback period",
       "vsDesign": "{{value}} vs design",
       "recoveryRate": "Recovers {{value}}% of loss",
-      "monthsUnit": "mo"
-    }
-  },
-  "cleaning": {
-    "dryIce": "Dry ice blasting",
-    "highPressureWater": "High-pressure water",
-    "chemical": "Chemical cleaning",
-    "mechanical": "Mechanical cleaning"
+      "monthsUnit": "mo",
+      "vsDesignPp": "{{value}}%p vs design"
+    },
+    "inputError": "These inputs cannot be calculated: {{messages}}"
   },
   "warn": {
     "exhaustFlowOffRated": "Exhaust gas flow differs from rated by more than 20%; results may be less reliable.",
@@ -343,12 +283,12 @@
     "card": {
       "title": "Calculation result",
       "foulingIndex": "Fouling index",
-      "recommended": "Recommended method",
       "assumptions": "Values used",
       "defaults": "{{count}} values filled with defaults",
       "userValue": "your input",
       "openInCalculator": "Open in calculator",
-      "edit": "Edit assumptions"
+      "edit": "Edit assumptions",
+      "maxNetBenefit": "Max net benefit method"
     },
     "confirm": {
       "title": "Please confirm the values needed for the calculation",
@@ -399,7 +339,6 @@
     "loadError": "Could not load the checklist. Check that the backend server is running.",
     "empty": "No items match.",
     "search": "Search items",
-    "unit": "unit {{unit}}",
     "progress": {
       "title": "Progress",
       "overall": "Overall progress",
@@ -422,7 +361,7 @@
     },
     "kind": {
       "design": "Design",
-      "operating": "Operating",
+      "operation": "Operation",
       "document": "Document"
     },
     "priority": {
@@ -432,9 +371,10 @@
     },
     "status": {
       "label": "{{item}} status",
-      "pending": "Pending",
+      "not_entered": "Waiting",
       "requested": "Requested",
       "received": "Received",
+      "verify_needed": "Needs verification",
       "na": "N/A"
     },
     "memo": {
@@ -445,7 +385,8 @@
     "linked": {
       "badge": "Used by calculator",
       "tooltip": "This data feeds the calculator's '{{field}}' input.",
-      "open": "Open calculator"
+      "open": "Open calculator",
+      "kitOnly": "Used by the calculation kit (this calculator screen has no field for it)."
     },
     "sync": {
       "failed": "Could not save to the server. The change is kept in this browser for now.",
@@ -462,20 +403,10 @@
         "all": "All items",
         "required_only": "Open required items"
       },
-      "language": "Email language",
-      "recipient": "Recipient (alias)",
-      "recipients": {
-        "customer_contact": "Customer contact",
-        "plant_operations": "Plant operations team",
-        "performance_engineer": "Performance engineer"
-      },
-      "includeMemo": "Include notes",
-      "memoHint": "Notes are included as written. Plant and customer names are replaced with aliases automatically; check other details such as personal names yourself.",
-      "privacy": "By security policy the recipient is shown only as an alias, and real plant/customer names in the body are masked automatically.",
+      "privacy": "The email lists item names only, never notes or measured values. Plant and customer names are masked automatically.",
       "preview": "Preview",
       "itemCount": "{{count}} requested item(s)",
       "previewError": "Could not load the preview.",
-      "subjectLabel": "Subject",
       "copy": "Copy to clipboard",
       "copied": "Email text copied ({{count}} requested items).",
       "copyFailed": "Could not copy. Select the preview text and copy it manually.",

@@ -7,24 +7,19 @@ import { formatNumber } from '../../lib/format'
 import { useUiStore } from '../../store/ui'
 import { StatusPill } from '../common/StatusPill'
 
-/** 섹션별 핀치·어프로치 평가에 필요한 계산기 입력 — 체크리스트에서 같은 입력에 연결된 항목을 강조한다 */
-const PINCH_FIELDS: Record<PinchApproachEvaluation['section'], string[]> = {
-  HP: ['hpEvapGasOutTempC', 'hpEcoWaterOutTempC', 'hpDrumPressureBarg'],
-  IP: [],
-  LP: [],
-}
+/**
+ * 「데이터 필요」 → 체크리스트를 키트가 준 분류(checklist_category, 'B')로 열고,
+ * 그 섹션의 키트 입력(sections.HP …)에 쓰이는 항목을 강조한다.
+ */
+export const checklistFocusUrl = (p: Pick<PinchApproachEvaluation, 'section' | 'checklistCategory'>) =>
+  `/checklist?focus=${encodeURIComponent(p.checklistCategory)}&inputs=sections.${p.section}`
 
-export const checklistFocusUrl = (section: PinchApproachEvaluation['section']) => {
-  const fields = PINCH_FIELDS[section]
-  return `/checklist?focus=pinch_approach${fields.length ? `&fields=${fields.join(',')}` : ''}`
-}
-
-/** HP/IP/LP 핀치·어프로치 평가. 입력이 없으면 "데이터 필요" + 체크리스트 해당 섹션으로 이동(강조) */
+/** HP/IP/LP 핀치·어프로치 평가 (키트 pinch_section). 입력이 없으면 "데이터 필요" + 체크리스트 해당 분류로 이동(강조) */
 export function PinchApproachPanel({ items }: { items: PinchApproachEvaluation[] }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
   const c = (v: number | null | undefined) =>
-    v == null ? '–' : `${formatNumber(v, locale, { maximumFractionDigits: 1 })}℃`
+    v == null ? '–' : `${formatNumber(v, locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}℃`
 
   return (
     <ul className="grid gap-3 md:grid-cols-3">
@@ -54,11 +49,12 @@ export function PinchApproachPanel({ items }: { items: PinchApproachEvaluation[]
               <dd className="text-right">{c(p.designApproachC)}</dd>
             </dl>
 
-            <p className="text-sm text-muted">{t(p.commentKey.replace('pinch.', 'calc.pinch.'))}</p>
+            {/* 키트 문구 그대로 */}
+            <p className="text-sm text-muted">{p.message}</p>
 
             {insufficient && (
               <Link
-                to={checklistFocusUrl(p.section)}
+                to={checklistFocusUrl(p)}
                 className="mt-auto inline-flex min-h-11 items-center gap-2 self-start rounded-lg border border-border px-3 text-sm font-medium text-accent hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <ClipboardList aria-hidden className="size-4" />

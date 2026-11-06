@@ -3,11 +3,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import type { ChecklistItem as ItemData, ChecklistItemPatch, ChecklistItemState, ItemStatus } from '../../api/types'
+import type { ChecklistItem as ItemData, ChecklistItemPatch, ChecklistItemState } from '../../api/types'
 import { applyCheck, applyStatus } from '../../lib/checklist'
 import { cn } from '../../lib/cn'
 
-const STATUSES: ItemStatus[] = ['pending', 'requested', 'received', 'na']
+/** 키트 README 팀 2: 상태 드롭다운 대기 / 요청함 / 수령 / 해당 없음 — 화면 글자가 아니라 키로 저장 */
+const STATUSES = ['not_entered', 'requested', 'received', 'na'] as const
+type SelectableStatus = (typeof STATUSES)[number]
 const MEMO_SAVE_DELAY_MS = 600
 
 const PRIORITY_STYLE: Record<ItemData['priority'], string> = {
@@ -40,6 +42,13 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
   const na = state.status === 'na'
+  // 키트 calc_input 이 있으면 「계산기 입력에 사용됨」. 이 앱 계산기 화면에 같은 입력이 있으면 그 이름을 보여 준다
+  const linkedText = item.linkedCalcField
+    ? t('checklist.linked.tooltip', { field: fieldLabel(item.linkedCalcField) })
+    : t('checklist.linked.kitOnly')
+  function fieldLabel(field: string) {
+    return field === 'gtModelId' ? t('calc.input.model') : t(`calc.fields.${field}`)
+  }
 
   // 서버·다른 탭에서 바뀐 메모 반영 (입력 중이 아닐 때)
   useEffect(() => {
@@ -89,19 +98,16 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
             <p className={cn('font-medium break-keep [overflow-wrap:anywhere]', state.checked && 'text-muted line-through decoration-1')}>
               {item.label}
             </p>
-            {(item.description || item.period || item.unit) && (
-              <p className="text-sm text-muted [overflow-wrap:anywhere]">
-                {[item.description, item.period, item.unit && t('checklist.unit', { unit: item.unit })].filter(Boolean).join(' · ')}
-              </p>
-            )}
-            {item.linkedCalcField && (
+            {/* 설명 줄 = 키트 detailLine(item) */}
+            {item.detail && <p className="text-sm text-muted [overflow-wrap:anywhere]">{item.detail}</p>}
+            {item.calcInput && (
               <div className="mt-1">
                 <button
                   type="button"
                   onClick={() => setLinkedOpen((v) => !v)}
                   aria-expanded={linkedOpen}
                   aria-controls={linkedId}
-                  title={t('checklist.linked.tooltip', { field: t(`calc.fields.${item.linkedCalcField}`) })}
+                  title={linkedText}
                   data-testid="linked-calc"
                   className="inline-flex min-h-8 items-center gap-1 rounded-full border border-accent/40 px-2 text-xs text-accent hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-accent"
                 >
@@ -110,7 +116,7 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
                 </button>
                 {linkedOpen && (
                   <p id={linkedId} className="mt-1 text-xs text-muted">
-                    {t('checklist.linked.tooltip', { field: t(`calc.fields.${item.linkedCalcField}`) })}{' '}
+                    {linkedText}{' '}
                     <Link to="/calculator" className="font-medium text-accent underline underline-offset-2">
                       {t('checklist.linked.open')}
                     </Link>
@@ -132,8 +138,8 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
           </span>
           <div className="flex min-w-[10rem] flex-1 items-center gap-2 md:min-w-0 md:flex-none">
             <select
-              value={state.status}
-              onChange={(e) => onChange(applyStatus(state, e.target.value as ItemStatus))}
+              value={state.status === 'verify_needed' ? 'received' : state.status}
+              onChange={(e) => onChange(applyStatus(state, e.target.value as SelectableStatus))}
               aria-label={t('checklist.status.label', { item: item.label })}
               className="h-11 min-w-28 flex-1 rounded-lg border border-border bg-surface px-2 text-base md:w-32 md:flex-none md:text-sm"
             >

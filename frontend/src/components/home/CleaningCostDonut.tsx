@@ -9,8 +9,8 @@ import { useUiStore } from '../../store/ui'
 import { useThemeColors } from '../../theme/useThemeColors'
 import { EChart } from '../calculator/EChart'
 
-/** 세정 공법별 비용 비율 도넛 + 범례(공법·비율) — 홈 대시보드 */
-export function CleaningCostDonut({ rows }: { rows: CleaningMethodComparison[] }) {
+/** 세정 공법별 비용(총투자) 비율 도넛 + 범례(공법·비율) — 홈 대시보드 */
+export function CleaningCostDonut({ rows: all }: { rows: CleaningMethodComparison[] }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
   const colors = useThemeColors()
@@ -19,7 +19,8 @@ export function CleaningCostDonut({ rows }: { rows: CleaningMethodComparison[] }
     () => [colors.toneBlue, colors.tonePurple, colors.toneGreen, colors.muted, colors.caution],
     [colors],
   )
-  const total = rows.reduce((sum, r) => sum + r.costKrw, 0)
+  const rows = all.filter((r) => r.totalInvestmentKrw != null) as (CleaningMethodComparison & { totalInvestmentKrw: number })[]
+  const total = rows.reduce((sum, r) => sum + r.totalInvestmentKrw, 0)
   const pct = (v: number) => (total ? (v / total) * 100 : 0)
 
   const option = useMemo<EChartsOption>(
@@ -43,8 +44,8 @@ export function CleaningCostDonut({ rows }: { rows: CleaningMethodComparison[] }
           label: { show: false },
           emphasis: { scale: true, scaleSize: 4 },
           data: rows.map((r, i) => ({
-            name: t(r.nameKey),
-            value: r.costKrw,
+            name: r.name,
+            value: r.totalInvestmentKrw,
             itemStyle: { color: palette[i % palette.length] },
           })),
         },
@@ -66,10 +67,10 @@ export function CleaningCostDonut({ rows }: { rows: CleaningMethodComparison[] }
         {rows.map((r, i) => (
           <li key={r.methodId} className="flex items-center gap-2">
             <span aria-hidden className="size-2.5 shrink-0 rounded-full" style={{ background: palette[i % palette.length] }} />
-            <span className="min-w-0 flex-1 truncate" title={t(r.nameKey)}>
-              {t(r.nameKey)}
+            <span className="min-w-0 flex-1 truncate" title={r.name}>
+              {r.name}
             </span>
-            <span className="shrink-0 font-medium tabular-nums">{formatNumber(pct(r.costKrw), locale, { maximumFractionDigits: 0 })}%</span>
+            <span className="shrink-0 font-medium tabular-nums">{formatNumber(pct(r.totalInvestmentKrw), locale, { maximumFractionDigits: 0 })}%</span>
           </li>
         ))}
       </ul>

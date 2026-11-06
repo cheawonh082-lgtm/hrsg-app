@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Response
 
-from app.checklist.email_formatter import format_email
 from app.checklist.registry import get_checklist_service
 from app.checklist.service import ChecklistService
 from app.domain.models.calc import Locale
@@ -38,4 +37,4 @@ def export_email(
     service: ChecklistService = Depends(get_checklist_service),
     redactor: Redactor = Depends(get_redactor),
 ):
-    return format_email(req, service.template, service.items(req.locale), service.states(), redactor)
+    return service.email(req, redactor)

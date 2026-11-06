@@ -1,10 +1,10 @@
 import { LoaderCircle, MessageSquare, SlidersHorizontal } from 'lucide-react'
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { ApiError } from '../api/client'
-import { useCalcResult, useThresholds } from '../api/hooks/useCalc'
+import { useCalcResult } from '../api/hooks/useCalc'
 import type { CalcResult } from '../api/types'
 import { CleaningCostTable } from '../components/calculator/CleaningCostTable'
 import { GaugeGroup } from '../components/calculator/GaugeChart'
@@ -27,7 +27,6 @@ import { useCalculatorDraft } from '../hooks/useCalculatorDraft'
 import { usePreviousDistinct } from '../hooks/usePreviousDistinct'
 import { toDraft } from '../lib/calcDraft'
 import { formatNumber } from '../lib/format'
-import { efficiencySummary } from '../lib/performance'
 import { type Locale, useUiStore } from '../store/ui'
 
 export function CalculatorPage() {
@@ -54,7 +53,6 @@ export function CalculatorPage() {
   // 챗 카드 "계산기에서 열기" → /calculator?calcId= : 저장된 결과의 입력으로 복원 (A-09)
   const restoreId = searchParams.get('calcId')
   const { models, limits, draft, setDraft, calc, loadModel } = useCalculatorDraft({ skipInit: !!restoreId })
-  const thresholds = useThresholds()
   const result = calc.result
   const previous = usePreviousDistinct(result)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -88,13 +86,15 @@ export function CalculatorPage() {
           isBlocked: calc.isBlocked,
           onDraftChange: setDraft,
           onModelChange: (id) => void loadModel(id, draft.economics),
-          onReset: () => void loadModel(draft.gtModelId),
+          // 「초기화」 = 선택한 등급의 설계 상태 (키트 designInputs, 손실 0)
+          onReset: () => void loadModel(draft.gtModelId, undefined, 'design'),
         }
       : null
 
   const errorCode = calc.error instanceof ApiError ? calc.error.code : calc.error?.message
-  const dpMetric = result?.current.metrics.find((m) => m.key === 'hrsgGasDp')
-  const efficiency = useMemo(() => result && efficiencySummary(result, thresholds.data), [result, thresholds.data])
+  // 키트가 계산을 거부한 입력(예: 증발기 출구 가스 < 포화온도) — 키트 문구를 그대로 보여 준다
+  const kitMessages =
+    calc.error instanceof ApiError ? (calc.error.details as { messages?: string[] } | undefined)?.messages : undefined
   const activeTab = CALC_TABS.find((c) => c.id === tab)!
 
   return (
@@ -146,7 +146,7 @@ export function CalculatorPage() {
 
           {calc.error && (
             <p role="alert" className="rounded-lg border border-status-danger/40 bg-status-danger/10 p-3 text-status-danger">
-              {t('calc.error', { code: errorCode })}
+              {kitMessages?.length ? t('calc.inputError', { messages: kitMessages.join(' ') }) : t('calc.error', { code: errorCode })}
             </p>
           )}
 
@@ -155,8 +155,8 @@ export function CalculatorPage() {
               <KpiRow result={result} previous={previous} pending={calc.isPending} locale={locale} />
 
               <Panel title={t('calc.gauge.title')}>
-                {result && thresholds.data ? (
-                  <GaugeGroup metrics={result.current.metrics} thresholds={thresholds.data} />
+                {result ? (
+                  <GaugeGroup metrics={result.current.metrics} />
                 ) : (
                   <Skeleton className="h-64" />
                 )}
@@ -171,8 +171,8 @@ export function CalculatorPage() {
               </Panel>
 
               <Panel title={t('calc.recoveryEffect.title')}>
-                {result && efficiency ? (
-                  <RecoveryEffect result={result} summary={efficiency} />
+                {result ? (
+                  <RecoveryEffect result={result} />
                 ) : (
                   <Skeleton className="h-80" />
                 )}
@@ -180,12 +180,7 @@ export function CalculatorPage() {
 
               <Panel title={t('calc.trend.title')}>
                 {result ? (
-                  <TrendChart
-                    series={result.sensitivity}
-                    currentY={result.loss.totalPowerLossMw}
-                    baseline={dpMetric?.baseline}
-                    band={thresholds.data?.hrsgGasDp}
-                  />
+                  <TrendChart series={result.sensitivity} currentY={result.loss.totalPowerLossMw} />
                 ) : (
                   <Skeleton className="h-[220px] md:h-[260px] lg:h-[300px]" />
                 )}
@@ -196,10 +191,7 @@ export function CalculatorPage() {
           {tab === 'cleaning' && (
             <Panel title={t('calc.cleaning.title')}>
               {result ? (
-                <CleaningCostTable
-                  rows={result.cleaningComparison}
-                  analysisYears={result.input.economics.analysisPeriodYears ?? 1}
-                />
+                <CleaningCostTable rows={result.cleaningComparison} />
               ) : (
                 <Skeleton className="h-48" />
               )}
@@ -213,8 +205,8 @@ export function CalculatorPage() {
               </Panel>
 
               <Panel title={t('calc.perf.title')}>
-                {result && efficiency ? (
-                  <PerformanceKpiGrid result={result} efficiency={efficiency} />
+                {result ? (
+                  <PerformanceKpiGrid result={result} />
                 ) : (
                   <Skeleton className="h-80" />
                 )}

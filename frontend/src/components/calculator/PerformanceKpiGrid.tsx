@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next'
 import type { CalcResult, StatusLevel } from '../../api/types'
 import { cn } from '../../lib/cn'
 import { formatKrwCompact, formatKrwFull, formatNumber } from '../../lib/format'
-import { type EfficiencySummary, representativeMethod } from '../../lib/performance'
 import { useUiStore } from '../../store/ui'
 import { StatusPill } from '../common/StatusPill'
 
@@ -39,22 +38,30 @@ interface Card {
   tone: Tone
 }
 
-/** 핵심 성능 지표 — 종합 상태 + 지표 카드 9개. 카드 색은 상태(정상·주의·위험)를 따른다 */
-export function PerformanceKpiGrid({ result, efficiency }: { result: CalcResult; efficiency: EfficiencySummary }) {
+/**
+ * 핵심 성능 지표 — 키트 key_indicators(): 종합 상태 + 지표 카드 9개. 카드 색은 키트 판정(정상·주의·위험)을 따르고,
+ * 판정이 없는 값(스팀·세정 비용·회수기간)은 중립색이다.
+ */
+export function PerformanceKpiGrid({ result }: { result: CalcResult }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
-  const num = (v: number, digits = 1) => formatNumber(v, locale, { maximumFractionDigits: digits })
-  const signed = (v: number, digits = 1) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${num(Math.abs(v), digits)}`
+  const num = (v: number, digits = 1) =>
+    formatNumber(v, locale, { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  // 부호는 반올림한 값 기준 (−0.04 → "0.0", "−0.0"이 아니라)
+  const signed = (v: number, digits = 1) => {
+    const r = Math.round(v * 10 ** digits) / 10 ** digits
+    return `${r > 0 ? '+' : r < 0 ? '−' : ''}${num(Math.abs(r), digits)}`
+  }
   const vsDesign = (v: string) => t('calc.perf.vsDesign', { value: v })
 
+  const k = result.keyIndicators
   const hp = result.pinchApproach.find((p) => p.section === 'HP')
   const hpTone: Tone = !hp || hp.status === 'insufficient_data' ? 'none' : hp.status
-  const steam = result.current.metrics.find((m) => m.key === 'hpSteamFlow')
-  const toTph = (kgS: number) => kgS * 3.6
-  const overall = result.current.overallStatus
-  const method = representativeMethod(result.cleaningComparison)
-  const payback = method?.paybackMonths
-  const periodMonths = (result.input.economics.analysisPeriodYears ?? 1) * 12
+  const eff = result.efficiency
+  const effTone: Tone = eff.status === 'no_data' ? 'none' : eff.status
+  const lossTone: Tone = result.current.overallStatus
+  const overall = k.overallStatus
+  const payback = k.paybackMonths
 
   const cards: Card[] = [
     {
@@ -75,32 +82,31 @@ export function PerformanceKpiGrid({ result, efficiency }: { result: CalcResult;
     },
     {
       key: 'steam',
-      value: steam ? num(toTph(steam.value)) : '–',
+      value: k.hpSteamTph != null ? formatNumber(k.hpSteamTph, locale, { maximumFractionDigits: 1 }) : '–',
       unit: 't/h',
-      sub: steam?.baseline != null ? vsDesign(`${signed(toTph(steam.value - steam.baseline))} t/h`) : undefined,
       icon: Zap,
-      tone: steam?.status ?? 'none',
+      tone: 'none',
     },
     {
       key: 'efficiency',
-      value: num(efficiency.current),
+      value: eff.currentPct != null ? num(eff.currentPct) : '–',
       unit: '%',
-      sub: vsDesign(`${signed(efficiency.current - efficiency.design)}%p`),
+      sub: eff.vsDesignPp != null ? t('calc.perf.vsDesignPp', { value: signed(eff.vsDesignPp, 2) }) : undefined,
       icon: TrendingDown,
-      tone: efficiency.status,
+      tone: effTone,
     },
     {
       key: 'perfLoss',
-      value: signed(-result.loss.totalPowerLossMw),
+      value: num(result.loss.totalPowerLossMw, 2),
       unit: 'MW',
       icon: Zap,
-      tone: overall,
+      tone: lossTone,
     },
     {
       key: 'recovery',
-      value: signed(result.recovery.recoveredPowerMw),
+      value: num(result.recovery.recoveredPowerMw, 2),
       unit: 'MW',
-      sub: t('calc.perf.recoveryRate', { value: num(result.recovery.recoveryRatePct, 0) }),
+      sub: t('calc.perf.recoveryRate', { value: formatNumber(result.recovery.recoveryRatePct, locale, { maximumFractionDigits: 0 }) }),
       icon: CircleCheck,
       tone: 'normal',
     },
@@ -109,22 +115,22 @@ export function PerformanceKpiGrid({ result, efficiency }: { result: CalcResult;
       value: formatKrwCompact(result.loss.annualRevenueLossKrw, locale),
       fullValue: formatKrwFull(result.loss.annualRevenueLossKrw, locale),
       icon: Banknote,
-      tone: overall,
+      tone: lossTone,
     },
     {
       key: 'cleaningCost',
-      value: method ? formatKrwCompact(method.costKrw, locale) : '–',
-      fullValue: method && formatKrwFull(method.costKrw, locale),
-      sub: method && t(method.nameKey),
+      value: k.cleaningCostKrw != null ? formatKrwCompact(k.cleaningCostKrw, locale) : t('calc.cleaning.na'),
+      fullValue: k.cleaningCostKrw != null ? formatKrwFull(k.cleaningCostKrw, locale) : undefined,
+      sub: result.recovery.name ?? undefined,
       icon: Banknote,
-      tone: 'normal',
+      tone: 'none',
     },
     {
       key: 'payback',
-      value: payback != null ? `~${num(payback)}` : t('calc.cleaning.na'),
+      value: payback != null ? num(payback, 2) : t('calc.cleaning.na'),
       unit: payback != null ? t('calc.perf.monthsUnit') : undefined,
       icon: CalendarClock,
-      tone: payback == null ? 'none' : payback <= periodMonths ? 'normal' : 'caution',
+      tone: 'none',
     },
   ]
 
@@ -146,7 +152,7 @@ export function PerformanceKpiGrid({ result, efficiency }: { result: CalcResult;
             <OverallIcon aria-hidden className="size-7" />
           </span>
           <span className={cn('text-lg font-bold', TONE[overall].text)}>{t(`status.${overall}`)}</span>
-          <span className="text-xs text-muted">{t(`calc.perf.advice.${overall}`)}</span>
+          <span data-testid="perf-overall-text" className="text-xs text-muted">{t(`calc.perf.advice.${overall}`)}</span>
         </li>
 
         {cards.map((c) => (

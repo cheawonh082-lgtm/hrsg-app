@@ -1,7 +1,10 @@
 import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
 
 import { apiFetch } from '../client'
-import type { CalcInput, CalcResult, GasTurbineSpec, InputLimits, StatusThresholds } from '../types'
+import type { CalcInput, CalcResult, GasTurbineSpec, InputLimits } from '../types'
+
+/** example: 키트 defaultInputs (처음 화면, 예시 운전 상태) / design: 키트 designInputs (「초기화」, 손실 0) */
+export type CalcPreset = 'example' | 'design'
 
 export function useGtModels() {
   return useQuery({
@@ -11,18 +14,11 @@ export function useGtModels() {
   })
 }
 
-export function calcDefaultsQuery(gtModelId: string) {
+export function calcDefaultsQuery(gtModelId: string, preset: CalcPreset = 'example') {
   return queryOptions({
-    queryKey: ['calc', 'defaults', gtModelId],
-    queryFn: () => apiFetch<CalcInput>(`/api/calc/defaults?gtModelId=${encodeURIComponent(gtModelId)}`),
-    staleTime: Infinity,
-  })
-}
-
-export function useThresholds() {
-  return useQuery({
-    queryKey: ['calc', 'thresholds'],
-    queryFn: () => apiFetch<StatusThresholds>('/api/calc/thresholds'),
+    queryKey: ['calc', 'defaults', gtModelId, preset],
+    queryFn: () =>
+      apiFetch<CalcInput>(`/api/calc/defaults?gtModelId=${encodeURIComponent(gtModelId)}&preset=${preset}`),
     staleTime: Infinity,
   })
 }

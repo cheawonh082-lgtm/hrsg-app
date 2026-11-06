@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { useThresholds } from '../api/hooks/useCalc'
 import { useChecklist } from '../api/hooks/useChecklist'
 import { KpiRow } from '../components/calculator/KpiRow'
 import { TrendChart } from '../components/calculator/TrendChart'
@@ -38,11 +37,9 @@ export function HomePage() {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
   const { calc } = useCalculatorDraft()
-  const thresholds = useThresholds()
   const checklist = useChecklist(locale)
   const questionCount = useChatStore((s) => s.messages.filter((m) => m.role === 'user').length)
   const result = calc.result
-  const dpMetric = result?.current.metrics.find((m) => m.key === 'hrsgGasDp')
   const computedAt =
     result &&
     new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(
@@ -104,12 +101,7 @@ export function HomePage() {
           <KpiRow result={result} pending={calc.isPending} locale={locale} className="grid grid-cols-2 gap-3 2xl:grid-cols-4" />
           <h3 className="mt-6 mb-2 font-bold">{t('home.trend.title')}</h3>
           {result ? (
-            <TrendChart
-              series={result.sensitivity}
-              currentY={result.loss.totalPowerLossMw}
-              baseline={dpMetric?.baseline}
-              band={thresholds.data?.hrsgGasDp}
-            />
+            <TrendChart series={result.sensitivity} currentY={result.loss.totalPowerLossMw} />
           ) : (
             <Skeleton className="h-[220px] md:h-[260px]" />
           )}
@@ -129,7 +121,7 @@ export function HomePage() {
                 {result
                   ? t('home.activity.calc', {
                       status: t(`status.${result.current.overallStatus}`),
-                      index: formatNumber(result.current.foulingIndex, locale, { maximumFractionDigits: 1 }),
+                      index: formatNumber(Math.round(result.current.foulingIndex), locale),
                     })
                   : t('home.activity.loading')}
               </Activity>

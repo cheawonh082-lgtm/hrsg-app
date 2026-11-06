@@ -49,9 +49,7 @@ export const FIELD_GROUPS: { id: FieldGroupId; fields: FieldDef[] }[] = [
   {
     id: 'advanced',
     fields: [
-      c('hpSteamFlowKgS', 'kg/s', 0, 200, 0.5),
-      c('ipSteamFlowKgS', 'kg/s', 0, 60, 0.5),
-      c('lpSteamFlowKgS', 'kg/s', 0, 40, 0.5),
+      c('hpSteamTph', 't/h', 0, 600, 1),
       c('hpDrumPressureBarg', 'barg', 0, 200, 0.5),
       c('hpEvapGasOutTempC', '℃', 200, 450, 0.1),
       c('hpEcoWaterOutTempC', '℃', 200, 380, 0.1),
@@ -61,8 +59,8 @@ export const FIELD_GROUPS: { id: FieldGroupId; fields: FieldDef[] }[] = [
     id: 'economics',
     fields: [
       e('electricityPriceKrwPerMwh', 'KRW/MWh', 30000, 400000, 1000),
+      e('monthlyOperatingHours', 'h', 0, 744, 1),
       e('annualOperatingHours', 'h', 0, 8760, 10),
-      e('analysisPeriodYears', '@years', 1, 20, 1),
     ],
   },
 ]

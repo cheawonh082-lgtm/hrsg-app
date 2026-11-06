@@ -5,8 +5,8 @@ from app.domain.models.chat import Assumption, CalcResultCard, ParamConfirmCard
 
 # 입력 필드 접미사(camelCase) → 표시 단위
 _UNIT_SUFFIXES = [
-    ("Pct", "%"), ("TempC", "℃"), ("Mbar", "mbar"), ("KgS", "kg/s"), ("Barg", "barg"),
-    ("KrwPerMwh", "KRW/MWh"), ("KrwPerGj", "KRW/GJ"), ("Hours", "h"), ("Years", "yr"),
+    ("Pct", "%"), ("TempC", "℃"), ("Mbar", "mbar"), ("KgS", "kg/s"), ("Tph", "t/h"), ("Barg", "barg"),
+    ("KrwPerMwh", "KRW/MWh"), ("Hours", "h"),
 ]
 
 
@@ -17,7 +17,7 @@ def unit_for(field: str) -> str | None:
 def to_calc_card(result: CalcResult, user_fields: set[str]) -> CalcResultCard:
     """user_fields: 사용자가 직접 준 입력(camelCase 필드명, 'gtModelId' 포함). 나머지는 기본값으로 표시."""
     loss, recovery, current = result.loss, result.recovery, result.current
-    recommended = next((m.method_id for m in result.cleaning_comparison if m.recommended), None)
+    max_net = next((m for m in result.cleaning_comparison if m.max_net_benefit), None)
     return CalcResultCard(
         calc_id=result.meta.calc_id,
         is_mock=result.meta.is_mock,
@@ -29,7 +29,8 @@ def to_calc_card(result: CalcResult, user_fields: set[str]) -> CalcResultCard:
         ],
         status=current.overall_status,
         assumptions=assumptions(result.input, user_fields),
-        recommended_method_id=recommended,
+        max_net_benefit_method_id=max_net and max_net.method_id,
+        max_net_benefit_method_name=max_net and max_net.name,
     )
 
 

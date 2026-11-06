@@ -31,13 +31,13 @@ describe('KpiCard 수치 포맷', () => {
     render(
       <KpiCard testId="kpi" label="연간 손실" value={2_876_400_000} format={krw} fullValue="2,876,400,000 원" />,
     )
-    expect(screen.getByTestId('kpi-value')).toHaveTextContent('28.8억 원')
+    expect(screen.getByTestId('kpi-value')).toHaveTextContent('28.76억 원') // 키트 formatKrw
     expect(screen.getByTitle('2,876,400,000 원')).toBeInTheDocument()
   })
 
   it('영어 로케일 축약 표기', () => {
     render(<KpiCard testId="kpi" label="Annual" value={2_876_400_000} format={(v) => formatKrwCompact(v, 'en')} />)
-    expect(screen.getByTestId('kpi-value')).toHaveTextContent('2.9B KRW')
+    expect(screen.getByTestId('kpi-value')).toHaveTextContent('2.88B KRW')
   })
 
   it('증가는 ▲ + 위험색 (값이 클수록 나쁜 지표)', () => {

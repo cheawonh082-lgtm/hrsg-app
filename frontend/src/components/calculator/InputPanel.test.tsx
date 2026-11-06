@@ -32,8 +32,8 @@ const LIMITS: InputLimits = {
   },
   economics: {
     electricityPriceKrwPerMwh: lim({ min: 0, exclusiveMin: true }),
+    monthlyOperatingHours: lim({ min: 1, max: 744, integer: true }),
     annualOperatingHours: lim({ min: 0, max: 8760, integer: true }),
-    analysisPeriodYears: lim({ min: 1, max: 20, integer: true }),
   },
 }
 
@@ -51,7 +51,7 @@ const DRAFT: CalcDraft = {
     stackTempC: 90,
     hpDrumPressureBarg: 120,
   },
-  economics: { electricityPriceKrwPerMwh: 130000, annualOperatingHours: 7000, analysisPeriodYears: 1 },
+  economics: { electricityPriceKrwPerMwh: 150000, monthlyOperatingHours: 720, annualOperatingHours: 8000 },
 }
 
 const fetchMock = vi.fn()
@@ -181,7 +181,7 @@ describe('InputPanel + useCalculate', () => {
     renderPanel()
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
     fireEvent.click(screen.getByRole('button', { name: /경제성/ }))
-    fireEvent.change(screen.getByLabelText('분석 기간'), { target: { value: '1.5' } })
+    fireEvent.change(screen.getByLabelText('연간 운전시간'), { target: { value: '7999.5' } })
     expect(await screen.findByText('정수를 입력하세요.')).toBeInTheDocument()
     // 접힌 그룹에도 오류 개수 표시
     fireEvent.click(screen.getByRole('button', { name: /경제성/ }))

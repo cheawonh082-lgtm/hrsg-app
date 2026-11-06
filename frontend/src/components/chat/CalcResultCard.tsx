@@ -6,7 +6,7 @@ import type { Assumption, CalcResultCard as CalcResultCardData, GasTurbineSpec }
 import { formatKrwCompact, formatKrwFull, formatNumber } from '../../lib/format'
 import { useUiStore } from '../../store/ui'
 import { StatusPill } from '../common/StatusPill'
-import { cleaningMethodKey, fieldLabel, formatAssumption } from './fieldMeta'
+import { fieldLabel, formatAssumption } from './fieldMeta'
 
 const HEADLINE_LABEL: Record<string, string> = {
   totalPowerLossMw: 'calc.kpi.totalLoss',
@@ -69,10 +69,10 @@ export function CalcResultCard({ card, models, onEdit }: Props) {
         })}
       </dl>
 
-      {card.recommendedMethodId && (
+      {card.maxNetBenefitMethodName && (
         <p className="text-sm">
-          <span className="text-muted">{t('chat.card.recommended')}: </span>
-          <span className="font-semibold">{t(cleaningMethodKey(card.recommendedMethodId))}</span>
+          <span className="text-muted">{t('chat.card.maxNetBenefit')}: </span>
+          <span className="font-semibold">{card.maxNetBenefitMethodName}</span>
         </p>
       )}
 

@@ -10,8 +10,8 @@ import { CalcResultCard } from './CalcResultCard'
 import { ParamConfirmCard } from './ParamConfirmCard'
 
 const models: GasTurbineSpec[] = [
-  { modelId: 'GT_MOCK_F_CLASS', displayName: 'F-Class GT (Mock)', ratedPowerMw: 270, ratedExhaustFlowKgS: 650, ratedExhaustTempC: 600 },
-  { modelId: 'GT_MOCK_H_CLASS', displayName: 'H-Class GT (Mock)', ratedPowerMw: 380, ratedExhaustFlowKgS: 800, ratedExhaustTempC: 640 },
+  { modelId: 'GT_MOCK_F_CLASS', displayName: 'F-Class GT (Mock)', ratedPowerMw: 270, ratedStMw: 135, ratedExhaustFlowKgS: 650, ratedExhaustTempC: 600 },
+  { modelId: 'GT_MOCK_H_CLASS', displayName: 'H-Class GT (Mock)', ratedPowerMw: 400, ratedStMw: 200, ratedExhaustFlowKgS: 900, ratedExhaustTempC: 640 },
 ]
 
 const limits = {
@@ -38,7 +38,8 @@ const card: CardData = {
     { key: 'hrsgGasDpMbar', value: 35, unit: 'mbar', source: 'user' },
     { key: 'gtLoadPct', value: 100, unit: '%', source: 'default' },
   ],
-  recommendedMethodId: 'dry_ice',
+  maxNetBenefitMethodId: 'chemical',
+  maxNetBenefitMethodName: '화학 세정',
 }
 
 function LocationProbe() {
@@ -54,11 +55,11 @@ describe('CalcResultCard', () => {
       </MemoryRouter>,
     )
     expect(screen.getByTestId('card-totalPowerLossMw')).toHaveTextContent('3.16 MW')
-    expect(screen.getByTestId('card-annualRevenueLossKrw')).toHaveTextContent('28.8억 원')
+    expect(screen.getByTestId('card-annualRevenueLossKrw')).toHaveTextContent('28.76억 원')
     expect(screen.getByTestId('card-annualRevenueLossKrw')).toHaveAttribute('title', '2,876,400,000 원')
     expect(screen.getByTestId('card-foulingIndex')).toHaveTextContent('80 / 100')
     expect(screen.getByText('MOCK')).toBeInTheDocument()
-    expect(screen.getByText('드라이아이스 블라스팅')).toBeInTheDocument()
+    expect(screen.getByText('화학 세정')).toBeInTheDocument() // 「순편익 최대」 공법
 
     const user = within(screen.getByTestId('assumptions-user'))
     expect(user.getByText('F-Class GT (Mock)')).toBeInTheDocument()

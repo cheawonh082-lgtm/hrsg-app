@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from app.calculator.mock import MockCalculator
-from app.calculator.reference_data.mock import MockReferenceData
+from app.calculator.kit_calculator import KitCalculator
+from app.calculator.reference_data.mock import KitReferenceData
 from app.chat.llm.fake import FakeLLMProvider
 from app.chat.registry import _keyword_retriever
 from app.domain.models.calc import CalcInput
@@ -17,13 +17,7 @@ from app.rag.ingest import ingest
 
 @pytest.fixture(scope="module")
 def result():
-    data = MockReferenceData()
-    inp = CalcInput(
-        gt_model_id="GT_MOCK_F_CLASS",
-        condition=data.get_default_condition("GT_MOCK_F_CLASS"),
-        economics=data.get_default_economics(),
-    )
-    return MockCalculator(data).evaluate(inp)
+    return KitCalculator().evaluate(KitReferenceData().default_input("GT_MOCK_F_CLASS"))
 
 
 @pytest.fixture(scope="module")
@@ -103,7 +97,7 @@ def test_input_filter(message, verdict):
 
 # ---- Fake LLM 파라미터 추출 ----
 def test_fake_extracts_params():
-    models = MockReferenceData().list_gt_models()
+    models = KitReferenceData().list_gt_models()
     ex = FakeLLMProvider().extract("H급, 부하 80%, 배압 35 mbar, 차압 40mbar, 스택 110℃", "ko", models)
     assert ex.params == {
         "gtModelId": "GT_MOCK_H_CLASS",

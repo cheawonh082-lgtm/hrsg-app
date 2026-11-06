@@ -91,7 +91,7 @@ export function ChecklistSection({
           <ChecklistItem
             key={item.id}
             item={item}
-            state={states.get(item.id) ?? { itemId: item.id, checked: false, status: 'pending' }}
+            state={states.get(item.id) ?? { itemId: item.id, checked: false, status: 'not_entered' }}
             highlighted={highlightedItems?.has(item.id)}
             onChange={(patch) => onChange(item.id, patch)}
           />

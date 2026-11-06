@@ -3,94 +3,99 @@ import { describe, expect, it } from 'vitest'
 import type { ChecklistItem, ChecklistItemState } from '../api/types'
 import { applyCheck, applyStatus, computeProgress, filterItems, mergeState, sectionCheckState } from './checklist'
 
-const item = (id: string, category: ChecklistItem['category'], priority: ChecklistItem['priority'], label = id): ChecklistItem => ({
+/** 키트 data/checklist.json 형식의 항목 몇 개 */
+const item = (id: string, required: boolean, label: string, description = ''): ChecklistItem => ({
   id,
-  category,
-  priority,
-  kind: 'operating',
-  labelKey: `checklist.items.${id}`,
+  category: id[0],
+  kind: 'operation',
+  required,
+  priority: required ? 'required' : 'recommended',
+  priorityLevel: required ? 'high' : 'medium',
   label,
+  description,
+  detail: description,
 })
 const state = (itemId: string, patch: Partial<ChecklistItemState> = {}): ChecklistItemState => ({
   itemId,
   checked: false,
-  status: 'pending',
+  status: 'not_entered',
   ...patch,
 })
 
 const items = [
-  item('gt.model', 'gas_turbine', 'required', 'GT 모델 및 정격 출력'),
-  item('gt.back_pressure', 'gas_turbine', 'required', 'GT 배압 측정값'),
-  item('exh.composition', 'exhaust_gas', 'recommended', '배기가스 성분'),
-  item('doc.pid', 'design_docs', 'optional', 'P&ID'),
+  item('A-01', true, 'GT 모델 및 정격 용량', '출력 손실·정지 손실 계산의 기준 용량'),
+  item('A-02', true, '운전 배압', '초과 배압과 출력 손실 계산'),
+  item('B-06', false, '증발기 출구 가스 온도', '핀치 온도차 계산'),
+  item('B-13', false, 'P&ID', '계측 위치 확인'),
 ]
-const categories = ['gas_turbine', 'exhaust_gas', 'design_docs'] as const
+const categories = ['A', 'B']
 
-describe('computeProgress', () => {
+describe('computeProgress (키트 summary 규칙)', () => {
   it('전체·필수·카테고리 진행률을 따로 센다', () => {
-    const p = computeProgress(items, [state('gt.model', { checked: true }), state('exh.composition', { checked: true })], [...categories])
+    const p = computeProgress(items, [state('A-01', { checked: true, status: 'received' }), state('B-06', { checked: true, status: 'received' })], categories)
     expect(p).toMatchObject({ total: 4, checked: 2, requiredTotal: 2, requiredChecked: 1, percent: 50 })
-    expect(p.byCategory.gas_turbine).toEqual({ total: 2, checked: 1 })
-    expect(p.byCategory.exhaust_gas).toEqual({ total: 1, checked: 1 })
+    expect(p.byCategory.A).toEqual({ total: 2, checked: 1 })
+    expect(p.byCategory.B).toEqual({ total: 2, checked: 1 })
   })
 
-  it("'해당 없음'은 분모·분자에서 뺀다", () => {
-    const p = computeProgress(items, [state('doc.pid', { status: 'na', checked: true })], [...categories])
+  it("'해당 없음'은 분모에서 뺀다", () => {
+    const p = computeProgress(items, [state('B-13', { status: 'na' })], categories)
     expect(p.total).toBe(3)
-    expect(p.checked).toBe(0)
-    expect(p.byCategory.design_docs).toEqual({ total: 0, checked: 0 })
+    expect(p.byCategory.B).toEqual({ total: 1, checked: 0 })
   })
 
-  it('항목이 없으면 0%', () => {
+  it("'검증 필요'도 수령으로 센다", () => {
+    expect(computeProgress(items, [state('A-02', { status: 'verify_needed', checked: true })], categories).checked).toBe(1)
+  })
+
+  it('1/49 → 2% (소수 첫째 자리 반올림)', () => {
+    const many = Array.from({ length: 49 }, (_, i) => item(`E-${i}`, false, `항목 ${i}`))
+    expect(computeProgress(many, [state('E-0', { status: 'received', checked: true })], ['E']).percent).toBe(2)
     expect(computeProgress([], [], []).percent).toBe(0)
-  })
-
-  it('반올림한 정수 퍼센트', () => {
-    const three = items.slice(0, 3)
-    expect(computeProgress(three, [state('gt.model', { checked: true })], [...categories]).percent).toBe(33)
   })
 })
 
-describe('체크·상태 연동', () => {
-  it('체크하면 받음, 받음 항목 체크 해제는 대기', () => {
+describe('체크·상태 연동 (체크 = 수령)', () => {
+  it('체크하면 수령, 수령 항목 체크 해제는 대기', () => {
     expect(applyCheck(state('a'), true)).toEqual({ checked: true, status: 'received' })
-    expect(applyCheck(state('a', { checked: true, status: 'received' }), false)).toEqual({ checked: false, status: 'pending' })
+    expect(applyCheck(state('a', { checked: true, status: 'received' }), false)).toEqual({ checked: false, status: 'not_entered' })
   })
 
   it('요청함 상태에서 체크 해제해도 요청함은 유지', () => {
-    expect(applyCheck(state('a', { checked: true, status: 'requested' }), false)).toEqual({ checked: false, status: 'requested' })
+    expect(applyCheck(state('a', { status: 'requested' }), false)).toEqual({ checked: false, status: 'requested' })
   })
 
-  it('받음을 고르면 체크, 받음에서 벗어나면 체크 해제', () => {
+  it('수령을 고르면 체크, 다른 상태면 체크 해제', () => {
     expect(applyStatus(state('a'), 'received')).toEqual({ status: 'received', checked: true })
     expect(applyStatus(state('a', { checked: true, status: 'received' }), 'requested')).toEqual({ status: 'requested', checked: false })
-    expect(applyStatus(state('a'), 'na')).toEqual({ status: 'na' })
+    expect(applyStatus(state('a'), 'na')).toEqual({ status: 'na', checked: false })
   })
 })
 
-describe('filterItems', () => {
-  const states = [state('gt.model', { checked: true }), state('doc.pid', { status: 'na' })]
+describe('filterItems (키트 filter_items 규칙)', () => {
+  const states = [state('A-01', { checked: true, status: 'received' }), state('B-13', { status: 'na' })]
 
   it('필수만', () => {
-    expect(filterItems(items, states, 'required', '').map((i) => i.id)).toEqual(['gt.model', 'gt.back_pressure'])
+    expect(filterItems(items, states, 'required', '').map((i) => i.id)).toEqual(['A-01', 'A-02'])
   })
 
-  it('미완료: 체크된 항목과 해당 없음 제외', () => {
-    expect(filterItems(items, states, 'unchecked', '').map((i) => i.id)).toEqual(['gt.back_pressure', 'exh.composition'])
+  it('미완료: 수령과 해당 없음 제외', () => {
+    expect(filterItems(items, states, 'unchecked', '').map((i) => i.id)).toEqual(['A-02', 'B-06'])
   })
 
-  it('검색은 대소문자·공백 무시', () => {
-    expect(filterItems(items, states, 'all', 'gt배압').map((i) => i.id)).toEqual(['gt.back_pressure'])
-    expect(filterItems(items, states, 'all', 'p&id').map((i) => i.id)).toEqual(['doc.pid'])
+  it('검색은 ID·항목명·이유, 대소문자 무시', () => {
+    expect(filterItems(items, states, 'all', '핀치').map((i) => i.id)).toEqual(['B-06'])
+    expect(filterItems(items, states, 'all', 'b-13').map((i) => i.id)).toEqual(['B-13'])
+    expect(filterItems(items, states, 'all', 'p&id').map((i) => i.id)).toEqual(['B-13'])
   })
 })
 
 describe('sectionCheckState', () => {
-  const gt = items.slice(0, 2)
+  const a = items.slice(0, 2)
   it('전부/일부/없음 (na 제외)', () => {
-    expect(sectionCheckState(gt, [state('gt.model', { checked: true })])).toBe('some')
-    expect(sectionCheckState(gt, [state('gt.model', { checked: true }), state('gt.back_pressure', { status: 'na' })])).toBe('all')
-    expect(sectionCheckState(gt, [])).toBe('none')
+    expect(sectionCheckState(a, [state('A-01', { checked: true })])).toBe('some')
+    expect(sectionCheckState(a, [state('A-01', { checked: true }), state('A-02', { status: 'na' })])).toBe('all')
+    expect(sectionCheckState(a, [])).toBe('none')
   })
 })
 

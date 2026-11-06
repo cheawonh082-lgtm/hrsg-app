@@ -230,12 +230,7 @@ class Orchestrator:
         return ParamPlan(user, user_fields, input=inp)
 
     def _defaults(self, model_id: str, locale: Locale) -> dict:
-        return CalcInput(
-            gt_model_id=model_id,
-            condition=self.data.get_default_condition(model_id),
-            economics=self.data.get_default_economics(),
-            locale=locale,
-        ).model_dump(by_alias=True)
+        return self.data.default_input(model_id, "example", locale).model_dump(by_alias=True)
 
 
 def grounded_numbers(message: str, citations: list[Citation]) -> set[float]:
@@ -290,7 +285,7 @@ def _flatten(partial: dict) -> list[tuple[str, object]]:
     for key, value in partial.items():
         if isinstance(value, dict):
             items.extend((k, v) for k, v in value.items() if v is not None)
-        elif value is not None and key not in ("locale", "cleaningMethodIds"):
+        elif value is not None and key != "locale":
             items.append((key, value))
     return items
 

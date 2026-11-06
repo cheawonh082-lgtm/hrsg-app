@@ -19,7 +19,7 @@ LLM_VISIBLE_PATHS = (
     "loss.gt_power_loss_mw",
     "loss.st_power_loss_mw",
     "loss.total_power_loss_mw",
-    "loss.heat_rate_increase_pct",
+    "loss.monthly_loss_krw",
     "loss.annual_revenue_loss_krw",
     "recovery.recovered_power_mw",
     "recovery.annual_recovery_krw",

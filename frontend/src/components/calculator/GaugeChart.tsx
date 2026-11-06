@@ -2,26 +2,21 @@ import type { EChartsOption } from 'echarts'
 import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Metric, StatusThresholds, ThresholdBand } from '../../api/types'
+import type { Metric } from '../../api/types'
 import { cn } from '../../lib/cn'
 import { prefersReducedMotion } from '../../lib/echarts'
 import { formatNumber } from '../../lib/format'
-import { absoluteBand, clamp, niceCeil, niceFloor } from '../../lib/thresholds'
+import { clamp } from '../../lib/thresholds'
 import { useUiStore } from '../../store/ui'
 import { useThemeColors } from '../../theme/useThemeColors'
 import { StatusPill } from '../common/StatusPill'
 import { EChart } from './EChart'
 
-/** 게이지로 보여줄 지표와 임계값 키 (백엔드 Metric.key ↔ StatusThresholds 키) */
+/** 게이지로 보여줄 지표 (키트 r.indicators — 값·설계·주의·위험·min·max·level) */
 const GAUGES = ['gtBackPressure', 'hrsgGasDp', 'stackTemp'] as const
 type GaugeKey = (typeof GAUGES)[number]
 
-interface GaugeChartProps {
-  metric: Metric
-  band: ThresholdBand
-}
-
-export function GaugeChart({ metric, band }: GaugeChartProps) {
+export function GaugeChart({ metric }: { metric: Metric }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
   const colors = useThemeColors()
@@ -30,12 +25,12 @@ export function GaugeChart({ metric, band }: GaugeChartProps) {
   const fmt = (v: number) => formatNumber(v, locale, { maximumFractionDigits: 1 })
 
   const option = useMemo<EChartsOption>(() => {
-    // 임계값(설계 대비)을 절대값으로 바꿔 게이지 구간 색으로 사용 — 프론트에 임계값 하드코딩 없음
-    const abs = absoluteBand(baseline, band)
-    const span = Math.max(abs.danger - baseline, 1)
-    const min = Math.max(0, niceFloor(baseline - span))
-    const max = niceCeil(Math.max(abs.danger + span, metric.value * 1.05))
-    const frac = (x: number) => clamp((x - min) / (max - min), 0, 1)
+    // 키트 지표의 판정 기준(절대값)을 게이지 구간 색으로 — 프론트에 기준값 하드코딩 없음
+    const caution = metric.caution ?? baseline
+    const danger = metric.danger ?? caution
+    const min = Math.min(metric.min ?? baseline, metric.value)
+    const max = Math.max(metric.max ?? danger, metric.value)
+    const frac = (x: number) => clamp((x - min) / (max - min || 1), 0, 1)
 
     return {
       animationDuration: prefersReducedMotion() ? 0 : 300,
@@ -52,8 +47,8 @@ export function GaugeChart({ metric, band }: GaugeChartProps) {
             lineStyle: {
               width: 12,
               color: [
-                [frac(abs.caution), colors.normal],
-                [frac(abs.danger), colors.caution],
+                [frac(caution), colors.normal],
+                [frac(danger), colors.caution],
                 [1, colors.danger],
               ],
             },
@@ -62,7 +57,8 @@ export function GaugeChart({ metric, band }: GaugeChartProps) {
           anchor: { show: true, size: 10, itemStyle: { color: colors.text } },
           axisTick: { distance: -12, length: 5, lineStyle: { color: colors.surface, width: 1 } },
           splitLine: { distance: -12, length: 12, lineStyle: { color: colors.surface, width: 2 } },
-          axisLabel: { distance: 16, color: colors.muted, fontSize: 10 },
+          splitNumber: 5,
+          axisLabel: { distance: 16, color: colors.muted, fontSize: 10, formatter: (v: number) => fmt(v) },
           title: { show: false },
           detail: {
             valueAnimation: !prefersReducedMotion(),
@@ -76,7 +72,7 @@ export function GaugeChart({ metric, band }: GaugeChartProps) {
         },
       ],
     }
-  }, [metric.value, metric.unit, baseline, band, colors, locale])
+  }, [metric, baseline, colors, locale])
 
   return (
     <figure
@@ -102,7 +98,7 @@ export function GaugeChart({ metric, band }: GaugeChartProps) {
 }
 
 /** 게이지 3종. 모바일은 가로 스와이프(스크롤 스냅 + 페이지 점), md 이상은 3열 (PRD §3.4.2) */
-export function GaugeGroup({ metrics, thresholds }: { metrics: Metric[]; thresholds: StatusThresholds }) {
+export function GaugeGroup({ metrics }: { metrics: Metric[] }) {
   const { t } = useTranslation()
   const scroller = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
@@ -125,7 +121,7 @@ export function GaugeGroup({ metrics, thresholds }: { metrics: Metric[]; thresho
       >
         {items.map(({ key, metric }) => (
           <div key={key} className="w-full shrink-0 snap-center md:w-auto md:min-w-0">
-            <GaugeChart metric={metric} band={thresholds[key]} />
+            <GaugeChart metric={metric} />
           </div>
         ))}
       </div>

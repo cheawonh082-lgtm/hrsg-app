@@ -13,7 +13,8 @@ import type {
   EmailExportResult,
 } from '../types'
 
-const PENDING_KEY = 'hrsg-checklist-pending'
+// v2: 체크리스트를 키트 항목(A-01 …)·상태 키(not_entered …)로 바꾸면서 이전 백업은 버린다
+const PENDING_KEY = 'hrsg-checklist-pending-v2'
 
 /** 서버에 아직 저장되지 않은 변경 (항목 id → 누적 변경). 새로고침해도 남도록 localStorage에 백업한다. */
 type Pending = Record<string, ChecklistItemPatch>
@@ -83,7 +84,7 @@ export function useChecklistMutations() {
         delete pending[itemId]
         writePending(pending)
         setCount(Object.keys(pending).length)
-        applyToCache(queryClient, itemId, { updatedAt: saved.updatedAt })
+        applyToCache(queryClient, itemId, saved) // 서버(키트) 기준 상태로 맞춘다
         return true
       } catch {
         const pending = readPending()

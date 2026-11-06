@@ -228,8 +228,9 @@ def test_claude_calc_question_goes_through_guardrails(client):
 
     body = ask(client, "F급 차압 35mbar, 스택 110℃면 손실이 얼마야?")
     headline = {m["key"]: m["value"] for m in blocks_of(body, "calc_result")[0]["headline"]}
-    assert headline["totalPowerLossMw"] == pytest.approx(3.16, abs=0.01)
-    assert "3.2 MW" in text_of(body) and "9.9" not in text_of(body)
+    # 키트 식: GT 270 MW × 0.08 %/mbar × 초과 10 mbar + ST 135 MW × 0.12 %/℃ × 초과 20 ℃ = 2.16 + 3.24
+    assert headline["totalPowerLossMw"] == pytest.approx(5.40, abs=0.01)
+    assert "5.4 MW" in text_of(body) and "9.9" not in text_of(body)
     assert body["guardrail"]["numberCheck"] == "sanitized"
 
     extract_call, compose_call = stub.calls
@@ -281,8 +282,9 @@ def test_gemini_calc_question_goes_through_guardrails(client):
 
     body = ask(client, "F급 차압 35mbar, 스택 110℃면 손실이 얼마야?")
     headline = {m["key"]: m["value"] for m in blocks_of(body, "calc_result")[0]["headline"]}
-    assert headline["totalPowerLossMw"] == pytest.approx(3.16, abs=0.01)
-    assert "3.2 MW" in text_of(body) and "9.9" not in text_of(body)
+    # 키트 식: GT 270 MW × 0.08 %/mbar × 초과 10 mbar + ST 135 MW × 0.12 %/℃ × 초과 20 ℃ = 2.16 + 3.24
+    assert headline["totalPowerLossMw"] == pytest.approx(5.40, abs=0.01)
+    assert "5.4 MW" in text_of(body) and "9.9" not in text_of(body)
     assert stub.calls[0]["model"] == "gemini-3.5-flash"
     assert stub.calls[0]["config"].response_mime_type == "application/json"
 

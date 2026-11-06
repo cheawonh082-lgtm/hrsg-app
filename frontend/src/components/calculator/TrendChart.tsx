@@ -2,25 +2,22 @@ import type { EChartsOption } from 'echarts'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { SensitivitySeries, ThresholdBand } from '../../api/types'
+import type { SensitivitySeries } from '../../api/types'
 import { prefersReducedMotion, withAlpha } from '../../lib/echarts'
 import { formatNumber } from '../../lib/format'
-import { absoluteBand } from '../../lib/thresholds'
 import { useUiStore } from '../../store/ui'
 import { useThemeColors } from '../../theme/useThemeColors'
 import { EChart } from './EChart'
 
 interface TrendChartProps {
+  /** 키트 loss_curve(param 'hrsg_dp'): 점(차압 mbar, 손실 MW) + 현재·설계·주의·위험 차압 */
   series: SensitivitySeries
   /** 현재 입력의 총 손실 (현재점 표시) */
   currentY: number
-  /** 설계 차압 — 주의/위험 구간 밴드 계산용 */
-  baseline?: number | null
-  band?: ThresholdBand
 }
 
 /** ΔP 변화에 따른 총 손실 감도 곡선 + 현재 ΔP 수직 마커 + 주의/위험 구간 배경 밴드 */
-export function TrendChart({ series, currentY, baseline, band }: TrendChartProps) {
+export function TrendChart({ series, currentY }: TrendChartProps) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
   const colors = useThemeColors()
@@ -28,9 +25,8 @@ export function TrendChart({ series, currentY, baseline, band }: TrendChartProps
 
   const option = useMemo<EChartsOption>(() => {
     const xs = series.points.map((p) => p.x)
-    const xMin = Math.min(...xs)
-    const xMax = Math.max(...xs)
-    const zones = baseline != null && band ? absoluteBand(baseline, band) : null
+    const xMin = Math.min(...xs, series.currentX)
+    const xMax = Math.max(...xs, series.currentX)
 
     return {
       animationDuration: prefersReducedMotion() ? 0 : 300,
@@ -68,29 +64,27 @@ export function TrendChart({ series, currentY, baseline, band }: TrendChartProps
           showSymbol: false,
           lineStyle: { color: colors.accent, width: 2 },
           itemStyle: { color: colors.accent },
-          markArea: zones
-            ? {
-                silent: true,
-                data: [
-                  [
-                    {
-                      xAxis: Math.min(zones.caution, xMax),
-                      itemStyle: { color: withAlpha(colors.caution, 0.12) },
-                      label: { show: true, position: 'insideTop', color: colors.caution, formatter: t('calc.trend.caution') },
-                    },
-                    { xAxis: Math.min(zones.danger, xMax) },
-                  ],
-                  [
-                    {
-                      xAxis: Math.min(zones.danger, xMax),
-                      itemStyle: { color: withAlpha(colors.danger, 0.12) },
-                      label: { show: true, position: 'insideTop', color: colors.danger, formatter: t('calc.trend.danger') },
-                    },
-                    { xAxis: xMax },
-                  ],
-                ],
-              }
-            : undefined,
+          markArea: {
+            silent: true,
+            data: [
+              [
+                {
+                  xAxis: Math.min(series.cautionX, xMax),
+                  itemStyle: { color: withAlpha(colors.caution, 0.12) },
+                  label: { show: true, position: 'insideTop', color: colors.caution, formatter: t('calc.trend.caution') },
+                },
+                { xAxis: Math.min(series.dangerX, xMax) },
+              ],
+              [
+                {
+                  xAxis: Math.min(series.dangerX, xMax),
+                  itemStyle: { color: withAlpha(colors.danger, 0.12) },
+                  label: { show: true, position: 'insideTop', color: colors.danger, formatter: t('calc.trend.danger') },
+                },
+                { xAxis: xMax },
+              ],
+            ],
+          },
           markLine: {
             silent: true,
             symbol: 'none',
@@ -108,10 +102,18 @@ export function TrendChart({ series, currentY, baseline, band }: TrendChartProps
         },
       ],
     }
-  }, [series, currentY, baseline, band, colors, locale, t])
+  }, [series, currentY, colors, locale, t])
 
   return (
-    <div data-testid="trend-chart" data-current-x={series.currentX} data-current-y={currentY}>
+    <div
+      data-testid="trend-chart"
+      data-current-x={series.currentX}
+      data-current-y={currentY}
+      data-first={`${series.points[0]?.x}:${series.points[0]?.y.toFixed(2)}`}
+      data-last={`${series.points.at(-1)?.x}:${series.points.at(-1)?.y.toFixed(2)}`}
+      data-caution={series.cautionX}
+      data-danger={series.dangerX}
+    >
       <EChart
         option={option}
         className="h-[220px] md:h-[260px] lg:h-[300px]"

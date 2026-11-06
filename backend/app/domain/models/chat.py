@@ -66,7 +66,8 @@ class CalcResultCard(CamelModel):
     headline: list[Metric]
     status: StatusLevel
     assumptions: list[Assumption]
-    recommended_method_id: str | None = None
+    max_net_benefit_method_id: str | None = None  # 「순편익 최대」 공법 (「권장」·「추천」 아님)
+    max_net_benefit_method_name: str | None = None  # 키트 공법 이름 그대로
 
 
 class ParamConfirmCard(CamelModel):

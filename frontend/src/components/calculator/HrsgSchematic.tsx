@@ -1,12 +1,12 @@
 import { type KeyboardEvent, type ReactNode, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { CalcResult, Metric, SectionHealth, StatusLevel } from '../../api/types'
+import type { CalcResult, Metric, StatusLevel } from '../../api/types'
 import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { cn } from '../../lib/cn'
 import { withAlpha } from '../../lib/echarts'
 import { formatNumber } from '../../lib/format'
-import { BUNDLES, bundleStatus } from '../../lib/performance'
+import { BUNDLES } from '../../lib/performance'
 import { useUiStore } from '../../store/ui'
 import { useThemeColors } from '../../theme/useThemeColors'
 import { StatusPill } from '../common/StatusPill'
@@ -16,14 +16,14 @@ const GRID = 4
 const PITCH = 100 / GRID
 const TUBE_R = 10
 
-type PartId = 'gt' | (typeof BUNDLES)[number]['id'] | 'stack'
+type PartId = 'gt' | (typeof BUNDLES)[number] | 'stack'
 /** 툴팁을 부품의 어느 쪽에 맞출지 — 도식 양 끝에서 화면 밖으로 잘리지 않게 */
 type Align = 'start' | 'center' | 'end'
 
 /**
  * HRSG 간략 도식 — GT → 과열기·증발기·절탄기 → 굴뚝.
- * 튜브 링 두께는 오염 지수, 색은 해당 묶음에서 가장 나쁜 섹션 상태를 따른다 (표시용, 손실 계산과 무관).
- * 부품에 마우스를 올리거나 누르면(탭) 섹션별 상태·가스 온도와 관련 운전 지표를 보여 준다.
+ * 튜브 링 두께는 키트 r.display_fouling(0~1, 표시용·손실 계산과 무관), 색은 HRSG 차압 판정(굴뚝은 스택 온도 판정)을 따른다.
+ * 부품에 마우스를 올리거나 누르면(탭) 표시 오염도와 관련 운전 지표를 보여 준다.
  */
 export function HrsgSchematic({ result }: { result: CalcResult }) {
   const { t } = useTranslation()
@@ -37,13 +37,16 @@ export function HrsgSchematic({ result }: { result: CalcResult }) {
   const [hovered, setHovered] = useState<PartId | null>(null)
   const shown = hovered ?? selected
 
-  const fouling = result.current.foulingIndex
-  // 깨끗해도 얇은 링은 보이게, 오염 지수 100이면 반지름의 약 60%
-  const ring = 1.5 + (fouling / 100) * 4.5
+  const fouling = result.displayFouling
+  // 깨끗해도 얇은 링은 보이게, 표시 오염도 1이면 반지름의 약 60%
+  const ring = (x: number) => 1.5 + x * 4.5
+  const pct = (x: number) => `${fmt(x * 100)}%`
   const metric = (key: string) => result.current.metrics.find((m) => m.key === key)
   const stackMetric = metric('stackTemp')
   const gtMetric = metric('gtBackPressure')
-  const stackStatus = result.sections.find((s) => s.sectionId === 'STACK')?.status ?? 'normal'
+  const dpMetric = metric('hrsgGasDp')
+  const bundleStatus: StatusLevel = dpMetric?.status ?? 'normal'
+  const stackStatus: StatusLevel = stackMetric?.status ?? 'normal'
   const tone = (s: StatusLevel) => colors[s]
 
   const hotspot = (id: PartId, align: Align, detail: ReactNode, children: ReactNode, className?: string) => (
@@ -83,37 +86,36 @@ export function HrsgSchematic({ result }: { result: CalcResult }) {
           <p className="mb-1 text-xs text-muted">{t('calc.schematic.flow')} →</p>
           <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-2 sm:gap-4 sm:p-4">
             {BUNDLES.map((b, i) => {
-              const status = bundleStatus(result.sections, b.sections)
+              const status = bundleStatus
               const c = tone(status)
-              const sections = result.sections.filter((s) => b.sections.includes(s.sectionId))
+              const x = fouling[b]
               return (
-                <div key={b.id} data-bundle={b.id} data-status={status} className="min-w-0">
+                <div key={b} data-bundle={b} data-status={status} data-fouling={x.toFixed(3)} className="min-w-0">
                   {hotspot(
-                    b.id,
+                    b,
                     // 모바일은 3열이 화면 폭을 채우므로 양 끝 열은 바깥쪽 끝에 맞춘다
                     row ? 'center' : i === 0 ? 'start' : i === BUNDLES.length - 1 ? 'end' : 'center',
-                    <PartDetail title={t(`calc.schematic.${b.id}`)} status={status}>
-                      {sections.map((s) => (
-                        <SectionLine key={s.sectionId} section={s} fmt={fmt} />
-                      ))}
+                    <PartDetail title={t(`calc.schematic.${b}`)} status={status}>
+                      <Line label={t('calc.schematic.displayFouling', { value: pct(x) })} value="" />
+                      <MetricLine metric={dpMetric} fmt={fmt} />
                     </PartDetail>,
                     <div className="flex flex-col items-center gap-2">
                       <svg aria-hidden viewBox="-4 -4 108 108" className="w-full max-w-28">
-                        <rect x={-2} y={-2} width={104} height={104} rx={6} fill={colors.surface} stroke={c} strokeWidth={shown === b.id ? 4 : 2.5} />
+                        <rect x={-2} y={-2} width={104} height={104} rx={6} fill={colors.surface} stroke={c} strokeWidth={shown === b ? 4 : 2.5} />
                         {Array.from({ length: GRID * GRID }, (_, k) => (
                           <circle
                             key={k}
                             cx={PITCH * ((k % GRID) + 0.5)}
                             cy={PITCH * (Math.floor(k / GRID) + 0.5)}
-                            r={TUBE_R - ring / 2}
+                            r={TUBE_R - ring(x) / 2}
                             fill={withAlpha(colors.muted, 0.08)}
                             stroke={c}
                             strokeOpacity={0.85}
-                            strokeWidth={ring}
+                            strokeWidth={ring(x)}
                           />
                         ))}
                       </svg>
-                      <span className="text-center text-sm">{t(`calc.schematic.${b.id}`)}</span>
+                      <span className="text-center text-sm">{t(`calc.schematic.${b}`)}</span>
                     </div>,
                   )}
                 </div>
@@ -157,7 +159,7 @@ export function HrsgSchematic({ result }: { result: CalcResult }) {
 
       <figcaption className="space-y-1 text-sm text-muted">
         <p>
-          {t('calc.schematic.foulingIndex', { value: fmt(fouling) })}{' '}
+          {t('calc.schematic.foulingIndex', { value: fmt(fouling.overall * 100) })}{' '}
           <span className="font-semibold text-text">{t('calc.schematic.displayOnly')}</span>
         </p>
         <p>{t(isMobile ? 'calc.schematic.hintTap' : 'calc.schematic.hintHover')}</p>
@@ -267,18 +269,6 @@ function MetricLine({ metric, fmt }: { metric?: Metric; fmt: (v: number) => stri
   if (!metric) return null
   const design = metric.baseline != null ? ` (${t('calc.schematic.design', { value: fmt(metric.baseline) })})` : ''
   return <Line label={t(`calc.metrics.${metric.key}`)} value={`${fmt(metric.value)} ${metric.unit}${design}`} status={metric.status} />
-}
-
-function SectionLine({ section: s, fmt }: { section: SectionHealth; fmt: (v: number) => string }) {
-  const { t } = useTranslation()
-  const temp = (v?: number | null) => (v == null ? '–' : `${fmt(v)}℃`)
-  return (
-    <Line
-      label={t(`calc.sections.${s.sectionId}.name`)}
-      value={`${temp(s.gasInTempC)} → ${temp(s.gasOutTempC)}`}
-      status={s.status}
-    />
-  )
 }
 
 function Connector() {

@@ -8,9 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useToastStore } from '../../store/toast'
 import { EmailExportDialog } from './EmailExportDialog'
 
+/** 서버가 키트 emailDraft()로 만든 본문 형태 */
 const result = (scope: string) => ({
-  subject: '[HRSG 성능 진단] 플랜트 데이터 요청드립니다',
-  body: `안녕하세요, 고객사 담당자님.\n■ 가스터빈\n  1. 부하별 운전 이력 [필수] (${scope})`,
+  body: `HRSG 성능 진단을 위해 아래 데이터를 요청드립니다.\n\n[A. 가스터빈/운전]\n- A-01 GT 모델 및 정격 용량 (MW) — 출력 손실·정지 손실 계산의 기준 용량 [필수] (${scope})`,
   itemCount: 1,
 })
 
@@ -49,24 +49,23 @@ afterEach(() => {
 describe('EmailExportDialog', () => {
   it('서버 미리보기를 보여 주고, 옵션을 바꾸면 다시 요청한다', async () => {
     renderDialog()
-    await waitFor(() => expect(preview().value).toContain('제목: [HRSG 성능 진단]'))
-    expect(lastBody()).toEqual({ scope: 'unchecked', locale: 'ko', includeMemo: false, recipientAlias: 'customer_contact' })
+    await waitFor(() => expect(preview().value).toContain('[A. 가스터빈/운전]'))
+    expect(lastBody()).toEqual({ scope: 'unchecked' })
 
     await userEvent.click(screen.getByRole('button', { name: '전체 항목' }))
     await waitFor(() => expect(preview().value).toContain('(all)'))
-
-    await userEvent.selectOptions(screen.getByLabelText('받는 사람 (별칭)'), 'plant_operations')
-    await userEvent.click(screen.getByLabelText(/메모 포함/))
-    await waitFor(() => expect(lastBody()).toMatchObject({ recipientAlias: 'plant_operations', includeMemo: true }))
+    expect(lastBody()).toEqual({ scope: 'all' })
+    // 키트 메일 문구는 한국어만 있어 언어 선택이 없다
+    expect(screen.queryByLabelText('이메일 언어')).toBeNull()
   })
 
-  it('수신자 실명을 입력하는 칸이 없다 (별칭 선택만)', async () => {
+  it('실명·메모를 입력하는 칸이 없다', async () => {
     renderDialog()
     await waitFor(() => expect(preview().value).not.toBe(''))
     expect(screen.queryAllByRole('textbox').filter((el) => !(el as HTMLTextAreaElement).readOnly)).toHaveLength(0)
   })
 
-  it('클립보드에 제목+본문을 복사하고 토스트를 띄운다', async () => {
+  it('클립보드에 키트 메일 문구를 그대로 복사하고 토스트를 띄운다', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     setClipboard(writeText)
     renderDialog()
@@ -74,7 +73,7 @@ describe('EmailExportDialog', () => {
 
     await userEvent.click(screen.getByRole('button', { name: '클립보드에 복사' }))
     expect(writeText).toHaveBeenCalledWith(preview().value)
-    expect(writeText.mock.calls[0][0]).toMatch(/^제목: \[HRSG 성능 진단\][\s\S]*안녕하세요, 고객사 담당자님\./)
+    expect(writeText.mock.calls[0][0]).toMatch(/^HRSG 성능 진단을 위해 아래 데이터를 요청드립니다\./)
     expect(useToastStore.getState().toasts.at(-1)?.message).toBe('이메일 텍스트를 복사했습니다 (요청 항목 1개).')
   })
 

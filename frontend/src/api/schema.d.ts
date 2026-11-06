@@ -45,25 +45,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Defaults */
+        /**
+         * Get Defaults
+         * @description example: 키트 defaultInputs (처음 화면, 예시 운전 상태) / design: 키트 designInputs (「초기화」, 손실 0)
+         */
         get: operations["get_defaults_api_calc_defaults_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/calc/thresholds": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Thresholds */
-        get: operations["get_thresholds_api_calc_thresholds_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -379,8 +365,6 @@ export interface components {
             gtModelId: string;
             condition: components["schemas"]["OperatingCondition"];
             economics: components["schemas"]["EconomicParams"];
-            /** Cleaningmethodids */
-            cleaningMethodIds?: string[] | null;
             /**
              * Locale
              * @default ko
@@ -416,12 +400,13 @@ export interface components {
             current: components["schemas"]["CurrentState"];
             loss: components["schemas"]["LossEstimate"];
             recovery: components["schemas"]["RecoveryEstimate"];
+            efficiency: components["schemas"]["EfficiencyEstimate"];
             /** Cleaningcomparison */
             cleaningComparison: components["schemas"]["CleaningMethodComparison"][];
             /** Pinchapproach */
             pinchApproach: components["schemas"]["PinchApproachEvaluation"][];
-            /** Sections */
-            sections: components["schemas"]["SectionHealth"][];
+            keyIndicators: components["schemas"]["KeyIndicators"];
+            displayFouling: components["schemas"]["DisplayFouling"];
             sensitivity: components["schemas"]["SensitivitySeries"];
         };
         /**
@@ -447,16 +432,15 @@ export interface components {
             status: "normal" | "caution" | "danger";
             /** Assumptions */
             assumptions: components["schemas"]["Assumption"][];
-            /** Recommendedmethodid */
-            recommendedMethodId?: string | null;
+            /** Maxnetbenefitmethodid */
+            maxNetBenefitMethodId?: string | null;
+            /** Maxnetbenefitmethodname */
+            maxNetBenefitMethodName?: string | null;
         };
         /** CategoryInfo */
         CategoryInfo: {
-            /**
-             * Id
-             * @enum {string}
-             */
-            id: "gas_turbine" | "exhaust_gas" | "feedwater_steam" | "pinch_approach" | "design_docs" | "maintenance_history" | "economics";
+            /** Id */
+            id: string;
             /** Label */
             label: string;
         };
@@ -501,43 +485,47 @@ export interface components {
         ChecklistItem: {
             /** Id */
             id: string;
-            /**
-             * Category
-             * @enum {string}
-             */
-            category: "gas_turbine" | "exhaust_gas" | "feedwater_steam" | "pinch_approach" | "design_docs" | "maintenance_history" | "economics";
-            /** Labelkey */
-            labelKey: string;
+            /** Category */
+            category: string;
             /**
              * Kind
              * @enum {string}
              */
-            kind: "design" | "operating" | "document";
+            kind: "design" | "operation" | "document";
+            /** Required */
+            required: boolean;
             /**
              * Priority
              * @enum {string}
              */
             priority: "required" | "recommended" | "optional";
+            /**
+             * Prioritylevel
+             * @enum {string}
+             */
+            priorityLevel: "high" | "medium" | "low";
             /** Unit */
             unit?: string | null;
+            /** Calcinput */
+            calcInput?: string | null;
             /** Linkedcalcfield */
             linkedCalcField?: string | null;
             /** Label */
             label: string;
             /** Description */
-            description?: string | null;
-            /** Period */
-            period?: string | null;
+            description: string;
+            /** Detail */
+            detail: string;
         };
         /**
          * ChecklistItemPatch
-         * @description PATCH 본문: Partial<ChecklistItemState>. 보낸 필드만 바뀐다.
+         * @description PATCH 본문. 보낸 필드만 바뀐다. 체크 = 'received' (키트: 동그라미 체크 하나만 쓰는 화면).
          */
         ChecklistItemPatch: {
             /** Checked */
             checked?: boolean | null;
             /** Status */
-            status?: ("pending" | "requested" | "received" | "na") | null;
+            status?: ("not_entered" | "requested" | "received" | "na") | null;
             /** Memo */
             memo?: string | null;
         };
@@ -552,18 +540,16 @@ export interface components {
             checked: boolean;
             /**
              * Status
-             * @default pending
+             * @default not_entered
              * @enum {string}
              */
-            status: "pending" | "requested" | "received" | "na";
+            status: "not_entered" | "requested" | "received" | "verify_needed" | "na";
             /** Memo */
             memo?: string | null;
-            /** Updatedat */
-            updatedAt?: string | null;
         };
         /**
          * ChecklistProgress
-         * @description '해당 없음(na)' 항목은 분모·분자 모두에서 뺀다.
+         * @description 키트 summary(): 해당 없음(na)은 분모에서 뺀다. 필수는 '수령했고 검증 실패가 아님'.
          */
         ChecklistProgress: {
             /** Total */
@@ -638,26 +624,57 @@ export interface components {
              */
             style: "excerpts" | "titles";
         };
-        /** CleaningMethodComparison */
+        /**
+         * CleaningMethodComparison
+         * @description 키트 compare_methods().rows 한 줄. available=false 면 「산출 불가 — 입력 필요: …」
+         */
         CleaningMethodComparison: {
             /** Methodid */
             methodId: string;
-            /** Namekey */
-            nameKey: string;
+            /** Name */
+            name: string;
+            /** Available */
+            available: boolean;
+            /** Missing */
+            missing?: string[];
             /** Costkrw */
-            costKrw: number;
+            costKrw?: number | null;
             /** Downtimedays */
-            downtimeDays: number;
+            downtimeDays?: number | null;
+            /** Indirectkrw */
+            indirectKrw?: number | null;
             /** Expectedrecoverypct */
-            expectedRecoveryPct: number;
+            expectedRecoveryPct?: number | null;
+            /** Recoveredpowermw */
+            recoveredPowerMw?: number | null;
+            /** Recoverybasis */
+            recoveryBasis?: ("mw" | "ratio" | "target") | null;
+            /** Outagelosskrw */
+            outageLossKrw?: number | null;
+            /** Totalinvestmentkrw */
+            totalInvestmentKrw?: number | null;
+            /** Monthlybenefitkrw */
+            monthlyBenefitKrw?: number | null;
+            /** Annualbenefitkrw */
+            annualBenefitKrw?: number | null;
             /** Paybackmonths */
-            paybackMonths: number | null;
+            paybackMonths?: number | null;
+            /** Breakevendays */
+            breakevenDays?: number | null;
+            /** Firstmonthnetkrw */
+            firstMonthNetKrw?: number | null;
             /** Netbenefitkrw */
-            netBenefitKrw: number;
-            /** Recommended */
-            recommended: boolean;
-            /** Noteskey */
-            notesKey?: string | null;
+            netBenefitKrw?: number | null;
+            /**
+             * Maxnetbenefit
+             * @default false
+             */
+            maxNetBenefit: boolean;
+            /**
+             * Bestpayback
+             * @default false
+             */
+            bestPayback: boolean;
         };
         /** CurrentState */
         CurrentState: {
@@ -668,56 +685,79 @@ export interface components {
             overallStatus: "normal" | "caution" | "danger";
             /** Foulingindex */
             foulingIndex: number;
+            /** Pressurepart */
+            pressurePart: number;
+            /** Temppart */
+            tempPart: number;
             /** Metrics */
             metrics: components["schemas"]["Metric"][];
+        };
+        /**
+         * DisplayFouling
+         * @description HRSG 도식 표시용 오염도 0~1 — 키트 r.display_fouling (손실 계산과 무관)
+         */
+        DisplayFouling: {
+            /** Overall */
+            overall: number;
+            /** Superheater */
+            superheater: number;
+            /** Evaporator */
+            evaporator: number;
+            /** Economizer */
+            economizer: number;
         };
         /** EconomicParams */
         EconomicParams: {
             /** Electricitypricekrwpermwh */
             electricityPriceKrwPerMwh: number;
-            /** Fuelpricekrwpergj */
-            fuelPriceKrwPerGj?: number | null;
+            /**
+             * Monthlyoperatinghours
+             * @default 720
+             */
+            monthlyOperatingHours: number;
             /**
              * Annualoperatinghours
-             * @default 7000
+             * @default 8000
              */
             annualOperatingHours: number;
+        };
+        /**
+         * EfficiencyEstimate
+         * @description 열회수 효율(%) — 키트 r.efficiency · efficiency_trend() · key_indicators().kpi.heat_recovery_eff.
+         *     배기·외기 온도가 없으면 None.
+         */
+        EfficiencyEstimate: {
+            /** Currentpct */
+            currentPct: number | null;
+            /** Aftercleaningpct */
+            afterCleaningPct: number | null;
+            /** Designpct */
+            designPct: number | null;
+            /** Vsdesignpp */
+            vsDesignPp: number | null;
+            /** Cautionpct */
+            cautionPct: number | null;
+            /** Dangerpct */
+            dangerPct: number | null;
             /**
-             * Analysisperiodyears
-             * @default 1
+             * Status
+             * @enum {string}
              */
-            analysisPeriodYears: number;
+            status: "normal" | "caution" | "danger" | "no_data";
+            /** Trend */
+            trend: components["schemas"]["TrendPoint"][];
         };
         /** EmailExportRequest */
         EmailExportRequest: {
-            /**
-             * Locale
-             * @default ko
-             * @enum {string}
-             */
-            locale: "ko" | "en";
             /**
              * Scope
              * @default unchecked
              * @enum {string}
              */
             scope: "unchecked" | "all" | "required_only";
-            /**
-             * Recipientalias
-             * @default customer_contact
-             * @enum {string}
-             */
-            recipientAlias: "customer_contact" | "plant_operations" | "performance_engineer";
-            /**
-             * Includememo
-             * @default false
-             */
-            includeMemo: boolean;
         };
         /** EmailExportResult */
         EmailExportResult: {
-            /** Subject */
-            subject: string;
             /** Body */
             body: string;
             /** Itemcount */
@@ -763,7 +803,10 @@ export interface components {
             /** Items */
             items: string[];
         };
-        /** GasTurbineSpec */
+        /**
+         * GasTurbineSpec
+         * @description 키트 data/calculator.json 의 gt_classes 한 개 (model_id 는 GT_MOCK_<등급>_CLASS)
+         */
         GasTurbineSpec: {
             /** Modelid */
             modelId: string;
@@ -771,12 +814,12 @@ export interface components {
             displayName: string;
             /** Ratedpowermw */
             ratedPowerMw: number;
+            /** Ratedstmw */
+            ratedStMw: number;
             /** Ratedexhaustflowkgs */
             ratedExhaustFlowKgS: number;
             /** Ratedexhausttempc */
             ratedExhaustTempC: number;
-            /** Backpressuresensitivity */
-            backPressureSensitivity?: number | null;
         };
         /** GuardrailReport */
         GuardrailReport: {
@@ -831,6 +874,27 @@ export interface components {
                 [key: string]: components["schemas"]["FieldLimit"];
             };
         };
+        /**
+         * KeyIndicators
+         * @description 탭 3 핵심 성능 지표 — 키트 key_indicators().kpi 중 다른 결과에 없는 값
+         */
+        KeyIndicators: {
+            /**
+             * Overallstatus
+             * @enum {string}
+             */
+            overallStatus: "normal" | "caution" | "danger";
+            /** Hpsteamtph */
+            hpSteamTph: number | null;
+            /** Cleaningmethodid */
+            cleaningMethodId: string | null;
+            /** Cleaningmethodname */
+            cleaningMethodName: string | null;
+            /** Cleaningcostkrw */
+            cleaningCostKrw: number | null;
+            /** Paybackmonths */
+            paybackMonths: number | null;
+        };
         /** LlmStatus */
         LlmStatus: {
             /** Provider */
@@ -866,12 +930,14 @@ export interface components {
             stPowerLossMw: number;
             /** Totalpowerlossmw */
             totalPowerLossMw: number;
-            /** Heatrateincreasepct */
-            heatRateIncreasePct: number;
+            /** Excesspressurembar */
+            excessPressureMbar: number;
+            /** Excessstackc */
+            excessStackC: number;
+            /** Monthlylosskrw */
+            monthlyLossKrw: number;
             /** Annualrevenuelosskrw */
             annualRevenueLossKrw: number;
-            /** Annualfuelpenaltykrw */
-            annualFuelPenaltyKrw?: number | null;
         };
         /** Metric */
         Metric: {
@@ -887,6 +953,14 @@ export interface components {
             baseline?: number | null;
             /** Delta */
             delta?: number | null;
+            /** Caution */
+            caution?: number | null;
+            /** Danger */
+            danger?: number | null;
+            /** Min */
+            min?: number | null;
+            /** Max */
+            max?: number | null;
         };
         /** NoticeBlock */
         NoticeBlock: {
@@ -919,12 +993,8 @@ export interface components {
             hrsgGasDpMbar: number;
             /** Stacktempc */
             stackTempC: number;
-            /** Hpsteamflowkgs */
-            hpSteamFlowKgS?: number | null;
-            /** Ipsteamflowkgs */
-            ipSteamFlowKgS?: number | null;
-            /** Lpsteamflowkgs */
-            lpSteamFlowKgS?: number | null;
+            /** Hpsteamtph */
+            hpSteamTph?: number | null;
             /** Hpdrumpressurebarg */
             hpDrumPressureBarg?: number | null;
             /** Hpevapgasouttempc */
@@ -950,7 +1020,10 @@ export interface components {
                 [key: string]: number | string;
             };
         };
-        /** PinchApproachEvaluation */
+        /**
+         * PinchApproachEvaluation
+         * @description 키트 pinch_section() — HP/IP/LP
+         */
         PinchApproachEvaluation: {
             /**
              * Section
@@ -965,10 +1038,14 @@ export interface components {
             designPinchC: number;
             /** Designapproachc */
             designApproachC: number;
+            /** Saturationtempc */
+            saturationTempC?: number | null;
             /** Status */
             status: ("normal" | "caution" | "danger") | "insufficient_data";
-            /** Commentkey */
-            commentKey: string;
+            /** Message */
+            message: string;
+            /** Checklistcategory */
+            checklistCategory: string;
         };
         /** ProcessStep */
         ProcessStep: {
@@ -1028,18 +1105,31 @@ export interface components {
             keywordDocs: number;
             api: components["schemas"]["RagApiStatus"];
         };
-        /** RecoveryEstimate */
+        /**
+         * RecoveryEstimate
+         * @description 기본 공법(키트 constants.default_method)으로 세정했을 때 — 키트 r.default_method
+         */
         RecoveryEstimate: {
-            /** Expecteddpaftermbar */
-            expectedDpAfterMbar: number;
-            /** Expectedstacktempafterc */
-            expectedStackTempAfterC: number;
+            /** Methodid */
+            methodId: string | null;
+            /** Name */
+            name: string | null;
             /** Recoveredpowermw */
             recoveredPowerMw: number;
+            /** Lossaftermw */
+            lossAfterMw: number;
+            /** Monthlyrecoverykrw */
+            monthlyRecoveryKrw: number;
             /** Annualrecoverykrw */
             annualRecoveryKrw: number;
             /** Recoveryratepct */
             recoveryRatePct: number;
+            /** Expectedbpaftermbar */
+            expectedBpAfterMbar: number;
+            /** Expecteddpaftermbar */
+            expectedDpAfterMbar: number;
+            /** Expectedstacktempafterc */
+            expectedStackTempAfterC: number;
         };
         /** ReferenceDoc */
         ReferenceDoc: {
@@ -1144,24 +1234,10 @@ export interface components {
             /** Corpusallpath */
             corpusAllPath: string | null;
         };
-        /** SectionHealth */
-        SectionHealth: {
-            /**
-             * Sectionid
-             * @enum {string}
-             */
-            sectionId: "HP_SH" | "RH" | "HP_EVA" | "HP_ECO" | "IP_SH" | "IP_EVA" | "IP_ECO" | "LP_SH" | "LP_EVA" | "CPH" | "STACK";
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "normal" | "caution" | "danger";
-            /** Gasintempc */
-            gasInTempC?: number | null;
-            /** Gasouttempc */
-            gasOutTempC?: number | null;
-        };
-        /** SensitivitySeries */
+        /**
+         * SensitivitySeries
+         * @description 차압 변화에 따른 손실 감도 — 키트 loss_curve(param='hrsg_dp')
+         */
         SensitivitySeries: {
             /**
              * Xkey
@@ -1179,13 +1255,12 @@ export interface components {
             points: components["schemas"]["TrendPoint"][];
             /** Currentx */
             currentX: number;
-        };
-        /** StatusThresholds */
-        StatusThresholds: {
-            hrsgGasDp: components["schemas"]["ThresholdBand"];
-            stackTemp: components["schemas"]["ThresholdBand"];
-            gtBackPressure: components["schemas"]["ThresholdBand"];
-            pinch: components["schemas"]["ThresholdBand"];
+            /** Designx */
+            designX: number;
+            /** Cautionx */
+            cautionX: number;
+            /** Dangerx */
+            dangerX: number;
         };
         /** TextBlock */
         TextBlock: {
@@ -1198,23 +1273,6 @@ export interface components {
             markdown: string;
             /** Aimodel */
             aiModel?: string | null;
-        };
-        /**
-         * ThresholdBand
-         * @description value < caution → 정상, caution ≤ value ≤ danger → 주의, value > danger → 위험.
-         */
-        ThresholdBand: {
-            /**
-             * Basis
-             * @enum {string}
-             */
-            basis: "pct_increase" | "delta";
-            /** Unit */
-            unit: string;
-            /** Caution */
-            caution: number;
-            /** Danger */
-            danger: number;
         };
         /** TrendPoint */
         TrendPoint: {
@@ -1289,6 +1347,7 @@ export interface operations {
         parameters: {
             query: {
                 gtModelId: string;
+                preset?: "example" | "design";
                 locale?: "ko" | "en";
             };
             header?: never;
@@ -1313,26 +1372,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_thresholds_api_calc_thresholds_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatusThresholds"];
                 };
             };
         };

@@ -4,7 +4,7 @@ import type { CalcResult } from '../../api/types'
 import { formatNumber } from '../../lib/format'
 import { useUiStore } from '../../store/ui'
 
-/** 현재 손실(GT·ST 분해) vs 세정 후 손실 — 막대 폭은 현재 총 손실 기준 */
+/** 현재 손실(GT·ST 분해) vs 기본 공법 세정 후 손실(키트 r.default_method.loss_after) — 막대 폭은 현재 총 손실 기준 */
 export function LossComparison({ result }: { result: CalcResult }) {
   const { t } = useTranslation()
   const locale = useUiStore((s) => s.locale)
@@ -12,7 +12,7 @@ export function LossComparison({ result }: { result: CalcResult }) {
 
   const { gtPowerLossMw: gt, stPowerLossMw: st, totalPowerLossMw: total } = result.loss
   const recovered = result.recovery.recoveredPowerMw
-  const after = Math.max(total - recovered, 0)
+  const after = result.recovery.lossAfterMw
   const pct = (v: number) => `${total > 0 ? (v / total) * 100 : 0}%`
 
   const rows = [

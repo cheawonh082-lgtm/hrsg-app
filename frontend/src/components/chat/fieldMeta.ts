@@ -34,8 +34,3 @@ export function formatAssumption(
   const n = formatNumber(value, locale, { maximumFractionDigits: 2 })
   return unit ? `${n} ${unit}` : n
 }
-
-/** 'dry_ice' → 'cleaning.dryIce' (계산기 공법 비교 표와 같은 i18n 키) */
-export function cleaningMethodKey(methodId: string) {
-  return `cleaning.${methodId.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())}`
-}

@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     calc_engine: Literal["mock", "real"] = "mock"
     data_source: Literal["mock", "real"] = "mock"
     secrets_dir: Path = _ROOT_DIR / "secrets"
+    # 팀 공통 계산기·체크리스트 키트 (calc.py · checklist.py · data/). 폴더 안 파일은 고치지 않고 그대로 불러 쓴다
+    calc_kit_dir: Path = _ROOT_DIR / "hrsg_calc_kit_team2"
 
     # LLM — 실제 공급자 연결 전까지 fake (PRD §7.4 #5)
     llm_provider: Literal["fake", "claude", "gemini"] = "fake"

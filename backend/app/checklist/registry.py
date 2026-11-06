@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import Depends
 
-from app.checklist.service import ChecklistService, load_template
+from app.checklist.service import ChecklistService
 from app.checklist.store import ChecklistStateStore, JsonFileStateStore
 from app.config import Settings, get_settings
 
@@ -20,4 +20,4 @@ def get_checklist_store(settings: Settings = Depends(get_settings)) -> Checklist
 
 
 def get_checklist_service(store: ChecklistStateStore = Depends(get_checklist_store)) -> ChecklistService:
-    return ChecklistService(load_template(), store)
+    return ChecklistService(store)

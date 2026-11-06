@@ -10,11 +10,12 @@
 
 | 경로 | 내용 |
 |---|---|
-| `backend/` | FastAPI + Pydantic v2. 계산기 인터페이스(`app/calculator/base.py`)와 Mock 구현 |
+| `backend/` | FastAPI + Pydantic v2. 계산기 인터페이스(`app/calculator/base.py`)와 키트 구현(`kit_calculator.py`, 어댑터 `kit_adapter.py`) |
+| `hrsg_calc_kit_team2/` | 팀 공통 계산기·체크리스트 키트(common-0.2, DEMO 값). `calc.py`·`checklist.py`·`data/`는 고치지 않고 백엔드가 그대로 불러 쓴다(`app/kit.py`, 경로는 `CALC_KIT_DIR`) |
 | `backend/app/chat/` | AI 챗: Orchestrator, LLM 인터페이스(`llm/base.py`) + Fake/Claude(stub) 구현 |
 | `backend/app/rag/` | 문서 검색: `Retriever` 인터페이스 + 키워드 검색, 인제스트 CLI, 가상 예시 문서(`mock_docs/`) |
 | `backend/app/guardrails/` | 입력 필터(인젝션·공식 요청), 숫자 출처 검증, 실명 마스킹 |
-| `backend/app/checklist/` | 플랜트 데이터 체크리스트: 항목 템플릿(`templates/*.yaml`), 상태 저장, 이메일 포맷터 |
+| `backend/app/checklist/` | 플랜트 데이터 체크리스트: 키트 `checklist.py`로 진행률·검색·메일 문구, 상태 저장 |
 | `frontend/` | Vite + React 18 + TypeScript + Tailwind v4. 반응형 AppShell |
 | `tests/backend/` | 계산기 계약·챗 시나리오·가드레일·체크리스트 API 테스트 (pytest) |
 | `frontend/src/**/*.test.ts(x)` | 단위 테스트 (Vitest + Testing Library): 카드·진행률 계산·이메일 다이얼로그·키보드 보정 등 |
@@ -142,12 +143,19 @@ LLM_FALLBACK_MODELS=gemini-3.5-flash,gemini-3.8-flash   # gemini 전용
 - 결과 카드의 "계산기에서 열기"는 `/calculator?calcId=`로 이동해 같은 입력을 복원합니다. 계산 결과는 서버 메모리에만 있어 재시작하면 사라집니다.
 - 스트리밍(SSE)과 대화 목록은 아직 없습니다(PRD Should). 응답이 블록 단위라 SSE로 바꿀 때 블록별로 보내면 됩니다.
 
+## 계산 키트 공개 범위
+
+키트 규칙(`hrsg_calc_kit_team2/README.md`·`CLAUDE.md`): 이 키트를 외부에 다시 배포하지 않고, 발전소 이름·측정값·메모는 LLM에 보내지 않습니다.
+- 공개 사이트에서 키트의 식·계수를 보여 주는 것은 키트 재배포에 해당하므로 **비공개**로 둡니다. 계산은 백엔드에서만 하고 화면·API에는 결과값만 나가며, 챗봇은 공식·계수 요청을 거절합니다(입력 필터).
+- 챗봇이 LLM에 보내는 것은 사용자 질문과 계산 결과값·기본값을 쓴 필드 이름뿐입니다. 체크리스트 메모·측정값은 보내지 않고, 발전소 실명은 가립니다.
+- 월간 가동시간(월간 금액·회수기간)과 연간 운전시간(연간 금액)은 계산기에서 따로 입력합니다(키트 `economics.monthly_hours` · `annual_hours`).
+
 ## 플랜트 데이터 체크리스트
 
-- 항목·문구는 `backend/app/checklist/templates/`의 YAML에서 관리합니다. `items.yaml`(구조: 카테고리·구분·우선순위·계산기 연결 필드)과 `default_ko.yaml`/`default_en.yaml`(항목명·기간·이메일 문구)의 id가 같아야 하며, 다르면 서버가 시작할 때 오류를 냅니다. 고친 뒤에는 서버를 재시작하세요.
-- 체크 상태와 메모는 `data/checklist_state.json`에 저장되어 서버를 재시작해도 남습니다(Git 제외 — 메모에 고객 정보가 들어갈 수 있음). 경로는 `.env`의 `CHECKLIST_STATE_PATH`로 바꿀 수 있습니다.
+- 항목 49개·분류·필수 여부·문구는 키트 `hrsg_calc_kit_team2/data/checklist.json` 그대로입니다. 키트에 한국어 문구만 있어 영어 화면에서도 항목·분류·메일 문구·세정 공법 이름·핀치 판정 문구는 한국어로 나옵니다(번역하지 않음).
+- 체크 상태와 메모는 키트 형식(`{ "A-01": { "supply": "received", "note": "…" } }`)으로 `data/checklist_state.json`에 저장되어 서버를 재시작해도 남습니다(Git 제외 — 메모에 고객 정보가 들어갈 수 있음). 불러올 때 키트 `validate_progress()` 오류가 있는 항목은 처음 상태로 돌아갑니다. 경로는 `.env`의 `CHECKLIST_STATE_PATH`로 바꿀 수 있습니다.
 - 서버 저장에 실패한 변경은 브라우저 localStorage에 임시 보관되고, 화면의 "다시 저장" 또는 다음 진입 때 다시 보냅니다.
-- 체크와 상태는 연동됩니다: 체크하면 "받음", "받음"을 고르면 체크, "해당 없음"은 진행률 계산에서 뺍니다.
+- 체크와 상태는 연동됩니다: 체크하면 "수령"(`received`), "수령"을 고르면 체크, "해당 없음"은 진행률 분모에서 뺍니다. 메일 문구는 키트 `email_draft()` 그대로이며 메모는 넣지 않습니다.
 - 이메일 텍스트는 서버가 만듭니다(`email_formatter.py`). 받는 사람은 정해진 별칭만 고를 수 있고, 본문 전체에 발전소·고객사 실명 마스킹이 적용됩니다. 메모 속 사람 이름 등은 자동으로 가려지지 않으니 메모 포함 시 확인하세요.
 - 계산기의 핀치 "데이터 필요" 링크는 체크리스트의 핀치/어프로치 섹션과 관련 항목을 강조해 보여 줍니다.
 

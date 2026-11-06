@@ -62,13 +62,16 @@ export function KpiRow({
         fullValue={result && formatKrwFull(result.recovery.annualRecoveryKrw, locale)}
         higherIsWorse={false}
         loading={pending}
-        sub={result && t('calc.kpi.recoveryRate', { value: formatNumber(result.recovery.recoveryRatePct, locale) })}
+        sub={
+          result &&
+          t('calc.kpi.recoveryRate', { value: formatNumber(result.recovery.recoveryRatePct, locale, { maximumFractionDigits: 0 }) })
+        }
       />
       <KpiCard
         testId="kpi-status"
         label={t('calc.kpi.overallStatus')}
         value={result?.current.foulingIndex}
-        format={(v) => formatNumber(v, locale, { maximumFractionDigits: 1 })}
+        format={(v) => formatNumber(Math.round(v), locale)}
         unit={t('calc.kpi.foulingIndexUnit')}
         status={result?.current.overallStatus}
         loading={pending}

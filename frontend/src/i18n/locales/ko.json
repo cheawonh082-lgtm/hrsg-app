@@ -62,10 +62,10 @@
       "title": "입력 조정",
       "open": "입력 조정",
       "model": "가스터빈 모델",
-      "reset": "선택한 모델의 기본값으로 복원",
+      "reset": "선택한 모델의 설계값으로 초기화 (손실 0)",
       "primary": "주요 입력",
       "operation": "운전 조건",
-      "advanced": "고급 입력 (증기·핀치)",
+      "advanced": "고급 입력 (HP 스팀·핀치)",
       "advancedHint": "비워 두면 해당 항목은 계산에서 빠지고, 핀치·어프로치 평가는 '데이터 필요'로 표시됩니다.",
       "economics": "경제성",
       "blocked": "입력값 오류로 재계산을 멈췄습니다. 화면의 결과는 마지막으로 올바르게 입력한 값 기준입니다.",
@@ -91,18 +91,13 @@
       "exhaustTempC": "GT 배기온도",
       "exhaustFlowKgS": "배기가스 유량",
       "ambientTempC": "대기온도",
-      "hpSteamFlowKgS": "HP 증기 유량",
-      "ipSteamFlowKgS": "IP 증기 유량",
-      "lpSteamFlowKgS": "LP 증기 유량",
       "hpDrumPressureBarg": "HP 드럼 압력",
       "hpEvapGasOutTempC": "HP 증발기 출구 가스온도",
       "hpEcoWaterOutTempC": "HP 절탄기 출구 급수온도",
       "electricityPriceKrwPerMwh": "전력 단가",
       "annualOperatingHours": "연간 운전시간",
-      "analysisPeriodYears": "분석 기간"
-    },
-    "units": {
-      "years": "년"
+      "hpSteamTph": "HP 스팀 생산량",
+      "monthlyOperatingHours": "월간 가동시간"
     },
     "kpi": {
       "totalLoss": "총 출력 손실",
@@ -119,60 +114,13 @@
     "metrics": {
       "gtBackPressure": "GT 배압",
       "hrsgGasDp": "HRSG 차압",
-      "stackTemp": "스택 온도",
-      "hpSteamFlow": "HP 증기 유량"
+      "stackTemp": "스택 온도"
     },
     "gauge": {
       "title": "운전 지표",
       "design": "설계 {{value}} {{unit}}",
       "aria": "{{label}} {{value}} {{unit}}, 설계값 {{design}} {{unit}}",
       "page": "{{index}}번째 지표 보기: {{label}}"
-    },
-    "sections": {
-      "HP_SH": {
-        "name": "고압 과열기",
-        "short": "HP SH"
-      },
-      "RH": {
-        "name": "재열기",
-        "short": "RH"
-      },
-      "HP_EVA": {
-        "name": "고압 증발기",
-        "short": "HP EVA"
-      },
-      "HP_ECO": {
-        "name": "고압 절탄기",
-        "short": "HP ECO"
-      },
-      "IP_SH": {
-        "name": "중압 과열기",
-        "short": "IP SH"
-      },
-      "IP_EVA": {
-        "name": "중압 증발기",
-        "short": "IP EVA"
-      },
-      "IP_ECO": {
-        "name": "중압 절탄기",
-        "short": "IP ECO"
-      },
-      "LP_SH": {
-        "name": "저압 과열기",
-        "short": "LP SH"
-      },
-      "LP_EVA": {
-        "name": "저압 증발기",
-        "short": "LP EVA"
-      },
-      "CPH": {
-        "name": "복수 예열기",
-        "short": "CPH"
-      },
-      "STACK": {
-        "name": "스택",
-        "short": "STACK"
-      }
     },
     "trend": {
       "title": "차압 변화에 따른 손실 감도",
@@ -185,17 +133,18 @@
     },
     "cleaning": {
       "title": "세정 공법별 비용 비교",
-      "caption": "분석 기간 {{years}}년 기준입니다. 계획정비 기간에 세정한다고 가정해 정지일수는 비용에 넣지 않았습니다 (Mock).",
+      "caption": "비용은 공법별 총투자, 순편익은 연간 기준이고, 회수기간은 월간 편익 기준입니다. 모든 수치는 가상(DEMO) 값입니다.",
       "method": "공법",
       "cost": "비용",
       "downtime": "정지일수",
       "recovery": "회수율",
       "payback": "회수기간",
       "netBenefit": "순편익",
-      "recommended": "추천",
       "days": "{{value}}일",
       "months": "{{value}}개월",
-      "na": "산정 불가"
+      "na": "산출 불가",
+      "maxNetBenefit": "순편익 최대",
+      "unavailable": "산출 불가 — 입력 필요: {{missing}}"
     },
     "pinch": {
       "title": "핀치·어프로치 평가",
@@ -204,13 +153,7 @@
       "approach": "어프로치",
       "current": "현재",
       "design": "설계",
-      "requestData": "체크리스트에서 데이터 요청",
-      "comment": {
-        "normal": "설계 범위 안입니다.",
-        "caution": "설계보다 핀치가 커졌습니다. 오염이 진행 중인지 확인하세요.",
-        "danger": "설계보다 핀치가 크게 늘었습니다. 세정을 검토하세요.",
-        "insufficient_data": "평가에 필요한 운전 데이터가 없습니다."
-      }
+      "requestData": "체크리스트에서 데이터 요청"
     },
     "ask": {
       "button": "AI에게 이 결과 질문하기",
@@ -238,8 +181,9 @@
       "foulingIndex": "오염 표시 지수 {{value}}%.",
       "displayOnly": "표시용 지수 (손실 계산과 무관)",
       "exhaustTemp": "GT 배기온도",
-      "hintHover": "설비에 마우스를 올리거나 누르면 섹션별 상태와 운전 지표를 볼 수 있습니다.",
-      "hintTap": "설비를 누르면 섹션별 상태와 운전 지표를 볼 수 있습니다."
+      "hintHover": "설비에 마우스를 올리거나 누르면 표시 오염도와 운전 지표를 볼 수 있습니다.",
+      "hintTap": "설비를 누르면 표시 오염도와 운전 지표를 볼 수 있습니다.",
+      "displayFouling": "표시 오염도 {{value}}%"
     },
     "lossCompare": {
       "title": "현재 손실 vs 세정 후 손실",
@@ -264,15 +208,15 @@
       "recovery": "세정 후 회복",
       "caution": "주의",
       "aria": "열회수 효율 추이. 설계 {{design}}, 현재 {{current}}, 세정 후 {{after}}",
-      "note": "운전 이력이 없어 설계값에서 현재값까지 {{months}}개월에 걸쳐 저하됐다고 가정한 추정 곡선입니다. 효율 = (배기온도 − 스택온도) / (배기온도 − 대기온도)."
+      "note": "운전 이력이 없어 설계값에서 현재값까지 {{months}}개월에 걸쳐 일정하게 저하됐다고 가정한 추정 곡선입니다."
     },
     "perf": {
       "title": "핵심 성능 지표 (KPI)",
       "overall": "종합 상태",
       "advice": {
         "normal": "설계 범위 안에서 운전 중",
-        "caution": "세정 시기 검토 권고",
-        "danger": "세정 계획 수립 필요"
+        "caution": "설계 범위를 벗어난 지표가 있습니다",
+        "danger": "즉시 점검이 필요한 지표가 있습니다"
       },
       "hpPinch": "HP 핀치 포인트",
       "hpApproach": "HP 어프로치 포인트",
@@ -285,14 +229,10 @@
       "payback": "투자 회수 기간",
       "vsDesign": "설계 대비 {{value}}",
       "recoveryRate": "손실 대비 회수율 {{value}}%",
-      "monthsUnit": "개월"
-    }
-  },
-  "cleaning": {
-    "dryIce": "드라이아이스 블라스팅",
-    "highPressureWater": "고압수 세정",
-    "chemical": "화학 세정",
-    "mechanical": "기계식 세정"
+      "monthsUnit": "개월",
+      "vsDesignPp": "설계 대비 {{value}}%p"
+    },
+    "inputError": "입력값으로 계산할 수 없습니다: {{messages}}"
   },
   "warn": {
     "exhaustFlowOffRated": "배기가스 유량이 정격과 20% 넘게 차이 나 결과 신뢰도가 낮을 수 있습니다.",
@@ -343,12 +283,12 @@
     "card": {
       "title": "계산 결과",
       "foulingIndex": "오염 지수",
-      "recommended": "추천 공법",
       "assumptions": "계산에 쓴 값",
       "defaults": "기본값으로 채운 값 {{count}}개",
       "userValue": "입력한 값",
       "openInCalculator": "계산기에서 열기",
-      "edit": "가정 수정"
+      "edit": "가정 수정",
+      "maxNetBenefit": "순편익 최대 공법"
     },
     "confirm": {
       "title": "계산에 필요한 값을 확인해 주세요",
@@ -399,7 +339,6 @@
     "loadError": "체크리스트를 불러오지 못했습니다. 백엔드 서버가 실행 중인지 확인하세요.",
     "empty": "조건에 맞는 항목이 없습니다.",
     "search": "항목 검색",
-    "unit": "단위 {{unit}}",
     "progress": {
       "title": "진행률",
       "overall": "전체 진행률",
@@ -422,7 +361,7 @@
     },
     "kind": {
       "design": "설계",
-      "operating": "운전",
+      "operation": "운전",
       "document": "문서"
     },
     "priority": {
@@ -432,9 +371,10 @@
     },
     "status": {
       "label": "{{item}} 상태",
-      "pending": "대기",
+      "not_entered": "대기",
       "requested": "요청함",
-      "received": "받음",
+      "received": "수령",
+      "verify_needed": "검증 필요",
       "na": "해당 없음"
     },
     "memo": {
@@ -445,7 +385,8 @@
     "linked": {
       "badge": "계산기 입력에 사용됨",
       "tooltip": "계산기의 '{{field}}' 입력에 쓰이는 데이터입니다.",
-      "open": "계산기에서 보기"
+      "open": "계산기에서 보기",
+      "kitOnly": "계산 키트가 쓰는 입력입니다 (이 계산기 화면에는 입력란이 없습니다)."
     },
     "sync": {
       "failed": "서버에 저장하지 못했습니다. 이 브라우저에 임시 저장해 두었습니다.",
@@ -462,20 +403,10 @@
         "all": "전체 항목",
         "required_only": "미완료 필수 항목"
       },
-      "language": "이메일 언어",
-      "recipient": "받는 사람 (별칭)",
-      "recipients": {
-        "customer_contact": "고객사 담당자",
-        "plant_operations": "발전소 운영팀",
-        "performance_engineer": "성능 담당 엔지니어"
-      },
-      "includeMemo": "메모 포함",
-      "memoHint": "메모는 그대로 들어갑니다. 발전소·고객사명은 자동으로 별칭으로 바뀌지만, 사람 이름 등은 직접 확인하세요.",
-      "privacy": "보안 정책상 받는 사람은 별칭으로만 표시되고, 본문의 발전소·고객사 실명은 자동으로 가려집니다.",
+      "privacy": "메일 문구에는 항목 이름만 들어가고 메모·측정값은 넣지 않습니다. 발전소·고객사 실명은 자동으로 가려집니다.",
       "preview": "미리보기",
       "itemCount": "요청 항목 {{count}}개",
       "previewError": "미리보기를 불러오지 못했습니다.",
-      "subjectLabel": "제목",
       "copy": "클립보드에 복사",
       "copied": "이메일 텍스트를 복사했습니다 (요청 항목 {{count}}개).",
       "copyFailed": "복사하지 못했습니다. 미리보기 텍스트를 직접 선택해 복사하세요.",

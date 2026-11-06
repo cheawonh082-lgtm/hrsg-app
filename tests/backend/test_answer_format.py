@@ -89,10 +89,10 @@ def test_internal_doc_bibliography_and_section_pages():
 
 def test_extract_schema_fits_claude_union_limit():
     """Claude 구조화 출력은 nullable·union 속성이 16개까지 — 값은 {field, value} 목록으로 받는다"""
-    from app.calculator.reference_data.mock import MockReferenceData
+    from app.calculator.reference_data.mock import KitReferenceData
     from app.chat.llm.prompts import extract_schema, parse_extraction
 
-    schema = extract_schema(MockReferenceData().list_gt_models())
+    schema = extract_schema(KitReferenceData().list_gt_models())
 
     def unions(node):
         if isinstance(node, dict):

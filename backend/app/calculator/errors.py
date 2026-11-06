@@ -15,11 +15,11 @@ class UnknownGtModelError(CalcError):
         super().__init__("UNKNOWN_GT_MODEL", "error.unknownGtModel", {"gtModelId": model_id})
 
 
-class UnknownCleaningMethodError(CalcError):
-    def __init__(self, method_ids: list[str]):
-        super().__init__(
-            "UNKNOWN_CLEANING_METHOD", "error.unknownCleaningMethod", {"cleaningMethodIds": method_ids}
-        )
+class KitInputError(CalcError):
+    """키트 validate_inputs()·calculate()가 계산할 수 없다고 한 입력. messages는 키트 문구 그대로."""
+
+    def __init__(self, messages: list[str]):
+        super().__init__("CALC_INPUT_INVALID", "error.calcInputInvalid", {"messages": messages})
 
 
 class CalcResultNotFoundError(CalcError):

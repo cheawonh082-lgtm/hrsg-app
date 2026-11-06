@@ -37,14 +37,16 @@ export function ChecklistPage() {
   const [emailOpen, setEmailOpen] = useState(false)
   const [highlight, setHighlight] = useState<{ category: ChecklistCategory; items: Set<string> } | null>(null)
 
-  // 계산기 핀치 "데이터 필요" → /checklist?focus=<category>&fields=<calc fields>: 섹션 펼침·스크롤·강조
+  // 계산기 핀치 "데이터 필요" → /checklist?focus=<키트 분류>&inputs=<키트 입력 경로>: 분류 펼침·스크롤·강조
   const [searchParams, setSearchParams] = useSearchParams()
   const focus = searchParams.get('focus') as ChecklistCategory | null
   useEffect(() => {
     if (!focus || !data) return
-    const fields = new Set((searchParams.get('fields') ?? '').split(',').filter(Boolean))
+    const inputs = (searchParams.get('inputs') ?? '').split(',').filter(Boolean)
     const items = new Set(
-      data.items.filter((i) => i.category === focus && i.linkedCalcField && fields.has(i.linkedCalcField)).map((i) => i.id),
+      data.items
+        .filter((i) => i.category === focus && i.calcInput && inputs.some((p) => i.calcInput!.startsWith(p)))
+        .map((i) => i.id),
     )
     setFilter('all')
     setCategory('all')
@@ -70,7 +72,7 @@ export function ChecklistPage() {
     [data, filter, search],
   )
   const statesVersion = useMemo(
-    () => (data?.states ?? []).map((s) => `${s.itemId}:${s.checked ? 1 : 0}:${s.status}:${s.memo ?? ''}`).join('|'),
+    () => (data?.states ?? []).map((s) => `${s.itemId}:${s.status}`).join('|'),
     [data?.states],
   )
 

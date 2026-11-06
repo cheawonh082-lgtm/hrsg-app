@@ -1,17 +1,21 @@
 import type {
   ChecklistCategory,
   ChecklistItem,
+  ChecklistItemPatch,
   ChecklistItemState,
   ChecklistProgress,
   ItemStatus,
 } from '../api/types'
 
 export type ChecklistFilter = 'all' | 'required' | 'unchecked'
+type PatchStatus = NonNullable<ChecklistItemPatch['status']>
+
+/** 키트 is_received: 수령 완료 + 검증 필요 */
+const isReceived = (status: ItemStatus | undefined) => status === 'received' || status === 'verify_needed'
 
 /**
- * 진행률 — 서버 app/checklist/service.py compute_progress와 같은 규칙.
- * 낙관적 업데이트 때 서버 응답을 기다리지 않고 바로 다시 계산하는 데 쓴다.
- * '해당 없음(na)'은 분모·분자 모두에서 뺀다.
+ * 진행률 — 서버가 쓰는 키트 summary()와 같은 규칙. 낙관적 업데이트 때 서버 응답을 기다리지 않고 바로 다시 계산하는 데 쓴다.
+ * 해당 없음(na)은 분모에서 빼고, 비율은 소수 첫째 자리에서 반올림한다(「2% (1/49)」).
  */
 export function computeProgress(
   items: ChecklistItem[],
@@ -19,21 +23,21 @@ export function computeProgress(
   categories: ChecklistCategory[],
 ): ChecklistProgress {
   const byId = new Map(states.map((s) => [s.itemId, s]))
-  const byCategory = Object.fromEntries(categories.map((c) => [c, { total: 0, checked: 0 }])) as ChecklistProgress['byCategory']
+  const byCategory: ChecklistProgress['byCategory'] = Object.fromEntries(categories.map((c) => [c, { total: 0, checked: 0 }]))
   let total = 0
   let checked = 0
   let requiredTotal = 0
   let requiredChecked = 0
   for (const item of items) {
-    const state = byId.get(item.id)
-    if (state?.status === 'na') continue
-    const done = state?.checked ? 1 : 0
+    const status = byId.get(item.id)?.status
+    if (status === 'na') continue
+    const done = isReceived(status) ? 1 : 0
     total += 1
     checked += done
     byCategory[item.category] ??= { total: 0, checked: 0 }
     byCategory[item.category].total += 1
     byCategory[item.category].checked += done
-    if (item.priority === 'required') {
+    if (item.required) {
       requiredTotal += 1
       requiredChecked += done
     }
@@ -43,26 +47,23 @@ export function computeProgress(
     checked,
     requiredTotal,
     requiredChecked,
-    percent: total ? Math.round((checked / total) * 100) : 0,
+    percent: total ? Math.floor((checked / total) * 100 + 0.5) : 0,
     byCategory,
   }
 }
 
-/** 체크하면 '받음', 받음이던 항목의 체크를 풀면 '대기'로 */
-export function applyCheck(state: ChecklistItemState, checked: boolean): Partial<ChecklistItemState> {
+/** 동그라미 체크 = 수령(received). 수령이던 항목의 체크를 풀면 대기(not_entered)로 */
+export function applyCheck(state: ChecklistItemState, checked: boolean): ChecklistItemPatch & Partial<ChecklistItemState> {
   if (checked) return { checked: true, status: 'received' }
-  return { checked: false, status: state.status === 'received' ? 'pending' : state.status }
+  return { checked: false, status: isReceived(state.status) ? 'not_entered' : (state.status as PatchStatus) }
 }
 
-/** '받음'을 고르면 자동 체크, 받음에서 다른 상태로 바꾸면 체크 해제 */
-export function applyStatus(state: ChecklistItemState, status: ItemStatus): Partial<ChecklistItemState> {
-  if (status === 'received') return { status, checked: true }
-  if (state.status === 'received' && state.checked) return { status, checked: false }
-  return { status }
+/** 상태 드롭다운 — 수령을 고르면 체크, 다른 상태면 체크 해제 */
+export function applyStatus(_state: ChecklistItemState, status: PatchStatus): ChecklistItemPatch & Partial<ChecklistItemState> {
+  return { status, checked: isReceived(status) }
 }
 
-const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '')
-
+/** 키트 filter_items와 같다: 검색(ID·항목명·이유), 「필수」, 「미완료」(수령·해당 없음 제외) */
 export function filterItems(
   items: ChecklistItem[],
   states: ChecklistItemState[],
@@ -70,13 +71,12 @@ export function filterItems(
   query: string,
 ): ChecklistItem[] {
   const byId = new Map(states.map((s) => [s.itemId, s]))
-  const q = normalize(query)
+  const q = query.trim().toLowerCase()
   return items.filter((item) => {
-    const state = byId.get(item.id)
-    if (filter === 'required' && item.priority !== 'required') return false
-    if (filter === 'unchecked' && (state?.checked || state?.status === 'na')) return false
-    if (!q) return true
-    return [item.label, item.description, item.period].some((t) => t && normalize(t).includes(q))
+    const status = byId.get(item.id)?.status
+    if (filter === 'required' && !item.required) return false
+    if (filter === 'unchecked' && (isReceived(status) || status === 'na')) return false
+    return !q || `${item.id} ${item.label} ${item.description}`.toLowerCase().includes(q)
   })
 }
 

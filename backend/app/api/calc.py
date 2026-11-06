@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query
 
 from app.calculator.base import CalculatorService
@@ -7,7 +9,6 @@ from app.calculator.registry import get_calculator, get_reference_data, get_resu
 from app.calculator.result_cache import CalcResultCache
 from app.domain.models.calc import CalcInput, CalcResult, GasTurbineSpec, Locale
 from app.domain.models.limits import InputLimits, input_limits
-from app.domain.models.reference import StatusThresholds
 
 router = APIRouter(prefix="/api/calc", tags=["calc"])
 
@@ -20,20 +21,12 @@ def list_gt_models(data: ReferenceDataProvider = Depends(get_reference_data)):
 @router.get("/defaults", response_model=CalcInput)
 def get_defaults(
     gt_model_id: str = Query(alias="gtModelId"),
+    preset: Literal["example", "design"] = "example",
     locale: Locale = "ko",
     data: ReferenceDataProvider = Depends(get_reference_data),
 ):
-    return CalcInput(
-        gt_model_id=data.get_gt_model(gt_model_id).model_id,
-        condition=data.get_default_condition(gt_model_id),
-        economics=data.get_default_economics(),
-        locale=locale,
-    )
-
-
-@router.get("/thresholds", response_model=StatusThresholds)
-def get_thresholds(data: ReferenceDataProvider = Depends(get_reference_data)):
-    return data.get_thresholds()
+    """example: 키트 defaultInputs (처음 화면, 예시 운전 상태) / design: 키트 designInputs (「초기화」, 손실 0)"""
+    return data.default_input(gt_model_id, preset, locale)
 
 
 @router.get("/input-limits", response_model=InputLimits)

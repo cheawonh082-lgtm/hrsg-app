@@ -58,16 +58,16 @@ test.describe('데스크톱 1280px', () => {
   test('A-02 계산형 질문 → 결과 카드, A-09 계산기에서 열기 → 같은 입력 복원', async ({ page }) => {
     await ask(page, 'F급 GT, 차압 35mbar, 스택 110℃면 연간 손실은?')
     const card = lastAnswer(page).getByTestId('calc-result-card')
-    await expect(card.getByTestId('card-totalPowerLossMw')).toHaveText('3.16 MW')
+    await expect(card.getByTestId('card-totalPowerLossMw')).toHaveText('5.40 MW')
     await expect(card).toContainText('위험')
     await expect(card).toContainText('MOCK')
-    await expect(lastAnswer(page).getByTestId('answer-text')).toContainText('3.2 MW')
+    await expect(lastAnswer(page).getByTestId('answer-text')).toContainText('5.4 MW')
     await expect(lastAnswer(page).getByTestId('answer-text')).not.toContainText('{{')
     await page.screenshot({ path: test.info().outputPath('chat-desktop.png') })
 
     await card.getByRole('button', { name: '계산기에서 열기' }).click()
     await expect(page).toHaveURL(/\/calculator$/)
-    await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText('3.16')
+    await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText('5.40')
     await expect(page.getByTestId('gauge-hrsgGasDp')).toHaveAttribute('data-value', '35')
   })
 
@@ -82,7 +82,7 @@ test.describe('데스크톱 1280px', () => {
     await confirm.getByRole('button', { name: '계산 실행' }).click()
 
     await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
-    await expect(lastAnswer(page).getByTestId('card-totalPowerLossMw')).toHaveText('3.16 MW')
+    await expect(lastAnswer(page).getByTestId('card-totalPowerLossMw')).toHaveText('5.40 MW')
   })
 
   test('A-05 공식 요청 거절 · A-06 인젝션 차단', async ({ page }) => {
@@ -117,14 +117,14 @@ test.describe('계산기 → 챗 맥락', () => {
 
   test('"이 계산 결과 해석해줘" → 계산기 입력 그대로 결과 카드', async ({ page }) => {
     await page.goto('/calculator')
-    await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText('0.00')
+    await expect(page.getByTestId('kpi-totalLoss-value')).toHaveText('1.89') // 키트 예시 운전 상태
     await page.getByRole('button', { name: 'AI에게 이 결과 질문하기' }).click()
 
     await expect(page).toHaveURL(/\/chat$/)
     await expect(page.getByTestId('chat-calc-context')).toBeVisible()
     await page.getByRole('button', { name: '이 계산 결과 해석해줘' }).click()
     await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
-    await expect(lastAnswer(page).getByTestId('card-totalPowerLossMw')).toHaveText('0.00 MW')
+    await expect(lastAnswer(page).getByTestId('card-totalPowerLossMw')).toHaveText('1.89 MW')
     await expect(lastAnswer(page).getByTestId('assumptions-default')).toHaveCount(0)
   })
 })

@@ -331,7 +331,18 @@
       "LLM_MODEL_NOT_FOUND": "The configured AI model was not found. Check LLM_MODEL in .env.",
       "LLM_RATE_LIMITED": "AI quota exceeded. The free tier limits daily requests per model. Try again later or enable billing.",
       "RAG_UNAVAILABLE": "Could not reach the paper search server. Check that the RAG search API (port 8100) is running.",
-      "LLM_UNAVAILABLE": "Could not reach the AI service. Check your network and try again."
+      "LLM_UNAVAILABLE": "Could not reach the AI service. Check your network and try again.",
+      "INTERRUPTED": "The connection was interrupted (e.g. page reload) before the answer arrived."
+    },
+    "history": {
+      "title": "Chat history",
+      "empty": "No saved conversations yet.",
+      "untitled": "Untitled chat",
+      "delete": "Delete conversation '{{title}}'",
+      "collapse": "Collapse chat history",
+      "clearAll": "Clear all history",
+      "clearConfirm": "Delete all saved conversations? This cannot be undone.",
+      "localNote": "Chat history is saved only in this browser. It won't appear on other devices or browsers."
     }
   },
   "checklist": {

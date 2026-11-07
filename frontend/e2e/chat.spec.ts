@@ -151,3 +151,51 @@ test.describe('모바일 360px', () => {
     await page.screenshot({ path: test.info().outputPath('chat-mobile.png') })
   })
 })
+
+test.describe('대화 기록 (사이드바·드로어, 브라우저 저장)', () => {
+  test('PC: 새 대화 후에도 이전 대화가 사이드바에 남고, 새로고침 뒤 다시 열 수 있다', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto('/chat')
+    const sidebar = page.getByTestId('chat-history-sidebar')
+    await expect(sidebar).toContainText('아직 저장된 대화가 없습니다')
+
+    await ask(page, '핀치 포인트란?')
+    await expect(sidebar.getByRole('button', { name: /^핀치 포인트란\?/ })).toHaveAttribute('aria-current', 'true')
+    await page.getByRole('button', { name: '새 대화' }).first().click()
+    await expect(page.getByTestId('user-message')).toHaveCount(0)
+
+    await page.reload()
+    await expect(page.getByTestId('user-message')).toHaveCount(0)
+    await sidebar.getByRole('button', { name: /^핀치 포인트란\?/ }).click()
+    await expect(page.getByTestId('user-message')).toHaveText('핀치 포인트란?')
+    await expect(lastAnswer(page)).toHaveAttribute('data-status', 'done')
+    await page.screenshot({ path: test.info().outputPath('chat-history-desktop.png') })
+
+    // 접기 → 헤더 버튼으로 다시 펼치기
+    await sidebar.getByRole('button', { name: '대화 기록 접기' }).click()
+    await expect(sidebar).toHaveCount(0)
+    await page.getByRole('button', { name: '대화 기록' }).click()
+    await expect(page.getByTestId('chat-history-sidebar')).toBeVisible()
+
+    // 삭제
+    await page.getByRole('button', { name: "'핀치 포인트란?' 대화 삭제" }).click()
+    await expect(page.getByTestId('chat-history-sidebar')).toContainText('아직 저장된 대화가 없습니다')
+  })
+
+  test('모바일: 헤더 "대화 기록" 버튼 → 드로어에서 이전 대화 열기', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/chat')
+    await expect(page.getByTestId('chat-history-sidebar')).toBeHidden()
+    await ask(page, '세정 공법은 어떻게 고르나요?')
+    await page.getByRole('button', { name: '새 대화' }).click()
+
+    await page.getByTestId('chat-history-open').click()
+    const drawer = page.getByRole('dialog', { name: '대화 기록' })
+    await drawer.getByRole('button', { name: /^세정 공법은/ }).click()
+    await expect(drawer).toHaveCount(0)
+    await expect(page.getByTestId('user-message')).toHaveText('세정 공법은 어떻게 고르나요?')
+    await expectNoHorizontalOverflow(page)
+    await page.getByTestId('chat-history-open').click()
+    await page.screenshot({ path: test.info().outputPath('chat-history-mobile.png') })
+  })
+})

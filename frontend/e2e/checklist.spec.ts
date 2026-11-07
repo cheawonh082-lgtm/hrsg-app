@@ -46,11 +46,11 @@ test.describe('데스크톱 1280px', () => {
     await openChecklist(page)
     await saved(page, () => tick(item(page, 'A-01').getByRole('checkbox')))
     await expect(progress(page)).toContainText('(1/49)')
-    await saved(page, () => item(page, 'B-13').getByRole('combobox').selectOption('na'))
+    await saved(page, () => item(page, 'B-13').getByTestId('status-na').click())
     await expect(progress(page)).toContainText('(1/48)')
     await page.reload()
     await expect(progress(page)).toContainText('(1/48)')
-    await expect(item(page, 'B-13').getByRole('combobox')).toHaveValue('na')
+    await expect(item(page, 'B-13').getByTestId('status-na')).toHaveAttribute('aria-pressed', 'true')
   })
 
   test('K-01 체크 → 진행률 즉시 갱신 → 새로고침 후 유지', async ({ page }) => {
@@ -59,7 +59,8 @@ test.describe('데스크톱 1280px', () => {
     await saved(page, () => tick(a01.getByRole('checkbox')))
 
     await expect(a01).toHaveAttribute('data-checked', 'true')
-    await expect(a01.getByRole('combobox')).toHaveValue('received')
+    await expect(a01).toHaveAttribute('data-status', 'received')
+    await expect(a01.getByTestId('status-requested')).toHaveAttribute('aria-pressed', 'false')
     await expect(page.getByTestId('progress-percent')).toHaveText('2%')
     await expect(page.getByTestId('progress-required')).toHaveText('필수 1/16')
     await expect(page.getByTestId('progress-A')).toContainText('1/6')
@@ -69,12 +70,19 @@ test.describe('데스크톱 1280px', () => {
     await expect(page.getByTestId('progress-percent')).toHaveText('2%')
   })
 
-  test('상태 드롭다운: 수령=자동 체크, 해당 없음=진행률 분모에서 제외', async ({ page }) => {
+  test('상태 토글: 요청함↔체크 상호 배타, 다시 누르면 대기, 해당 없음=진행률 분모에서 제외', async ({ page }) => {
     await openChecklist(page)
-    await saved(page, () => item(page, 'B-01').getByRole('combobox').selectOption('received'))
-    await expect(item(page, 'B-01')).toHaveAttribute('data-checked', 'true')
+    const b01 = item(page, 'B-01')
+    await saved(page, () => tick(b01.getByRole('checkbox')))
+    await saved(page, () => b01.getByTestId('status-requested').click())
+    await expect(b01).toHaveAttribute('data-checked', 'false')
+    await expect(b01).toHaveAttribute('data-status', 'requested')
+    await saved(page, () => b01.getByTestId('status-requested').click())
+    await expect(b01).toHaveAttribute('data-status', 'not_entered')
+    await saved(page, () => tick(b01.getByRole('checkbox')))
+    await expect(b01).toHaveAttribute('data-checked', 'true')
 
-    await saved(page, () => item(page, 'B-13').getByRole('combobox').selectOption('na'))
+    await saved(page, () => item(page, 'B-13').getByTestId('status-na').click())
     await expect(progress(page)).toContainText('(1/48)')
     await expect(item(page, 'B-13').getByRole('checkbox')).toBeDisabled()
   })
@@ -200,7 +208,7 @@ test.describe('모바일 360px', () => {
     await openChecklist(page)
     const row = item(page, 'A-02')
     const rowBox = (await row.boundingBox())!
-    for (const control of [row.getByRole('combobox'), row.getByRole('button', { name: /메모$/ })]) {
+    for (const control of [row.getByTestId('status-requested'), row.getByTestId('status-na'), row.getByRole('button', { name: /메모$/ })]) {
       const b = (await control.boundingBox())!
       expect(b.x + b.width).toBeLessThanOrEqual(rowBox.x + rowBox.width + 1)
       expect(b.height).toBeGreaterThanOrEqual(44) // 터치 영역 (R-9)

@@ -340,6 +340,7 @@
       "untitled": "Untitled chat",
       "delete": "Delete conversation '{{title}}'",
       "collapse": "Collapse chat history",
+      "expand": "Expand chat history",
       "clearAll": "Clear all history",
       "clearConfirm": "Delete all saved conversations? This cannot be undone.",
       "localNote": "Chat history is saved only in this browser. It won't appear on other devices or browsers."

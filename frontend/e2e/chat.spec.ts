@@ -174,7 +174,12 @@ test.describe('대화 기록 (사이드바·드로어, 브라우저 저장)', ()
     // 접기 → 헤더 버튼으로 다시 펼치기
     await sidebar.getByRole('button', { name: '대화 기록 접기' }).click()
     await expect(sidebar).toHaveCount(0)
-    await page.getByRole('button', { name: '대화 기록' }).click()
+    // 펼치기 버튼은 좌측 상단(제목 왼쪽)
+    const expand = page.getByRole('button', { name: '대화 기록 펼치기' })
+    const title = page.getByRole('heading', { level: 1 })
+    expect((await expand.boundingBox())!.x).toBeLessThan((await title.boundingBox())!.x)
+    await page.screenshot({ path: test.info().outputPath('chat-history-collapsed.png') })
+    await expand.click()
     await expect(page.getByTestId('chat-history-sidebar')).toBeVisible()
 
     // 삭제

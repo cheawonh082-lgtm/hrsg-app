@@ -1,4 +1,4 @@
-import { Calculator, NotebookPen } from 'lucide-react'
+import { Calculator, Check, NotebookPen } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -7,9 +7,11 @@ import type { ChecklistItem as ItemData, ChecklistItemPatch, ChecklistItemState 
 import { applyCheck, applyStatus } from '../../lib/checklist'
 import { cn } from '../../lib/cn'
 
-/** 키트 README 팀 2: 상태 드롭다운 대기 / 요청함 / 수령 / 해당 없음 — 화면 글자가 아니라 키로 저장 */
-const STATUSES = ['not_entered', 'requested', 'received', 'na'] as const
-type SelectableStatus = (typeof STATUSES)[number]
+/**
+ * 키트 README 팀 2 상태(대기 / 요청함 / 수령 / 해당 없음) 중 동그라미 체크와 겹치지 않는 둘만 토글로 고른다.
+ * 수령 = 동그라미 체크, 대기 = 아무것도 선택 안 함. 켜진 토글을 다시 누르면 대기. 화면 글자가 아니라 키로 저장.
+ */
+const TOGGLE_STATUSES = ['requested', 'na'] as const
 const MEMO_SAVE_DELAY_MS = 600
 
 const PRIORITY_STYLE: Record<ItemData['priority'], string> = {
@@ -128,7 +130,7 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
         </div>
 
         {/* ② 구분·우선순위·상태·메모 */}
-        {/* 영어 라벨처럼 길어지면 태그 줄과 [상태·메모] 묶음이 나뉘어 줄바꿈된다 — 드롭다운이 읽을 수 없게 줄지 않도록 (R-11) */}
+        {/* 영어 라벨처럼 길어지면 태그 줄과 [상태·메모] 묶음이 나뉘어 줄바꿈된다 — 상태 토글이 읽을 수 없게 줄지 않도록 (R-11) */}
         <div className="flex flex-wrap items-center gap-2 pl-10 md:shrink-0 md:flex-nowrap md:pl-0">
           <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs whitespace-nowrap text-muted">
             {t(`checklist.kind.${item.kind}`)}
@@ -136,19 +138,33 @@ export function ChecklistItem({ item, state, highlighted, onChange }: Props) {
           <span className={cn('rounded-md border px-2 py-0.5 text-xs font-semibold whitespace-nowrap', PRIORITY_STYLE[item.priority])}>
             {t(`checklist.priority.${item.priority}`)}
           </span>
-          <div className="flex min-w-[10rem] flex-1 items-center gap-2 md:min-w-0 md:flex-none">
-            <select
-              value={state.status === 'verify_needed' ? 'received' : state.status}
-              onChange={(e) => onChange(applyStatus(state, e.target.value as SelectableStatus))}
-              aria-label={t('checklist.status.label', { item: item.label })}
-              className="h-11 min-w-28 flex-1 rounded-lg border border-border bg-surface px-2 text-base md:w-32 md:flex-none md:text-sm"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t(`checklist.status.${s}`)}
-                </option>
-              ))}
-            </select>
+          <div className="flex w-full items-center gap-2 md:w-auto">
+            <div role="group" aria-label={t('checklist.status.label', { item: item.label })} className="flex flex-1 gap-1.5 md:flex-none">
+              {TOGGLE_STATUSES.map((s) => {
+                const on = state.status === s
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    data-testid={`status-${s}`}
+                    aria-pressed={on}
+                    onClick={() => onChange(applyStatus(state, on ? 'not_entered' : s))}
+                    className={cn(
+                      'inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg border px-2.5 text-sm whitespace-nowrap transition-colors md:flex-none',
+                      'focus-visible:outline-2 focus-visible:outline-accent',
+                      on
+                        ? s === 'na'
+                          ? 'border-muted/50 bg-surface-2 font-semibold text-text'
+                          : 'border-accent bg-accent/10 font-semibold text-accent'
+                        : 'border-border bg-surface text-muted hover:bg-surface-2 hover:text-text',
+                    )}
+                  >
+                    <Check aria-hidden className={cn('size-4 shrink-0', !on && 'opacity-0')} />
+                    {t(`checklist.status.${s}`)}
+                  </button>
+                )
+              })}
+            </div>
             <button
               type="button"
               onClick={() => setMemoOpen((v) => !v)}

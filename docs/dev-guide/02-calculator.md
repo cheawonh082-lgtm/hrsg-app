@@ -1,9 +1,28 @@
-# 프롬프트 원문: 3단계 — 2주차 계산기 화면
+# 2단계. 계산기 화면 (팀 공통 키트로 교체 포함)
 
-실제로 입력한 프롬프트 그대로다. 아래 줄부터 끝까지 복사해 Claude Code에 붙여 넣는다. 설명: [03-week2-calculator-ui.md](../03-week2-calculator-ui.md)
+## 목표(결과)
+- 입력을 바꾸면 KPI·게이지·도식·그래프가 실시간으로 바뀌는 계산기 화면. PC·모바일 모두 레이아웃 깨짐 없음.
+  - PC: 왼쪽 입력 패널(320px) + 오른쪽 대시보드 / 모바일: "입력 조정" 버튼 → 바텀시트(50%·90% 스냅)
+  - 슬라이더 + 숫자 입력, 300ms 디바운스로 계산 요청, 범위 초과 시 경고
+  - 게이지 3종, HRSG 도식(PC 가로·모바일 세로), 손실 감도 곡선, 세정 공법 비교(PC 표·모바일 카드), 핀치·어프로치 평가
+- 계산 로직은 팀 공통 키트(`hrsg_calc_kit_team2`)를 그대로 쓴다.
+  - 키트 `calc.py`·`checklist.py`·`data/`는 고치지 않고 백엔드가 불러 쓴다. 화면 입력 ↔ 키트 입력 변환은 어댑터 하나(`kit_adapter.py`)
+  - 처음 화면 = 키트 예시 운전 상태, 「초기화」 = 설계 상태, 연간 운전시간 + 월간 가동시간 입력
+  - 공법은 「순편익 최대」로 표시("추천" 표기 안 함), 계산식은 비공개, DEMO 값 표시(MOCK DATA 배너) 유지
+  - 체크리스트 항목·진행률·메일 문구도 키트 함수로 바뀐다(4단계 화면)
 
----
+```
+frontend\src\pages\CalculatorPage.tsx
+frontend\src\components\calculator\   InputPanel, KpiCard, GaugeChart, HrsgSchematic, TrendChart, CleaningCostTable, PinchApproachPanel …
+frontend\src\components\layout\       BottomSheet.tsx, Drawer.tsx, ResponsiveTable.tsx
+backend\app\kit.py, calculator\kit_adapter.py, calculator\kit_calculator.py
+frontend\e2e\calculator.spec.ts, kit-expected.spec.ts
+```
 
+## 입력한 프롬프트
+
+### 2-1. 계산기 화면 구현
+```
 우리는 `PRD.md` 및 1주차 구현 결과를 바탕으로 **2주차 목표인 계산기 화면 UI 및 관련 오버레이/반응형 컴포넌트 전체**를 구현합니다.
 
 1주차 반영사항(Python `.venv`, `hpDrumPressureBarg` 필드명, `frontend/e2e/` 구조 등)을 그대로 존중하며 작업을 진행해 주세요.
@@ -64,3 +83,28 @@
 - Playwright E2E: `frontend/e2e/calculator.spec.ts` 작성 (360px 모바일 및 1280px 데스크톱 환경에서 입력값 조절 시 KPI 및 차트 정상 업데이트 검증)
 
 위 내용들을 구현하고 `npm run dev` 및 테스트 실행 결과를 알려주세요.
+```
+
+### 2-2. 팀 공통 키트로 교체 (키트 폴더를 저장소 루트에 복사한 뒤)
+```
+C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit 폴더 안에 있는 md파일 읽어줘
+```
+```
+C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2 폴더 제목만 변경했어 안에 내용은 똑같아. 기존 계산기를 대체하는 방향으로 바꿔줘. 키트의 지시대로 모두 수행한 뒤 수정 제안 사항을 알려줘.
+```
+Claude가 수정 제안을 보고하면 결정 사항을 지시:
+```
+연간 운전시간으로 바꿔서 월간 가동시간 입력란을 둬. 키트에 한국어 뿐이라면 영어로 번역은 없애. 키트 md파일 규칙에 따라 공개 여부 결정해. 수정 후 커밋하고 푸시해줘.
+```
+
+## 사용한 md 파일 위치
+
+| 파일 | 로컬 경로 | GitHub 주소 | 용도 |
+|---|---|---|---|
+| PRD.md §3.1, §3.4 | `C:\Users\chaewon\hrsg-reference-app\PRD.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/PRD.md | 계산기 화면·반응형 명세 |
+| README.md (키트) | `C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2\README.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/hrsg_calc_kit_team2/README.md | 키트 구성, 화면 ↔ 키트 입력·결과 연결표, 기대값 |
+| CLAUDE.md (키트) | `C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2\CLAUDE.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/hrsg_calc_kit_team2/CLAUDE.md | 키트 작업 규칙 (키트 파일 수정 금지, DEMO 표시 유지, "추천" 표기 금지 등) — Claude가 따른다 |
+| FORMULAS.md (키트) | `C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2\FORMULAS.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/hrsg_calc_kit_team2/FORMULAS.md | 계산식 (화면·챗에 공개하지 않음) |
+| CHECKLIST.md (키트) | `C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2\CHECKLIST.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/hrsg_calc_kit_team2/CHECKLIST.md | 체크리스트 항목·상태·함수 |
+
+**이 단계 가이드 파일:** `C:\Users\chaewon\hrsg-reference-app\docs\dev-guide\02-calculator.md` · https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/docs/dev-guide/02-calculator.md

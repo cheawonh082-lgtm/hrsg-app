@@ -1,9 +1,23 @@
-# 프롬프트 원문: 5단계 — 4주차 체크리스트·연동·반응형 검수
+# 4단계. 체크리스트 · 화면 연동 · 반응형 교차 검수
 
-실제로 입력한 프롬프트 그대로다. 아래 줄부터 끝까지 복사해 Claude Code에 붙여 넣는다. 설명: [05-week4-checklist-integration.md](../05-week4-checklist-integration.md)
+## 목표(결과)
+- 플랜트 데이터 체크리스트 화면: 전체·필수 진행률, 카테고리별 접기, 항목별 상태·메모, 이메일용 요청 문구 복사(수신자는 별칭)
+- 화면 연동
+  - 계산기 "AI에게 질문하기" → 챗에 계산 맥락 전달 + "이 계산 결과 해석해줘" 추천 질문
+  - 챗 결과 카드 "계산기에서 열기" → 당시 입력 복원
+  - 핀치·어프로치 "데이터 필요" → 체크리스트 해당 항목으로 이동·강조
+- 반응형 교차 검수: 360·390·768·1280px × (한국어·라이트 / 영어·다크)에서 가로 넘침·글자 넘침·색 대비 자동 검사 + 스크린샷,
+  모바일 챗 입력창이 가상 키보드에 가리지 않도록 보정
 
----
+```
+backend\app\checklist\, backend\app\api\checklist.py, data\checklist_state.json (Git 제외)
+frontend\src\pages\ChecklistPage.tsx, components\checklist\ (ProgressBar, ChecklistSection, ChecklistItem, EmailExportDialog)
+frontend\src\hooks\useVisualViewport.ts
+frontend\e2e\checklist.spec.ts, responsive.spec.ts, responsive\layout.spec.ts, tests\backend\test_checklist.py
+```
 
+## 입력한 프롬프트
+```
 우리는 `PRD.md` 및 이전 주차(1~3주차) 구현 결과를 바탕으로 **4주차 목표인 플랜트 데이터 체크리스트, 화면 간 통합 연동, 반응형 교차 검수 및 최종 통합 테스트**를 진행합니다.
 
 3주차 반영사항(FakeLLM 키워드 규칙, 서버 메모리 캐시 특성, SSE 생략 등)을 그대로 존중하며 작업을 수행해 주세요.
@@ -57,3 +71,19 @@
   - `responsive.spec.ts`: 360px, 390px, 768px, 1280px 뷰포트별 가로 스크롤(`scrollWidth`) 검사 및 주요 화면 스크린샷 검증
 
 위 내용들을 구현하고 `npm run dev` 및 전체 테스트(`pytest`, `npm test`, Playwright) 실행 결과를 정리해 주세요.
+```
+확인용:
+```
+백앤드, 프론트앤드 실행해줘
+두 서버 꺼줘
+```
+
+## 사용한 md 파일 위치
+
+| 파일 | 로컬 경로 | GitHub 주소 | 용도 |
+|---|---|---|---|
+| PRD.md §2.4, §3.3, §3.4 | `C:\Users\chaewon\hrsg-reference-app\PRD.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/PRD.md | 체크리스트 데이터·화면 명세, 반응형 명세 |
+| CHECKLIST.md (키트) | `C:\Users\chaewon\hrsg-reference-app\hrsg_calc_kit_team2\CHECKLIST.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/hrsg_calc_kit_team2/CHECKLIST.md | 키트 교체(2-2) 후 체크리스트 항목·상태 규칙 |
+| README.md "테스트", "플랜트 데이터 체크리스트" | `C:\Users\chaewon\hrsg-reference-app\README.md` | https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/README.md | 테스트 명령, 체크리스트 저장 방식 |
+
+**이 단계 가이드 파일:** `C:\Users\chaewon\hrsg-reference-app\docs\dev-guide\04-checklist-integration.md` · https://github.com/cheawonh082-lgtm/hrsg-app/blob/main/docs/dev-guide/04-checklist-integration.md
